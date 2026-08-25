@@ -4,7 +4,6 @@ import { Home, Sparkles, Settings, Gauge, Users, Menu, ClipboardList, PanelLeftC
 import { Logo } from '@/components/brand/logo'
 import { Badge } from '@/components/ui/badge'
 import { ThemeToggle } from '@/features/theme/theme-toggle'
-import { LangSwitch } from '@/features/i18n/lang-switch'
 import { useTranslation } from '@/features/i18n/provider'
 import { PaymentFailedBanner } from '@/features/billing/components/payment-failed-banner'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
@@ -198,7 +197,6 @@ export function AppShell({
             </Badge>
           )}
           <ThemeToggle theme={theme} />
-          <LangSwitch />
         </div>
         <div className="app-main">
           <PaymentFailedBanner show={!!paymentFailed} />

@@ -22,7 +22,7 @@ export const Route = createFileRoute('/{-$locale}/waitlist')({
   },
   head: ({ loaderData, params }) => {
     const origin = loaderData?.origin ?? ''
-    const locale = ((params as { locale?: string }).locale ?? 'en') as Locale
+    const locale = ((params as { locale?: string }).locale ?? 'zh') as Locale
     const dict = locale === 'zh' ? '加入候补名单' : 'Join the waitlist'
     const { meta, links } = localeHead({
       origin,

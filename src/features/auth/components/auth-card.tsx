@@ -3,7 +3,6 @@ import { Link, getRouteApi } from '@tanstack/react-router'
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react'
 import { Logo } from '@/components/brand/logo'
 import { ThemeToggle } from '@/features/theme/theme-toggle'
-import { LangSwitch } from '@/features/i18n/lang-switch'
 import { useTranslation } from '@/features/i18n/provider'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,7 +33,6 @@ export function AuthCard({
         <div className="flex-1" />
         <div className="flex items-center gap-1">
           <ThemeToggle theme={theme} />
-          <LangSwitch />
         </div>
       </div>
       <div className="auth-body">

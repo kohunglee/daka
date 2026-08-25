@@ -33,7 +33,7 @@ const clientLoader = browserCollections.changelog.createClientLoader({
 
 export const Route = createFileRoute('/{-$locale}/changelog')({
   loader: async ({ params }) => {
-    const locale = ((params as { locale?: string }).locale ?? 'en') as Locale
+    const locale = ((params as { locale?: string }).locale ?? 'zh') as Locale
     const [origin, user, entries] = await Promise.all([
       getOrigin(),
       getOptionalUser(),
@@ -44,7 +44,7 @@ export const Route = createFileRoute('/{-$locale}/changelog')({
   },
   head: ({ loaderData, params }) => {
     const origin = loaderData?.origin ?? ''
-    const locale = ((params as { locale?: string }).locale ?? 'en') as Locale
+    const locale = ((params as { locale?: string }).locale ?? 'zh') as Locale
     const dict = dictionaries[locale]
     const { meta, links } = localeHead({
       origin,

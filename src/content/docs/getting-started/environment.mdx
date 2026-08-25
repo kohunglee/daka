@@ -40,6 +40,10 @@ description: 了解 FlareStarter 需要配置哪些环境变量以及它们的�
       description: '发件人邮箱，例如 noreply@yourdomain.com',
       type: 'string',
     },
+    EMAIL_VERIFICATION_ENABLED: {
+      description: '邮箱验证开关。设为 false 时注册后直接可登录；设为 true 且已配置 Resend 时恢复验证。',
+      type: 'true | false',
+    },
   }}
 />
 

@@ -6,9 +6,9 @@ title: "国际化（i18n）与 SEO"
 
 - 语言走路径前缀（TanStack `{-$locale}` 可选参数）：默认 `en` 无前缀（`/`、`/pricing`），`zh` 带前缀（`/zh`、`/zh/pricing`）。
 - locale 来自路由 param（非 cookie）；主题仍 cookie。
-- `/en/...` 会 307 规范化到无前缀路径；未知语言 → 404。
+- 当前为中文单语言模式：`/zh/...` 与历史 `/en/...` 都会 307 规范化到中文无前缀路径；未知语言 → 404。
 - 本地化页面在 `src/routes/{-$locale}/`；`api/`、`sitemap.xml`、`robots.txt` 在根、不本地化。
-- 切换语言（LangSwitch）保留当前子路径。
+- 语言切换入口当前已隐藏；英文字典保留在代码中，未来需要双语时可恢复。
 
 ## 新增一种语言
 

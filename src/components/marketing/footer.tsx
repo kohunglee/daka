@@ -2,7 +2,6 @@ import { Link } from '@tanstack/react-router'
 import { useTranslation } from '@/features/i18n/provider'
 import { Logo } from '@/components/brand/logo'
 import { ThemeToggle } from '@/features/theme/theme-toggle'
-import { LangSwitch } from '@/features/i18n/lang-switch'
 
 const GITHUB_URL = 'https://github.com/flarestarter/flarestarter'
 const TELEGRAM_URL = 'https://t.me/+coaN5Ihjte9jNzZl'
@@ -56,7 +55,6 @@ export function Footer({ theme }: { theme: 'light' | 'dark' }) {
         </p>
         <div className="flex items-center gap-1">
           <ThemeToggle theme={theme} />
-          <LangSwitch />
         </div>
       </div>
     </footer>

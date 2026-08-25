@@ -6,9 +6,9 @@ import { ImpersonationBanner } from '@/features/admin/components/impersonation-b
 export const Route = createFileRoute('/{-$locale}')({
   beforeLoad: ({ params, location }) => {
     const loc = (params as { locale?: string }).locale
-    if (loc === undefined) return                  // en (no prefix) — ok
-    if (loc === defaultLocale) {                    // '/en/...' → strip to canonical no-prefix
-      // href (not pathname) so query/hash survive — /en/sponsor?status=success 带参回跳
+    if (loc === undefined) return                  // 中文无前缀路径
+    if (loc === defaultLocale || loc === 'en') {    // 历史 /zh 与 /en URL 都统一到中文无前缀
+      // href（不是 pathname）确保 query/hash 在规范化跳转时保留。
       throw redirect({ href: stripDefaultLocalePrefix(location.href) })
     }
     if (!isLocale(loc)) throw notFound()            // unknown segment

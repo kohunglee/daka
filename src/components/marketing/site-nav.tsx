@@ -4,7 +4,6 @@ import { Menu, X, Github } from 'lucide-react'
 import { Logo } from '@/components/brand/logo'
 import { buttonVariants } from '@/components/ui/button'
 import { ThemeToggle } from '@/features/theme/theme-toggle'
-import { LangSwitch } from '@/features/i18n/lang-switch'
 import { useTranslation } from '@/features/i18n/provider'
 
 const GITHUB_URL = 'https://github.com/flarestarter/flarestarter'
@@ -59,7 +58,6 @@ export function SiteNav({ theme, loggedIn }: { theme: 'light' | 'dark'; loggedIn
         <div className="hidden items-center gap-1 md:flex">{navLinks}</div>
         <div className="flex items-center gap-1">
           <ThemeToggle theme={theme} />
-          <LangSwitch />
         </div>
         <a
           href={GITHUB_URL}

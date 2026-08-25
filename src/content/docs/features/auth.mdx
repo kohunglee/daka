@@ -44,7 +44,7 @@ authClient.signUp.email({ email, password, name })
   (本地 `.dev.vars`、生产 `wrangler secret put`),按钮自动出现。
 - **给用户加字段**:改 `src/features/auth/auth.schema.ts`,再 `pnpm db:generate` +
   迁移(见 [迁移与种子](/docs/getting-started/migrations))。
-- **关掉邮箱验证**:把 `requireEmailVerification` 设为 `false`(不推荐生产环境这么做)。
+- **临时关掉邮箱验证**:在 `.dev.vars` 设 `EMAIL_VERIFICATION_ENABLED=false`；恢复时改为 `true` 并配置 `RESEND_API_KEY`。
 
 <Callout type="warn">
 本地没配 `RESEND_API_KEY` 时,验证邮件不会真发 —— 链接会**打印到 `pnpm dev` 的

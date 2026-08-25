@@ -11,6 +11,7 @@ import { isAdminEmail } from '@/features/admin/is-admin'
 export interface AuthEnv {
   BETTER_AUTH_SECRET: string
   BETTER_AUTH_URL: string
+  EMAIL_VERIFICATION_ENABLED?: string
   GOOGLE_CLIENT_ID?: string
   GOOGLE_CLIENT_SECRET?: string
   GITHUB_CLIENT_ID?: string
@@ -18,6 +19,14 @@ export interface AuthEnv {
   ADMIN_EMAILS?: string
   TURNSTILE_SECRET_KEY?: string
   RESEND_API_KEY?: string
+}
+
+/**
+ * 邮箱验证开关：显式填 false 时临时关闭；未填时保持既有行为，
+ * 即只有配置了真实邮件服务才会强制验证，避免本地开发被验证流程卡住。
+ */
+export function isEmailVerificationEnabled(authEnv: AuthEnv): boolean {
+  return authEnv.EMAIL_VERIFICATION_ENABLED !== 'false' && Boolean(authEnv.RESEND_API_KEY)
 }
 
 /** Derive the user's preferred locale from an incoming Better-Auth hook request. */
@@ -43,23 +52,27 @@ function socialProviders(e: AuthEnv) {
 }
 
 export function createAuth(authEnv: AuthEnv, db: DB) {
+  // 复用同一个开关，确保服务端鉴权和注册页面的后续体验一致。
+  const emailVerificationEnabled = isEmailVerificationEnabled(authEnv)
+
   return betterAuth({
     secret: authEnv.BETTER_AUTH_SECRET,
     baseURL: authEnv.BETTER_AUTH_URL,
     database: drizzleAdapter(db, { provider: 'sqlite', schema }),
     emailAndPassword: {
       enabled: true,
-      // 只在真能发邮件时强制验证：缺 RESEND_API_KEY 时验证邮件只进日志（dev transport），
-      // 强制会把所有注册用户永久锁在「请先验证邮箱」外——遵循「key 缺失 → 功能关闭」约定。
-      requireEmailVerification: Boolean(authEnv.RESEND_API_KEY),
+      // 开关为 false 时，MVP 注册后可直接登录；改回 true 且配置 Resend 即恢复强验证。
+      requireEmailVerification: emailVerificationEnabled,
       sendResetPassword: async ({ user, url }, request) => {
         const locale = localeFromRequest(request)
         await sendEmail({ to: user.email, locale, template: 'reset-password', data: { url } })
       },
     },
     emailVerification: {
-      sendOnSignUp: true,
+      // 关闭时不产生无用 verification token，也不提示用户查收不存在的邮件。
+      sendOnSignUp: emailVerificationEnabled,
       sendVerificationEmail: async ({ user, url }, request) => {
+        if (!emailVerificationEnabled) return
         const locale = localeFromRequest(request)
         await sendEmail({ to: user.email, locale, template: 'verify-email', data: { url } })
       },

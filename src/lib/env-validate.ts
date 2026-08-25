@@ -30,6 +30,10 @@ const envSchema = z
     RESEND_API_KEY: optional,
     RESEND_AUDIENCE_ID: optional,
     EMAIL_FROM: optional,
+    EMAIL_VERIFICATION_ENABLED: z.preprocess(
+      (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+      z.enum(['true', 'false']).optional(),
+    ),
     GOOGLE_CLIENT_ID: optional,
     GOOGLE_CLIENT_SECRET: optional,
     GITHUB_CLIENT_ID: optional,

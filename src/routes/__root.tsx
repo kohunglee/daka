@@ -12,10 +12,10 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'FlareStarter — Cloudflare-native SaaS starter' },
-      { name: 'description', content: 'The open-source, Cloudflare-native SaaS starter. Clone it and ship on Workers.' },
+      { title: 'FlareStarter — Cloudflare 原生 SaaS 模板' },
+      { name: 'description', content: '开源的 Cloudflare 原生 SaaS 模板，克隆即可部署到 Workers。' },
       { property: 'og:title', content: 'FlareStarter' },
-      { property: 'og:description', content: 'The open-source, Cloudflare-native SaaS starter. Clone it and ship on Workers.' },
+      { property: 'og:description', content: '开源的 Cloudflare 原生 SaaS 模板，克隆即可部署到 Workers。' },
       { property: 'og:type', content: 'website' },
     ],
     links: [

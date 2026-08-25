@@ -1,4 +1,4 @@
-import { locales, defaultLocale, localizePath, type Locale } from '@/features/i18n/locale'
+import { defaultLocale, localizePath, type Locale } from '@/features/i18n/locale'
 
 const PUBLIC_PATHS = ['/', '/pricing', '/changelog', '/sponsor', '/waitlist'] as const
 
@@ -22,24 +22,13 @@ export function buildRobots(origin: string): string {
   ].join('\n')
 }
 
-function alternates(origin: string, path: string): string {
-  const links = locales.map(
-    (l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${origin}${localizePath(l, path)}"/>`,
-  )
-  links.push(
-    `<xhtml:link rel="alternate" hreflang="x-default" href="${origin}${localizePath(defaultLocale, path)}"/>`,
-  )
-  return links.join('')
-}
-
+/** 中文单语言模式：每个公开页面只保留一个规范 URL，不输出 hreflang 替代页。 */
 export function buildSitemap(origin: string, singleLocalePaths: string[] = []): string {
-  const bilingual = locales.flatMap((l) =>
-    PUBLIC_PATHS.map(
-      (p) => `<url><loc>${origin}${localizePath(l, p)}</loc>${alternates(origin, p)}</url>`,
-    ),
+  const publicPages = PUBLIC_PATHS.map(
+    (p) => `<url><loc>${origin}${localizePath(defaultLocale, p)}</loc></url>`,
   )
   const single = singleLocalePaths.map((p) => `<url><loc>${origin}${p}</loc></url>`)
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${[...bilingual, ...single].join('')}</urlset>`
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${[...publicPages, ...single].join('')}</urlset>`
 }
 
 export interface HeadLink {
@@ -62,24 +51,16 @@ export function localeHead(input: {
   title: string
   description: string
 }): { meta: HeadMeta[]; links: HeadLink[] } {
-  const { origin, locale, path, title, description } = input
-  const canonical = `${origin}${localizePath(locale, path)}`
+  const { origin, path, title, description } = input
+  const canonical = `${origin}${localizePath(defaultLocale, path)}`
   const links: HeadLink[] = [{ rel: 'canonical', href: canonical }]
-  for (const l of locales) {
-    links.push({ rel: 'alternate', hrefLang: l, href: `${origin}${localizePath(l, path)}` })
-  }
-  links.push({
-    rel: 'alternate',
-    hrefLang: 'x-default',
-    href: `${origin}${localizePath(defaultLocale, path)}`,
-  })
   const meta: HeadMeta[] = [
     { title },
     { name: 'description', content: description },
     { property: 'og:title', content: title },
     { property: 'og:description', content: description },
     { property: 'og:url', content: canonical },
-    { property: 'og:locale', content: OG_LOCALE[locale] },
+    { property: 'og:locale', content: OG_LOCALE[defaultLocale] },
     { property: 'og:image', content: `${origin}/logo512.png` },
     { name: 'twitter:card', content: 'summary_large_image' },
   ]

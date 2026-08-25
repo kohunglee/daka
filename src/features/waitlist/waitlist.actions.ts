@@ -9,7 +9,7 @@ export const joinWaitlist = createServerFn({ method: 'POST' })
     const o = (d ?? {}) as Record<string, unknown>
     return {
       email: typeof o.email === 'string' ? o.email : '',
-      locale: typeof o.locale === 'string' ? o.locale : 'en',
+      locale: typeof o.locale === 'string' ? o.locale : 'zh',
       turnstileToken: typeof o.turnstileToken === 'string' ? o.turnstileToken : '',
       source: typeof o.source === 'string' ? o.source : undefined,
     }
@@ -43,7 +43,7 @@ export const joinWaitlist = createServerFn({ method: 'POST' })
     const ok = await verifyTurnstile(data.turnstileToken, env.TURNSTILE_SECRET_KEY)
     if (!ok) return { status: 'captcha' }
 
-    const locale = data.locale === 'zh' ? 'zh' : 'en'
+    const locale = 'zh'
     const status = await upsertWaitlist(createDb(env.DB), {
       id: crypto.randomUUID(),
       email,

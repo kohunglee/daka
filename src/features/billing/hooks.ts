@@ -29,7 +29,7 @@ export const billingHooks: BillingHooks = {
     const { env } = await import('@/lib/env')
     const { sendEmail } = await import('@/features/email/email.server')
     const base = new URL(env.BETTER_AUTH_URL).origin
-    await sendEmail({ to: ctx.email, locale: 'en', template: 'pro-activated', data: { url: `${base}/app` } })
+    await sendEmail({ to: ctx.email, locale: 'zh', template: 'pro-activated', data: { url: `${base}/app` } })
   },
   // async onProDeactivated(ctx, reason) {
   //   // Example: revoke provisioned resources, send a "your Pro ended" email, etc.

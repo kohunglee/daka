@@ -24,7 +24,7 @@ export const Route = createFileRoute('/{-$locale}/sponsor')({
   },
   head: ({ loaderData, params }) => {
     const origin = loaderData?.origin ?? ''
-    const locale = ((params as { locale?: string }).locale ?? 'en') as Locale
+    const locale = ((params as { locale?: string }).locale ?? 'zh') as Locale
     const { meta, links } = localeHead({
       origin,
       locale,

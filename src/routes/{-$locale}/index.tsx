@@ -3,13 +3,8 @@ import { localeHead } from '@/features/seo/seo'
 import { getOrigin } from '@/features/seo/seo.fns'
 import type { Locale } from '@/features/i18n/locale'
 import { SiteNav } from '@/components/marketing/site-nav'
-import { Hero } from '@/components/marketing/hero'
-import { TechStrip } from '@/components/marketing/tech-strip'
-import { Features } from '@/components/marketing/features'
-import { FeatureGrid } from '@/components/marketing/feature-grid'
-import { AgentSection } from '@/components/marketing/agent-section'
-import { CTA } from '@/components/marketing/cta'
 import { Footer } from '@/components/marketing/footer'
+import { YearCalendar } from '@/components/calendar/year-calendar'
 
 const rootRoute = getRouteApi('__root__')
 
@@ -17,7 +12,7 @@ export const Route = createFileRoute('/{-$locale}/')({
   loader: async () => ({ origin: await getOrigin() }),
   head: ({ loaderData, params }) => {
     const origin = loaderData?.origin ?? ''
-    const locale = ((params as { locale?: string }).locale ?? 'en') as Locale
+    const locale = ((params as { locale?: string }).locale ?? 'zh') as Locale
     const { meta, links } = localeHead({
       origin,
       locale,
@@ -38,14 +33,12 @@ function Home() {
   const loggedIn = !!user
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <SiteNav theme={theme} loggedIn={loggedIn} />
-      <Hero loggedIn={loggedIn} />
-      <TechStrip />
-      <Features />
-      <FeatureGrid />
-      <AgentSection />
-      <CTA loggedIn={loggedIn} />
+      {/* 首页正文：打卡系统 MVP 的全年日历占位 */}
+      <main className="flex-1" aria-label="Main content">
+        <YearCalendar />
+      </main>
       <Footer theme={theme} />
     </div>
   )

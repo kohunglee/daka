@@ -1,14 +1,17 @@
 import { en, type Dict } from './dictionaries/en'
 import { zh } from './dictionaries/zh'
 
-export const locales = ['en', 'zh'] as const
-export type Locale = (typeof locales)[number]
-export const defaultLocale: Locale = 'en'
+// 对外只开放中文；英文类型与字典保留，为将来恢复双语预留最小改动面。
+export const locales = ['zh'] as const
+export type Locale = 'en' | (typeof locales)[number]
+// 当前产品面向中文用户：公开页面仅使用中文。英文字典先保留，未来可快速恢复双语。
+export const activeLocales = locales
+export const defaultLocale: Locale = 'zh'
 
 export const dictionaries: Record<Locale, Dict> = { en, zh }
 
 export function isLocale(value: unknown): value is Locale {
-  return typeof value === 'string' && (locales as readonly string[]).includes(value)
+  return typeof value === 'string' && (activeLocales as readonly string[]).includes(value)
 }
 
 type Params = Record<string, string | number>
@@ -26,34 +29,25 @@ export function translate(dict: Dict, key: string, params?: Params): string {
   )
 }
 
-/** 从完整 href 上剥掉冗余的 /en 前缀，保留 query 和 hash——
- *  规范化重定向用（`/en/pricing?ref=x` → `/pricing?ref=x`）。 */
+/** 从完整 href 上剥掉历史语言前缀，保留 query 和 hash，统一为中文无前缀 URL。 */
 export function stripDefaultLocalePrefix(href: string): string {
-  const stripped = href.replace(/^\/en(?=[/?#]|$)/, '')
+  const stripped = href.replace(/^\/(?:en|zh)(?=[/?#]|$)/, '')
   if (stripped === '') return '/'
   if (stripped.startsWith('?') || stripped.startsWith('#')) return `/${stripped}`
   return stripped
 }
 
-/** en 无前缀；其余 locale 加 /{locale} 前缀。 */
+/** 中文为唯一公开语言，统一使用无前缀 URL。 */
 export function localizePath(locale: Locale, path: string): string {
   const clean = path === '/' ? '' : path
   if (locale === defaultLocale) return clean || '/'
   return `/${locale}${clean}` || `/${locale}`
 }
 
-/** SSR 语言协商：cookie 优先，其次 Accept-Language，最后默认。 */
+/** 中文单语言模式：忽略旧 cookie 与浏览器语言，始终返回中文。 */
 export function negotiateLocale(
-  cookieLocale: string | undefined,
-  acceptLanguage: string | null,
+  _cookieLocale: string | undefined,
+  _acceptLanguage: string | null,
 ): Locale {
-  if (isLocale(cookieLocale)) return cookieLocale
-  if (acceptLanguage) {
-    for (const part of acceptLanguage.split(',')) {
-      const tag = part.split(';')[0].trim().toLowerCase()
-      const base = tag.split('-')[0]
-      if (isLocale(base)) return base
-    }
-  }
   return defaultLocale
 }

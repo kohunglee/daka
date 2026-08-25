@@ -31,6 +31,15 @@ export const getEnabledSocialProviders = createServerFn({ method: 'GET' }).handl
   return out
 })
 
+/**
+ * 返回注册页是否需要显示邮箱验证后的过渡页。
+ * 显式 false 为 MVP 临时关闭；恢复为 true 且填入 Resend key 后自动重新启用。
+ */
+export const getEmailVerificationEnabled = createServerFn({ method: 'GET' }).handler(
+  async (): Promise<boolean> =>
+    env.EMAIL_VERIFICATION_ENABLED !== 'false' && Boolean(env.RESEND_API_KEY),
+)
+
 /** Public Turnstile site key for the auth forms, or null when bot protection is off. */
 export const getTurnstileSiteKey = createServerFn({ method: 'GET' }).handler(
   async (): Promise<string | null> => env.TURNSTILE_SITE_KEY || null,

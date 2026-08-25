@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { User, Mail, Lock } from 'lucide-react'
 import { signUp } from '@/features/auth/auth.client'
-import { getEnabledSocialProviders, getTurnstileSiteKey } from '@/features/auth/middleware'
+import { getEmailVerificationEnabled, getEnabledSocialProviders, getTurnstileSiteKey } from '@/features/auth/middleware'
 import { mapAuthError } from '@/features/auth/errors'
 import { useTurnstile, captchaHeaders } from '@/features/auth/components/turnstile'
 import { useTranslation } from '@/features/i18n/provider'
@@ -14,18 +14,20 @@ import { Button } from '@/components/ui/button'
 export const Route = createFileRoute('/{-$locale}/(auth)/register')({
   head: ({ params }) => authPageHead(params, 'registerTitle'),
   loader: async () => {
-    const [providers, turnstileSiteKey] = await Promise.all([
+    const [providers, turnstileSiteKey, emailVerificationEnabled] = await Promise.all([
       getEnabledSocialProviders(),
       getTurnstileSiteKey(),
+      getEmailVerificationEnabled(),
     ])
-    return { providers, turnstileSiteKey }
+    return { providers, turnstileSiteKey, emailVerificationEnabled }
   },
   component: Register,
 })
 
 function Register() {
-  const { providers, turnstileSiteKey } = Route.useLoaderData()
+  const { providers, turnstileSiteKey, emailVerificationEnabled } = Route.useLoaderData()
   const { t } = useTranslation()
+  const router = useRouter()
   const { token, enabled, widget, reset } = useTurnstile(turnstileSiteKey)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -45,7 +47,9 @@ function Register() {
       reset() // tokens are single-use
       return
     }
-    setSent(true)
+    // MVP 关闭邮箱验证时，注册成功后直接进入应用，不再显示“验证邮件已发送”。
+    if (emailVerificationEnabled) setSent(true)
+    else router.navigate({ to: '/{-$locale}/app' })
   }
 
   if (sent) {
