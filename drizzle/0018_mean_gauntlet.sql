@@ -1,0 +1,1 @@
+DROP INDEX `daily_checkin_user_date_idx`;

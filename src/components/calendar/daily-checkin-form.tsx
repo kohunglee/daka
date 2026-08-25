@@ -1,8 +1,8 @@
 /**
  * 每日出海打卡表单。
  *
- * 当前阶段先完成首页交互、字段约束和公开截图提示；真正的图片上传、D1/R2
- * 保存接口等后端能力，等打卡数据模型确定后再接入，避免前端先写死数据结构。
+ * 截图会在浏览器内完成编辑和 JPEG 压缩，再通过同一个 FormData 提交到 D1/R2。
+ * 失败时不清空表单，方便陛下直接重试。
  */
 import {
   useRef,
@@ -17,6 +17,13 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { submitCheckinFn } from '@/features/checkin/actions'
+import {
+  countChineseCharacters,
+  MAX_CHECKIN_IMAGE_BYTES,
+  MAX_CHECKIN_IMAGE_DIMENSION,
+  type CheckinRecordView,
+} from '@/features/checkin/checkin.shared'
 
 /** 画笔工具类型：马赛克用于遮挡敏感信息，红笔用于自由标记。 */
 type BrushTool = 'mosaic' | 'red'
@@ -27,8 +34,8 @@ const BRUSH_SIZES: Record<BrushTool, number> = {
   red: 14,
 }
 
-/** 编辑画布最大宽度，避免超大截图让浏览器编辑时占用过多内存。 */
-const MAX_EDITOR_WIDTH = 1200
+/** 编辑画布最长边，和本轮确定的前端压缩策略保持一致。 */
+const MAX_EDITOR_WIDTH = MAX_CHECKIN_IMAGE_DIMENSION
 
 /** 将指针事件换算成画布内部坐标，兼容 CSS 缩放后的展示尺寸。 */
 function getCanvasPoint(event: ReactPointerEvent<HTMLCanvasElement>) {
@@ -125,8 +132,32 @@ function drawBrushSegment(
   targetContext.restore()
 }
 
+/** 将编辑画布按比例输出为 JPEG，并逐步降低质量/尺寸直到不超过 600KB。 */
+async function compressEditedCanvas(canvas: HTMLCanvasElement): Promise<Blob | null> {
+  const qualityLevels = [0.92, 0.84, 0.76, 0.68, 0.6, 0.5, 0.4, 0.3]
+  const scaleLevels = [1, 0.9, 0.8, 0.7, 0.6, 0.5]
+
+  for (const scale of scaleLevels) {
+    const output = document.createElement('canvas')
+    output.width = Math.max(1, Math.round(canvas.width * scale))
+    output.height = Math.max(1, Math.round(canvas.height * scale))
+    const context = output.getContext('2d')
+    if (!context) return null
+    context.fillStyle = '#ffffff'
+    context.fillRect(0, 0, output.width, output.height)
+    context.drawImage(canvas, 0, 0, output.width, output.height)
+
+    for (const quality of qualityLevels) {
+      const blob = await new Promise<Blob | null>((resolve) => output.toBlob(resolve, 'image/jpeg', quality))
+      if (blob && blob.size <= MAX_CHECKIN_IMAGE_BYTES) return blob
+    }
+  }
+
+  return null
+}
+
 /** 每日打卡字段的前端表单容器，负责即时展示填写进度和原生校验约束。 */
-export function DailyCheckinForm() {
+export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRecordView, currentStreak: number) => void }) {
   const [gscFile, setGscFile] = useState<File | null>(null)
   const [brushTool, setBrushTool] = useState<BrushTool>('mosaic')
   const [imageReady, setImageReady] = useState(false)
@@ -136,12 +167,13 @@ export function DailyCheckinForm() {
   const [quality, setQuality] = useState(5)
   const [log, setLog] = useState('')
   const [submitMessage, setSubmitMessage] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const sourceCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const drawingRef = useRef(false)
   const lastPointRef = useRef<{ x: number; y: number } | null>(null)
-  const logLength = Array.from(log).length
+  const logLength = countChineseCharacters(log)
 
   /** 统一处理选择或粘贴进来的图片，并把图片文件同步到原生 file input。 */
   function handleImageFile(file: File) {
@@ -266,21 +298,52 @@ export function DailyCheckinForm() {
     setSubmitMessage(null)
   }
 
-  /** 暂时只阻止页面刷新，并读取编辑后的画布 Blob，等待后端提交接口接入。 */
+  /** 压缩编辑结果并和四个字段一起交给服务端，失败时保留所有表单状态。 */
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (isSubmitting) return
     const canvas = canvasRef.current
     if (!canvas || !gscFile) {
       setSubmitMessage('请先选择并编辑 GSC 截图。')
       return
     }
-
-    const editedImage = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'))
-    if (!editedImage) {
-      setSubmitMessage('编辑后的图片准备失败，请重新选择截图。')
+    if (countChineseCharacters(log) < 80) {
+      setSubmitMessage('工作日志至少需要 80 个汉字。')
       return
     }
-    setSubmitMessage(`已准备好编辑后的截图（${Math.ceil(editedImage.size / 1024)} KB），保存接口待接入。`)
+
+    setIsSubmitting(true)
+    setSubmitMessage('正在压缩截图并保存今天的打卡……')
+    const editedImage = await compressEditedCanvas(canvas)
+    if (!editedImage) {
+      setIsSubmitting(false)
+      setSubmitMessage('截图压缩失败，请减少图片内容后重试。')
+      return
+    }
+
+    const data = new FormData()
+    data.set('image', new File([editedImage], 'gsc-checkin.jpg', { type: 'image/jpeg' }))
+    data.set('hours', hours)
+    data.set('backlinks', backlinks)
+    data.set('quality', String(quality))
+    data.set('log', log)
+
+    try {
+      const result = await submitCheckinFn({ data })
+      if (result.status === 'created') {
+        setSubmitMessage(`今日已打卡，截图已压缩到 ${Math.ceil(result.record.imageBytes / 1024)}KB。`)
+        onSuccess?.(result.record, result.currentStreak)
+      } else if (result.status === 'already_checked_in') {
+        setSubmitMessage('今天已经打卡，已为陛下显示当天记录。')
+        onSuccess?.(result.record, result.currentStreak)
+      } else {
+        setSubmitMessage(result.message)
+      }
+    } catch {
+      setSubmitMessage('保存失败，请检查网络后重试；当前表单内容已保留。')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -468,11 +531,13 @@ export function DailyCheckinForm() {
             placeholder="记录今天做了什么、遇到什么问题、明天准备怎么继续……"
             aria-describedby="daily-log-hint"
           />
-          <p id="daily-log-hint" className="m-0 text-xs text-fg-3">至少填写 80 个汉字。</p>
+          <p id="daily-log-hint" className="m-0 text-xs text-fg-3">至少填写 80 个汉字，标点、数字和英文不计入。</p>
         </div>
 
         <div className="grid gap-2 pt-1">
-          <Button type="submit" size="lg" className="w-full sm:w-fit">提交今日打卡</Button>
+          <Button type="submit" size="lg" disabled={isSubmitting} className="w-full sm:w-fit">
+            {isSubmitting ? '正在保存……' : '提交今日打卡'}
+          </Button>
           {submitMessage && <p className="m-0 text-sm text-success" role="status">{submitMessage}</p>}
         </div>
       </form>

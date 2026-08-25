@@ -37,7 +37,7 @@ function Home() {
       <SiteNav theme={theme} loggedIn={loggedIn} />
       {/* 首页正文：打卡系统 MVP 的全年日历占位 */}
       <main className="flex-1" aria-label="Main content">
-        <YearCalendar />
+        <YearCalendar userId={user?.id ?? null} />
       </main>
       <Footer theme={theme} />
     </div>

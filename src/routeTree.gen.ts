@@ -44,6 +44,8 @@ import { Route as Char123LocaleChar125authForgotPasswordRouteImport } from './ro
 import { Route as ApiWebhooksStripeRouteImport } from './routes/api/webhooks/stripe'
 import { Route as ApiAvatarsSplatRouteImport } from './routes/api/avatars/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as Char123LocaleChar125CheckinUserIdDateRouteImport } from './routes/{-$locale}/checkin/$userId/$date'
+import { Route as ApiCheckinsUserIdDateRouteImport } from './routes/api/checkins/$userId/$date'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -243,6 +245,17 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char123LocaleChar125CheckinUserIdDateRoute =
+  Char123LocaleChar125CheckinUserIdDateRouteImport.update({
+    id: '/checkin/$userId/$date',
+    path: '/checkin/$userId/$date',
+    getParentRoute: () => Char123LocaleChar125RouteRoute,
+  } as any)
+const ApiCheckinsUserIdDateRoute = ApiCheckinsUserIdDateRouteImport.update({
+  id: '/api/checkins/$userId/$date',
+  path: '/api/checkins/$userId/$date',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/{-$locale}': typeof Char123LocaleChar125RouteRouteWithChildren
@@ -280,6 +293,8 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/app/pro': typeof Char123LocaleChar125AppProRoute
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/app/': typeof Char123LocaleChar125AppIndexRoute
+  '/api/checkins/$userId/$date': typeof ApiCheckinsUserIdDateRoute
+  '/{-$locale}/checkin/$userId/$date': typeof Char123LocaleChar125CheckinUserIdDateRoute
 }
 export interface FileRoutesByTo {
   '/llms-full.txt': typeof LlmsFullDottxtRoute
@@ -315,6 +330,8 @@ export interface FileRoutesByTo {
   '/{-$locale}/app/pro': typeof Char123LocaleChar125AppProRoute
   '/{-$locale}/admin': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/app': typeof Char123LocaleChar125AppIndexRoute
+  '/api/checkins/$userId/$date': typeof ApiCheckinsUserIdDateRoute
+  '/{-$locale}/checkin/$userId/$date': typeof Char123LocaleChar125CheckinUserIdDateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -353,6 +370,8 @@ export interface FileRoutesById {
   '/{-$locale}/app/pro': typeof Char123LocaleChar125AppProRoute
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/app/': typeof Char123LocaleChar125AppIndexRoute
+  '/api/checkins/$userId/$date': typeof ApiCheckinsUserIdDateRoute
+  '/{-$locale}/checkin/$userId/$date': typeof Char123LocaleChar125CheckinUserIdDateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -392,6 +411,8 @@ export interface FileRouteTypes {
     | '/{-$locale}/app/pro'
     | '/{-$locale}/admin/'
     | '/{-$locale}/app/'
+    | '/api/checkins/$userId/$date'
+    | '/{-$locale}/checkin/$userId/$date'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/llms-full.txt'
@@ -427,6 +448,8 @@ export interface FileRouteTypes {
     | '/{-$locale}/app/pro'
     | '/{-$locale}/admin'
     | '/{-$locale}/app'
+    | '/api/checkins/$userId/$date'
+    | '/{-$locale}/checkin/$userId/$date'
   id:
     | '__root__'
     | '/{-$locale}'
@@ -464,6 +487,8 @@ export interface FileRouteTypes {
     | '/{-$locale}/app/pro'
     | '/{-$locale}/admin/'
     | '/{-$locale}/app/'
+    | '/api/checkins/$userId/$date'
+    | '/{-$locale}/checkin/$userId/$date'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -480,6 +505,7 @@ export interface RootRouteChildren {
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiAvatarsSplatRoute: typeof ApiAvatarsSplatRoute
   ApiWebhooksStripeRoute: typeof ApiWebhooksStripeRoute
+  ApiCheckinsUserIdDateRoute: typeof ApiCheckinsUserIdDateRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -729,6 +755,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/{-$locale}/checkin/$userId/$date': {
+      id: '/{-$locale}/checkin/$userId/$date'
+      path: '/checkin/$userId/$date'
+      fullPath: '/{-$locale}/checkin/$userId/$date'
+      preLoaderRoute: typeof Char123LocaleChar125CheckinUserIdDateRouteImport
+      parentRoute: typeof Char123LocaleChar125RouteRoute
+    }
+    '/api/checkins/$userId/$date': {
+      id: '/api/checkins/$userId/$date'
+      path: '/api/checkins/$userId/$date'
+      fullPath: '/api/checkins/$userId/$date'
+      preLoaderRoute: typeof ApiCheckinsUserIdDateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -775,6 +815,7 @@ interface Char123LocaleChar125RouteRouteChildren {
   Char123LocaleChar125AppFeedbackRoute: typeof Char123LocaleChar125AppFeedbackRoute
   Char123LocaleChar125AppProRoute: typeof Char123LocaleChar125AppProRoute
   Char123LocaleChar125AppIndexRoute: typeof Char123LocaleChar125AppIndexRoute
+  Char123LocaleChar125CheckinUserIdDateRoute: typeof Char123LocaleChar125CheckinUserIdDateRoute
 }
 
 const Char123LocaleChar125RouteRouteChildren: Char123LocaleChar125RouteRouteChildren =
@@ -801,6 +842,8 @@ const Char123LocaleChar125RouteRouteChildren: Char123LocaleChar125RouteRouteChil
     Char123LocaleChar125AppFeedbackRoute: Char123LocaleChar125AppFeedbackRoute,
     Char123LocaleChar125AppProRoute: Char123LocaleChar125AppProRoute,
     Char123LocaleChar125AppIndexRoute: Char123LocaleChar125AppIndexRoute,
+    Char123LocaleChar125CheckinUserIdDateRoute:
+      Char123LocaleChar125CheckinUserIdDateRoute,
   }
 
 const Char123LocaleChar125RouteRouteWithChildren =
@@ -822,6 +865,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiAvatarsSplatRoute: ApiAvatarsSplatRoute,
   ApiWebhooksStripeRoute: ApiWebhooksStripeRoute,
+  ApiCheckinsUserIdDateRoute: ApiCheckinsUserIdDateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
