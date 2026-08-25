@@ -94,9 +94,13 @@ export function YearCalendar({ userId }: { userId: string | null }) {
   const [detailLoading, setDetailLoading] = useState(false)
   const [detailError, setDetailError] = useState<string | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(false)
+  // 只有年度打卡摘要成功返回后，按钮才显示具体状态，避免慢网速下先闪出错误文案。
+  const [loadedSummaryKey, setLoadedSummaryKey] = useState<string | null>(() => (userId ? null : 'logged-out'))
   const timerRef = useRef<number | null>(null)
 
   const months = useMemo(() => buildYear(year), [year])
+  const currentSummaryKey = userId ? `${userId}:${year}` : 'logged-out'
+  const statusReady = !userId || loadedSummaryKey === currentSummaryKey
   const today = new Date()
   const todayKey = formatBeijingDate()
   const todayYear = today.getFullYear()
@@ -107,10 +111,12 @@ export function YearCalendar({ userId }: { userId: string | null }) {
   /** 年份或登录身份变化时读取年度日期和当前连续天数。 */
   useEffect(() => {
     let cancelled = false
+    const requestKey = userId ? `${userId}:${year}` : 'logged-out'
     setSelectedRecord(null)
     setSelectedDate(null)
     setDetailError(null)
     if (!userId) {
+      setLoadedSummaryKey(requestKey)
       setCheckedDates(new Set())
       setCurrentStreak(0)
       return () => { cancelled = true }
@@ -122,6 +128,7 @@ export function YearCalendar({ userId }: { userId: string | null }) {
         if (cancelled) return
         setCheckedDates(new Set(summary.checkedDates))
         setCurrentStreak(summary.currentStreak)
+        setLoadedSummaryKey(requestKey)
       })
       .catch(() => {
         if (!cancelled) setDetailError('日历数据读取失败，请刷新页面重试。')
@@ -170,6 +177,7 @@ export function YearCalendar({ userId }: { userId: string | null }) {
 
   /** 未登录时引导登录；已打卡时直接打开今天的只读详情。 */
   function handleTodayAction() {
+    if (userId && !statusReady) return
     if (!userId) {
       window.location.href = '/login'
       return
@@ -208,8 +216,8 @@ export function YearCalendar({ userId }: { userId: string | null }) {
       </div>
 
       {summaryLoading && userId && <p className="mb-3 text-center text-xs text-fg-3">正在读取打卡日历……</p>}
-      {/* 12 个月：桌面两行各 6 个，小屏四行各 3 个。 */}
-      <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+      {/* 12 个月：宽度不超过 600px 时 2 列，601–1080px 时 3 列，更宽时 6 列。 */}
+      <div className="grid grid-cols-2 gap-3 min-[601px]:grid-cols-3 min-[1081px]:grid-cols-6">
         {months.map((month) => (
           <div key={month.name} className="p-2 font-mono">
             <div className="mb-1.5 text-center text-sm font-semibold text-fg-3">{month.name}</div>
@@ -241,11 +249,14 @@ export function YearCalendar({ userId }: { userId: string | null }) {
       <button
         type="button"
         onClick={handleTodayAction}
+        disabled={Boolean(userId && !statusReady)}
+        aria-busy={!statusReady}
+        aria-label={statusReady ? (!userId ? '登录后打卡今天' : todayChecked ? '今日已打卡' : '打卡今天') : '正在判断今日打卡状态'}
         aria-expanded={showCheckinForm}
         aria-controls="daily-checkin-form"
-        className={`mx-auto mt-8 flex min-h-12 w-full max-w-sm items-center justify-center rounded-lg border px-6 py-3 text-lg font-semibold shadow-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${todayChecked ? 'border-destructive/30 bg-destructive/15 text-destructive hover:bg-destructive/20' : 'border-transparent bg-primary text-primary-foreground hover:bg-primary/90'}`}
+        className={`mx-auto mt-8 flex min-h-12 w-full max-w-sm items-center justify-center rounded-lg border px-6 py-3 text-lg font-semibold shadow-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${!statusReady ? 'cursor-wait border-border bg-bg-alt text-transparent' : todayChecked ? 'border-destructive/30 bg-destructive/15 text-destructive hover:bg-destructive/20' : 'border-transparent bg-primary text-primary-foreground hover:bg-primary/90'}`}
       >
-        {!userId ? '登录后打卡今天' : todayChecked ? '今日已打卡' : '打卡今天'}
+        {statusReady && (!userId ? '登录后打卡今天' : todayChecked ? '今日已打卡' : '打卡今天')}
       </button>
       {showCheckinForm && userId && !todayChecked && (
         <div id="daily-checkin-form">

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as N4v8q2m7x9r3k6p1RouteImport } from './routes/n4v8q2m7x9r3k6p1'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as LlmsFullDottxtRouteImport } from './routes/llms-full[.]txt'
 import { Route as Char123LocaleChar125RouteRouteImport } from './routes/{-$locale}/route'
@@ -55,6 +56,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const N4v8q2m7x9r3k6p1Route = N4v8q2m7x9r3k6p1RouteImport.update({
+  id: '/n4v8q2m7x9r3k6p1',
+  path: '/n4v8q2m7x9r3k6p1',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
@@ -261,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}': typeof Char123LocaleChar125RouteRouteWithChildren
   '/llms-full.txt': typeof LlmsFullDottxtRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/n4v8q2m7x9r3k6p1': typeof N4v8q2m7x9r3k6p1Route
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/{-$locale}/admin': typeof Char123LocaleChar125AdminRouteRouteWithChildren
@@ -299,6 +306,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/llms-full.txt': typeof LlmsFullDottxtRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/n4v8q2m7x9r3k6p1': typeof N4v8q2m7x9r3k6p1Route
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/sponsors.csv': typeof AdminSponsorsDotcsvRoute
@@ -338,6 +346,7 @@ export interface FileRoutesById {
   '/{-$locale}': typeof Char123LocaleChar125RouteRouteWithChildren
   '/llms-full.txt': typeof LlmsFullDottxtRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/n4v8q2m7x9r3k6p1': typeof N4v8q2m7x9r3k6p1Route
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/{-$locale}/admin': typeof Char123LocaleChar125AdminRouteRouteWithChildren
@@ -379,6 +388,7 @@ export interface FileRouteTypes {
     | '/{-$locale}'
     | '/llms-full.txt'
     | '/llms.txt'
+    | '/n4v8q2m7x9r3k6p1'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/{-$locale}/admin'
@@ -417,6 +427,7 @@ export interface FileRouteTypes {
   to:
     | '/llms-full.txt'
     | '/llms.txt'
+    | '/n4v8q2m7x9r3k6p1'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/admin/sponsors.csv'
@@ -455,6 +466,7 @@ export interface FileRouteTypes {
     | '/{-$locale}'
     | '/llms-full.txt'
     | '/llms.txt'
+    | '/n4v8q2m7x9r3k6p1'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/{-$locale}/admin'
@@ -495,6 +507,7 @@ export interface RootRouteChildren {
   Char123LocaleChar125RouteRoute: typeof Char123LocaleChar125RouteRouteWithChildren
   LlmsFullDottxtRoute: typeof LlmsFullDottxtRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
+  N4v8q2m7x9r3k6p1Route: typeof N4v8q2m7x9r3k6p1Route
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AdminSponsorsDotcsvRoute: typeof AdminSponsorsDotcsvRoute
@@ -522,6 +535,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/n4v8q2m7x9r3k6p1': {
+      id: '/n4v8q2m7x9r3k6p1'
+      path: '/n4v8q2m7x9r3k6p1'
+      fullPath: '/n4v8q2m7x9r3k6p1'
+      preLoaderRoute: typeof N4v8q2m7x9r3k6p1RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/llms.txt': {
@@ -855,6 +875,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char123LocaleChar125RouteRoute: Char123LocaleChar125RouteRouteWithChildren,
   LlmsFullDottxtRoute: LlmsFullDottxtRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
+  N4v8q2m7x9r3k6p1Route: N4v8q2m7x9r3k6p1Route,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   AdminSponsorsDotcsvRoute: AdminSponsorsDotcsvRoute,

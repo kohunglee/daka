@@ -44,6 +44,7 @@ const envSchema = z
     STRIPE_PRICE_PRO_YEARLY: optional,
     STRIPE_PRICE_PRO_LIFETIME: optional,
     ADMIN_EMAILS: optional,
+    ADMIN_PASSWORD: optional,
     TURNSTILE_SITE_KEY: optional,
     TURNSTILE_SECRET_KEY: optional,
     CF_ANALYTICS_TOKEN: optional,
