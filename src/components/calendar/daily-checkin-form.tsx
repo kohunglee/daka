@@ -1,0 +1,481 @@
+/**
+ * 每日出海打卡表单。
+ *
+ * 当前阶段先完成首页交互、字段约束和公开截图提示；真正的图片上传、D1/R2
+ * 保存接口等后端能力，等打卡数据模型确定后再接入，避免前端先写死数据结构。
+ */
+import {
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ClipboardEvent as ReactClipboardEvent,
+  type FormEvent,
+  type PointerEvent as ReactPointerEvent,
+} from 'react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+
+/** 画笔工具类型：马赛克用于遮挡敏感信息，红笔用于自由标记。 */
+type BrushTool = 'mosaic' | 'red'
+
+/** 两种工具使用固定粗细：马赛克用粗笔，红色涂抹用细笔。 */
+const BRUSH_SIZES: Record<BrushTool, number> = {
+  mosaic: 30,
+  red: 14,
+}
+
+/** 编辑画布最大宽度，避免超大截图让浏览器编辑时占用过多内存。 */
+const MAX_EDITOR_WIDTH = 1200
+
+/** 将指针事件换算成画布内部坐标，兼容 CSS 缩放后的展示尺寸。 */
+function getCanvasPoint(event: ReactPointerEvent<HTMLCanvasElement>) {
+  const canvas = event.currentTarget
+  const rect = canvas.getBoundingClientRect()
+  // 画布可能被 object-contain 或父容器缩放，先计算实际图片内容在外框中的偏移。
+  const scale = Math.min(rect.width / canvas.width, rect.height / canvas.height)
+  const renderedWidth = canvas.width * scale
+  const renderedHeight = canvas.height * scale
+  const offsetX = (rect.width - renderedWidth) / 2
+  const offsetY = (rect.height - renderedHeight) / 2
+
+  return {
+    x: Math.max(0, Math.min(canvas.width, (event.clientX - rect.left - offsetX) / scale)),
+    y: Math.max(0, Math.min(canvas.height, (event.clientY - rect.top - offsetY) / scale)),
+  }
+}
+
+/** 在原图采样颜色并绘制像素块，形成可拖动的马赛克遮挡效果。 */
+function drawMosaicStamp(
+  targetContext: CanvasRenderingContext2D,
+  sourceContext: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+) {
+  const half = size / 2
+  const left = Math.max(0, Math.floor(x - half))
+  const top = Math.max(0, Math.floor(y - half))
+  const right = Math.min(targetContext.canvas.width, Math.ceil(x + half))
+  const bottom = Math.min(targetContext.canvas.height, Math.ceil(y + half))
+  const width = right - left
+  const height = bottom - top
+  if (width <= 0 || height <= 0) return
+
+  const sourcePixels = sourceContext.getImageData(left, top, width, height).data
+  const blockSize = Math.max(6, Math.round(size / 7))
+
+  for (let blockY = 0; blockY < height; blockY += blockSize) {
+    for (let blockX = 0; blockX < width; blockX += blockSize) {
+      const sampleX = Math.min(width - 1, blockX + Math.floor(blockSize / 2))
+      const sampleY = Math.min(height - 1, blockY + Math.floor(blockSize / 2))
+      const pixelIndex = (sampleY * width + sampleX) * 4
+      const red = sourcePixels[pixelIndex] ?? 0
+      const green = sourcePixels[pixelIndex + 1] ?? 0
+      const blue = sourcePixels[pixelIndex + 2] ?? 0
+      const alpha = (sourcePixels[pixelIndex + 3] ?? 255) / 255
+      targetContext.fillStyle = `rgba(${red}, ${green}, ${blue}, ${alpha})`
+      targetContext.fillRect(
+        left + blockX,
+        top + blockY,
+        Math.min(blockSize, width - blockX),
+        Math.min(blockSize, height - blockY),
+      )
+    }
+  }
+}
+
+/** 在两个连续指针点之间补齐笔触，避免快速拖动时出现断线。 */
+function drawBrushSegment(
+  targetContext: CanvasRenderingContext2D,
+  sourceContext: CanvasRenderingContext2D,
+  tool: BrushTool,
+  size: number,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+) {
+  const distance = Math.hypot(to.x - from.x, to.y - from.y)
+  const steps = Math.max(1, Math.ceil(distance / Math.max(2, size / 3)))
+
+  if (tool === 'mosaic') {
+    for (let index = 0; index <= steps; index += 1) {
+      const progress = index / steps
+      drawMosaicStamp(
+        targetContext,
+        sourceContext,
+        from.x + (to.x - from.x) * progress,
+        from.y + (to.y - from.y) * progress,
+        size,
+      )
+    }
+    return
+  }
+
+  targetContext.save()
+  targetContext.strokeStyle = '#e5484d'
+  targetContext.lineWidth = size
+  targetContext.lineCap = 'round'
+  targetContext.lineJoin = 'round'
+  targetContext.beginPath()
+  targetContext.moveTo(from.x, from.y)
+  targetContext.lineTo(to.x, to.y)
+  targetContext.stroke()
+  targetContext.restore()
+}
+
+/** 每日打卡字段的前端表单容器，负责即时展示填写进度和原生校验约束。 */
+export function DailyCheckinForm() {
+  const [gscFile, setGscFile] = useState<File | null>(null)
+  const [brushTool, setBrushTool] = useState<BrushTool>('mosaic')
+  const [imageReady, setImageReady] = useState(false)
+  const [editorError, setEditorError] = useState<string | null>(null)
+  const [hours, setHours] = useState('')
+  const [backlinks, setBacklinks] = useState('')
+  const [quality, setQuality] = useState(5)
+  const [log, setLog] = useState('')
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const sourceCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const drawingRef = useRef(false)
+  const lastPointRef = useRef<{ x: number; y: number } | null>(null)
+  const logLength = Array.from(log).length
+
+  /** 统一处理选择或粘贴进来的图片，并把图片文件同步到原生 file input。 */
+  function handleImageFile(file: File) {
+    setGscFile(file)
+    setImageReady(false)
+    setEditorError(null)
+    setSubmitMessage(null)
+
+    // 粘贴得到的 File 不会自动进入 file input；同步后才能通过同一张表单的 required 校验。
+    const fileInput = fileInputRef.current
+    if (fileInput && fileInput.files?.[0] !== file) {
+      const transfer = new DataTransfer()
+      transfer.items.add(file)
+      fileInput.files = transfer.files
+    }
+
+    const objectUrl = URL.createObjectURL(file)
+    const image = new Image()
+    image.onload = () => {
+      const scale = Math.min(1, MAX_EDITOR_WIDTH / image.naturalWidth)
+      const width = Math.max(1, Math.round(image.naturalWidth * scale))
+      const height = Math.max(1, Math.round(image.naturalHeight * scale))
+      const canvas = canvasRef.current
+      if (!canvas) {
+        URL.revokeObjectURL(objectUrl)
+        return
+      }
+
+      const sourceCanvas = document.createElement('canvas')
+      sourceCanvas.width = width
+      sourceCanvas.height = height
+      canvas.width = width
+      canvas.height = height
+      const sourceContext = sourceCanvas.getContext('2d', { willReadFrequently: true })
+      const targetContext = canvas.getContext('2d')
+      if (!sourceContext || !targetContext) {
+        setEditorError('当前浏览器无法创建图片编辑画布。')
+        URL.revokeObjectURL(objectUrl)
+        return
+      }
+
+      sourceContext.drawImage(image, 0, 0, width, height)
+      targetContext.drawImage(sourceCanvas, 0, 0)
+      sourceCanvasRef.current = sourceCanvas
+      setImageReady(true)
+      URL.revokeObjectURL(objectUrl)
+    }
+    image.onerror = () => {
+      setGscFile(null)
+      setEditorError('图片读取失败，请重新选择 PNG、JPG 或 WebP 图片。')
+      URL.revokeObjectURL(objectUrl)
+    }
+    image.src = objectUrl
+  }
+
+  /** 从系统文件选择器读取图片。 */
+  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (file) handleImageFile(file)
+  }
+
+  /** 支持在表单或下方粘贴框内直接使用 Cmd+V / Ctrl+V 粘贴截图。 */
+  function handlePaste(event: ReactClipboardEvent<HTMLElement>) {
+    const item = Array.from(event.clipboardData.items).find(
+      (entry) => entry.kind === 'file' && entry.type.startsWith('image/'),
+    )
+    const file = item?.getAsFile()
+    if (!file) return
+    event.preventDefault()
+    handleImageFile(file)
+  }
+
+  /** 阻止粘贴事件继续冒泡，避免同一张截图被表单和文本框重复处理。 */
+  function handlePasteBox(event: ReactClipboardEvent<HTMLTextAreaElement>) {
+    event.stopPropagation()
+    handlePaste(event)
+  }
+
+  /** 在画布上开始绘制，并锁定指针，保证拖到画布边缘时笔触不中断。 */
+  function handlePointerDown(event: ReactPointerEvent<HTMLCanvasElement>) {
+    if (!imageReady) return
+    event.currentTarget.setPointerCapture(event.pointerId)
+    drawingRef.current = true
+    const point = getCanvasPoint(event)
+    lastPointRef.current = point
+    const targetContext = event.currentTarget.getContext('2d')
+    const sourceContext = sourceCanvasRef.current?.getContext('2d', { willReadFrequently: true })
+    if (targetContext && sourceContext) {
+      drawBrushSegment(targetContext, sourceContext, brushTool, BRUSH_SIZES[brushTool], point, point)
+    }
+  }
+
+  /** 绘制连续笔触：马赛克按原图采样，红笔使用固定红色自由涂抹。 */
+  function handlePointerMove(event: ReactPointerEvent<HTMLCanvasElement>) {
+    if (!drawingRef.current || !lastPointRef.current) return
+    const targetContext = event.currentTarget.getContext('2d')
+    const sourceContext = sourceCanvasRef.current?.getContext('2d', { willReadFrequently: true })
+    if (!targetContext || !sourceContext) return
+
+    const point = getCanvasPoint(event)
+    drawBrushSegment(targetContext, sourceContext, brushTool, BRUSH_SIZES[brushTool], lastPointRef.current, point)
+    lastPointRef.current = point
+  }
+
+  /** 结束当前笔触，释放指针捕获状态。 */
+  function handlePointerUp(event: ReactPointerEvent<HTMLCanvasElement>) {
+    drawingRef.current = false
+    lastPointRef.current = null
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+  }
+
+  /** 清除所有涂抹并恢复到刚选择的原图，方便重新编辑。 */
+  function resetEditor() {
+    const canvas = canvasRef.current
+    const sourceCanvas = sourceCanvasRef.current
+    const targetContext = canvas?.getContext('2d')
+    if (!canvas || !targetContext || !sourceCanvas) return
+    targetContext.clearRect(0, 0, canvas.width, canvas.height)
+    targetContext.drawImage(sourceCanvas, 0, 0)
+    setSubmitMessage(null)
+  }
+
+  /** 暂时只阻止页面刷新，并读取编辑后的画布 Blob，等待后端提交接口接入。 */
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const canvas = canvasRef.current
+    if (!canvas || !gscFile) {
+      setSubmitMessage('请先选择并编辑 GSC 截图。')
+      return
+    }
+
+    const editedImage = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'))
+    if (!editedImage) {
+      setSubmitMessage('编辑后的图片准备失败，请重新选择截图。')
+      return
+    }
+    setSubmitMessage(`已准备好编辑后的截图（${Math.ceil(editedImage.size / 1024)} KB），保存接口待接入。`)
+  }
+
+  return (
+    <Card className="mt-8 p-5 sm:p-6">
+      <div className="mb-5">
+        <h3 className="m-0 text-xl font-semibold">今天的出海打卡</h3>
+        <p className="mb-0 mt-1.5 text-sm leading-relaxed text-fg-2">
+          这份记录和 GSC 截图未来会公开展示，请先遮挡域名、搜索词等敏感信息。
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} onPaste={handlePaste} className="grid gap-5">
+        {/* 1. GSC 截图：选择后先在浏览器内打码，图片不会单独上传 */}
+        <div className="grid gap-1.5">
+          <Label htmlFor="daily-gsc-screenshot">1. 选择今天的 GSC 截图 <span className="text-destructive">*</span></Label>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <input
+              ref={fileInputRef}
+              id="daily-gsc-screenshot"
+              name="gscScreenshot"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              required
+              onChange={handleImageChange}
+              className="h-auto min-h-[42px] w-full rounded-[7px] border border-input bg-background px-3 py-2 text-sm text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-soft file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-primary focus-visible:border-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring sm:flex-1"
+            />
+          </div>
+          <Textarea
+            aria-label="粘贴 GSC 截图"
+            rows={2}
+            placeholder="在这里粘贴截图（Cmd+V / Ctrl+V）"
+            onPaste={handlePasteBox}
+            className="min-h-[64px] resize-none"
+          />
+          {gscFile && <p className="m-0 text-xs text-fg-3">已选择：{gscFile.name}</p>}
+          {editorError && <p className="m-0 text-sm text-destructive" role="alert">{editorError}</p>}
+        </div>
+
+        <div className={imageReady ? 'grid gap-3 rounded-lg border border-border bg-bg-alt p-3 sm:p-4' : 'hidden'}>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="m-0 text-sm font-semibold">截图编辑器</p>
+                <p className="m-0 mt-1 text-xs text-fg-3">在图片上按住鼠标或手指拖动，自由遮挡或标记。</p>
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={resetEditor} disabled={!imageReady}>恢复原图</Button>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-1.5">
+                <span className="text-xs font-semibold text-fg-2">画笔</span>
+                <div className="flex flex-wrap gap-2" role="group" aria-label="画笔类型">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={brushTool === 'mosaic' ? 'default' : 'outline'}
+                    aria-pressed={brushTool === 'mosaic'}
+                    onClick={() => setBrushTool('mosaic')}
+                    disabled={!imageReady}
+                  >
+                    马赛克遮挡（粗）
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={brushTool === 'red' ? 'default' : 'outline'}
+                    aria-pressed={brushTool === 'red'}
+                    onClick={() => setBrushTool('red')}
+                    disabled={!imageReady}
+                  >
+                    红色涂抹（细）
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="overflow-auto rounded-md border border-border bg-background p-2">
+              <canvas
+                ref={canvasRef}
+                className={`${imageReady ? 'mx-auto block' : 'hidden'} h-auto w-full touch-none`}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+                aria-label="GSC 截图编辑画布"
+              />
+            </div>
+        </div>
+
+        {/* 2. 出海时长：1 到 24 小时，只允许正整数 */}
+        <div className="grid gap-1.5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <Label htmlFor="daily-hours">2. 今天出海了几个小时？ <span className="text-destructive">*</span></Label>
+            <Input
+              id="daily-hours"
+              name="hours"
+              type="number"
+              min={1}
+              max={24}
+              step={1}
+              inputMode="numeric"
+              required
+              value={hours}
+              onChange={(event) => {
+                setHours(event.target.value)
+                setSubmitMessage(null)
+              }}
+              className="sm:w-32 sm:text-right"
+              aria-describedby="daily-hours-hint"
+            />
+          </div>
+          <p id="daily-hours-hint" className="m-0 text-xs text-fg-3">请输入 1～24 之间的正整数。</p>
+        </div>
+
+        {/* 3. 外链数量：至少 1 条，只允许正整数 */}
+        <div className="grid gap-1.5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <Label htmlFor="daily-backlinks">3. 今天添加了几个外链？ <span className="text-destructive">*</span></Label>
+            <Input
+              id="daily-backlinks"
+              name="backlinks"
+              type="number"
+              min={1}
+              step={1}
+              inputMode="numeric"
+              required
+              value={backlinks}
+              onChange={(event) => {
+                setBacklinks(event.target.value)
+                setSubmitMessage(null)
+              }}
+              className="sm:w-32 sm:text-right"
+              aria-describedby="daily-backlinks-hint"
+            />
+          </div>
+          <p id="daily-backlinks-hint" className="m-0 text-xs text-fg-3">请输入大于 0 的正整数。</p>
+        </div>
+
+        {/* 4. 工作质量：1 到 10 的十档滑杆，并实时显示当前分数 */}
+        <div className="grid gap-2">
+          <div className="flex items-center justify-between gap-3">
+            <Label htmlFor="daily-quality">4. 今天的上站工作质量，自评几分？ <span className="text-destructive">*</span></Label>
+            <span className="min-w-12 rounded-md bg-soft px-2 py-1 text-center font-mono text-lg font-semibold text-primary">
+              {quality}/10
+            </span>
+          </div>
+          <input
+            id="daily-quality"
+            name="quality"
+            type="range"
+            min={1}
+            max={10}
+            step={1}
+            value={quality}
+            onChange={(event) => {
+              setQuality(Number(event.target.value))
+              setSubmitMessage(null)
+            }}
+            className="h-2 w-full cursor-pointer accent-primary"
+            aria-valuetext={`${quality} 分，共 10 分`}
+          />
+          <div className="flex justify-between px-0.5 font-mono text-xs text-fg-3" aria-hidden="true">
+            {Array.from({ length: 10 }, (_, index) => <span key={index + 1}>{index + 1}</span>)}
+          </div>
+        </div>
+
+        {/* 5. 工作日志：原生 minLength + 字数计数，确保至少 80 个汉字 */}
+        <div className="grid gap-1.5">
+          <div className="flex items-center justify-between gap-3">
+            <Label htmlFor="daily-log">5. 今天的工作日志 <span className="text-destructive">*</span></Label>
+            <span className={`text-xs ${logLength >= 80 ? 'text-success' : 'text-fg-3'}`}>
+              {logLength}/80 字
+            </span>
+          </div>
+          <Textarea
+            id="daily-log"
+            name="log"
+            required
+            minLength={80}
+            rows={7}
+            value={log}
+            onChange={(event) => {
+              setLog(event.target.value)
+              setSubmitMessage(null)
+            }}
+            placeholder="记录今天做了什么、遇到什么问题、明天准备怎么继续……"
+            aria-describedby="daily-log-hint"
+          />
+          <p id="daily-log-hint" className="m-0 text-xs text-fg-3">至少填写 80 个汉字。</p>
+        </div>
+
+        <div className="grid gap-2 pt-1">
+          <Button type="submit" size="lg" className="w-full sm:w-fit">提交今日打卡</Button>
+          {submitMessage && <p className="m-0 text-sm text-success" role="status">{submitMessage}</p>}
+        </div>
+      </form>
+    </Card>
+  )
+}

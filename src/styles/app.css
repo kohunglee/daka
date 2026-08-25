@@ -661,12 +661,33 @@ input {
   animation: price-pop 0.26s ease;
 }
 
+/* 日历「今天」高亮：始终保持黄底，点击「今天」时额外闪烁约 3 秒 */
+@keyframes today-blink {
+  0%,
+  100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: color-mix(in srgb, var(--destructive) 65%, transparent);
+  }
+}
+.today-cell {
+  background-color: rgba(253, 224, 71, 0.65);
+}
+.today-blink {
+  animation: today-blink 0.7s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .auth-back,
   .price-pop,
-  .term-cursor {
+  .term-cursor,
+  .today-blink {
     transition: none;
     animation: none;
   }
+  /* 无动画环境下，「今天」保持静态黄底 */
+  .today-blink {
+    background-color: rgba(253, 224, 71, 0.65);
+  }
 }
-
