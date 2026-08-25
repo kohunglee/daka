@@ -14,7 +14,7 @@ import {
   type CheckinCalendarSummary,
   type SubmitCheckinResult,
 } from './checkin.shared'
-import { getPublicCheckin, getUserCheckin, getYearCheckinData, parseCheckinNumbers, validateCheckinFields, validateYear } from './checkin.server'
+import { getPublicCheckin, getUserCheckin, getYearCheckinData, parseCheckinOptions, validateCheckinFields, validateYear } from './checkin.server'
 
 /** 未登录时只返回空日历；打卡动作本身仍然会跳转登录。 */
 export const getYearCheckinSummaryFn = createServerFn({ method: 'GET' })
@@ -77,7 +77,7 @@ export const submitCheckinFn = createServerFn({ method: 'POST' })
     const imageKey = checkinImageObjectKey(user.id, checkinDate)
     try {
       await putCheckinImage(env.BUCKET, user.id, checkinDate, await image.arrayBuffer())
-      const numbers = parseCheckinNumbers({ hours, backlinks, quality })
+      const numbers = parseCheckinOptions({ hours, backlinks, quality })
       const row = {
         id: crypto.randomUUID(),
         userId: user.id,

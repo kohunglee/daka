@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Card } from '@/components/ui/card'
 import { getPublicCheckinDetailFn } from '@/features/checkin/actions'
+import { displayBacklinkOption, displayHoursOption } from '@/features/checkin/checkin.shared'
 
 /** 公开链接只展示单条记录，不提供用户记录列表或编辑入口。 */
 export const Route = createFileRoute('/{-$locale}/checkin/$userId/$date')({
@@ -23,8 +24,8 @@ function PublicCheckinPage() {
         <h1 className="mb-6 mt-2 text-2xl font-semibold">{record.checkinDate}</h1>
         <img src={record.imageUrl} alt={`${record.checkinDate} 的 GSC 截图`} className="h-auto w-full rounded-lg border border-border" />
         <dl className="mt-6 grid grid-cols-3 gap-3 text-center">
-          <div className="rounded-lg bg-bg-alt p-3"><dt className="text-xs text-fg-3">出海小时</dt><dd className="m-0 mt-1 text-xl font-semibold">{record.hours}</dd></div>
-          <div className="rounded-lg bg-bg-alt p-3"><dt className="text-xs text-fg-3">新增外链</dt><dd className="m-0 mt-1 text-xl font-semibold">{record.backlinks}</dd></div>
+          <div className="rounded-lg bg-bg-alt p-3"><dt className="text-xs text-fg-3">出海小时</dt><dd className="m-0 mt-1 text-xl font-semibold">{displayHoursOption(record.hours)}</dd></div>
+          <div className="rounded-lg bg-bg-alt p-3"><dt className="text-xs text-fg-3">新增外链</dt><dd className="m-0 mt-1 text-xl font-semibold">{displayBacklinkOption(record.backlinks)}</dd></div>
           <div className="rounded-lg bg-bg-alt p-3"><dt className="text-xs text-fg-3">工作质量</dt><dd className="m-0 mt-1 text-xl font-semibold">{record.quality}/10</dd></div>
         </dl>
         <section className="mt-6">

@@ -134,6 +134,13 @@
       "when": 1787659576087,
       "tag": "0018_mean_gauntlet",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1787666032719,
+      "tag": "0019_conscious_puppet_master",
+      "breakpoints": true
     }
   ]
 }

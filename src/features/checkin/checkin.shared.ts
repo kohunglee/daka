@@ -3,14 +3,45 @@
  * 这些常量和纯函数同时服务浏览器端与 Worker 端，避免前后端校验口径漂移。
  */
 
-/** 处理后的 GSC 截图最大体积：600 KiB。 */
-export const MAX_CHECKIN_IMAGE_BYTES = 600 * 1024
+/** 处理后的 GSC 截图最大体积：300 KiB。 */
+export const MAX_CHECKIN_IMAGE_BYTES = 300 * 1024
 
 /** 前端编辑画布允许的最长边，超出时先按比例缩小。 */
 export const MAX_CHECKIN_IMAGE_DIMENSION = 2560
 
 /** 允许服务端保存的最终图片格式。 */
 export const CHECKIN_IMAGE_CONTENT_TYPE = 'image/jpeg'
+
+/** 小时和外链的数据库枚举值；页面只展示对应中文选项，不展示字母。 */
+export const CHECKIN_OPTION_KEYS = ['A', 'B', 'C', 'D'] as const
+export type CheckinOption = (typeof CHECKIN_OPTION_KEYS)[number]
+export const HOURS_OPTION_LABELS: Record<CheckinOption, string> = {
+  A: '1',
+  B: '2~5',
+  C: '5~8',
+  D: '8~12',
+}
+export const BACKLINK_OPTION_LABELS: Record<CheckinOption, string> = {
+  A: '0',
+  B: '1',
+  C: '2~4',
+  D: '5+',
+}
+
+/** 将数据库里的枚举值转换成页面展示文字；未知值原样返回便于排查数据。 */
+export function displayHoursOption(value: string): string {
+  return HOURS_OPTION_LABELS[value as CheckinOption] ?? value
+}
+
+/** 将数据库里的枚举值转换成页面展示文字；未知值原样返回便于排查数据。 */
+export function displayBacklinkOption(value: string): string {
+  return BACKLINK_OPTION_LABELS[value as CheckinOption] ?? value
+}
+
+/** 校验小时/外链是否为四档枚举值。 */
+export function isCheckinOption(value: string): value is CheckinOption {
+  return (CHECKIN_OPTION_KEYS as readonly string[]).includes(value)
+}
 
 /** 首页年度日历接口返回的摘要。 */
 export interface CheckinCalendarSummary {
@@ -25,8 +56,8 @@ export interface CheckinRecordView {
   id: string
   userId: string
   checkinDate: string
-  hours: number
-  backlinks: number
+  hours: string
+  backlinks: string
   quality: number
   log: string
   imageUrl: string

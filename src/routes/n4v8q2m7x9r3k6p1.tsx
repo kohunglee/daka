@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { formatBeijingDate } from '@/features/checkin/checkin.shared'
+import { displayBacklinkOption, displayHoursOption, formatBeijingDate } from '@/features/checkin/checkin.shared'
 import {
   clearAdminCheckinFn,
   getAdminClearSessionFn,
@@ -242,7 +242,7 @@ function AdminClearPanel() {
               <div><dt className="text-xs text-fg-3">用户</dt><dd className="m-0 break-all">{preview.userName ?? '未知'} · {preview.userEmail ?? '无邮箱'}</dd></div>
               <div><dt className="text-xs text-fg-3">日期</dt><dd className="m-0 font-mono">{preview.checkinDate}</dd></div>
               <div><dt className="text-xs text-fg-3">图片大小</dt><dd className="m-0">{Math.ceil(preview.imageBytes / 1024)}KB</dd></div>
-              <div><dt className="text-xs text-fg-3">出海 / 外链 / 质量</dt><dd className="m-0">{preview.hours} 小时 / {preview.backlinks} 条 / {preview.quality}/10</dd></div>
+              <div><dt className="text-xs text-fg-3">出海 / 外链 / 质量</dt><dd className="m-0">{displayHoursOption(preview.hours)} 小时 / {displayBacklinkOption(preview.backlinks)} 条 / {preview.quality}/10</dd></div>
             </dl>
             <p className="m-0 break-all text-xs text-fg-3">R2：{preview.imageKey}</p>
             <Button type="button" variant="default" className="bg-destructive text-white hover:bg-destructive/90" onClick={() => void clearRecord()} disabled={busy}>
@@ -287,7 +287,7 @@ function AdminClearPanel() {
                   <span className="block truncate text-sm font-semibold">{row.userName ?? '未知用户'}</span>
                   <span className="block truncate text-xs text-fg-3">{row.userEmail ?? row.userId}</span>
                 </span>
-                <span className="text-xs text-fg-3">{row.hours} 小时 · {row.backlinks} 外链 · 质量 {row.quality}/10</span>
+                <span className="text-xs text-fg-3">{displayHoursOption(row.hours)} 小时 · {displayBacklinkOption(row.backlinks)} 外链 · 质量 {row.quality}/10</span>
                 <span className="text-xs text-fg-3">{Math.ceil(row.imageBytes / 1024)}KB</span>
               </button>
             ))}

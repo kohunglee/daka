@@ -4,7 +4,7 @@ import { dailyCheckin } from './checkin.schema'
 import {
   calculateCurrentStreak,
   countChineseCharacters,
-  isPositiveInteger,
+  isCheckinOption,
   isValidCheckinDate,
   MAX_CHECKIN_IMAGE_BYTES,
   type CheckinRecordView,
@@ -80,20 +80,21 @@ export function validateCheckinFields(input: {
 }): { ok: true } | { ok: false; message: string } {
   if (input.image.type !== 'image/jpeg') return { ok: false, message: '截图必须是 JPEG 图片。' }
   if (input.image.size <= 0 || input.image.size > MAX_CHECKIN_IMAGE_BYTES) {
-    return { ok: false, message: '截图压缩后仍超过 600KB，请重新编辑或降低图片内容。' }
+    return { ok: false, message: '截图压缩后仍超过 300KB，请重新编辑或降低图片内容。' }
   }
-  if (!isPositiveInteger(input.hours, 24)) return { ok: false, message: '出海小时数必须是 1～24 的正整数。' }
-  if (!isPositiveInteger(input.backlinks)) return { ok: false, message: '外链数量必须是大于 0 的正整数。' }
-  if (!isPositiveInteger(input.quality, 10)) return { ok: false, message: '工作质量必须是 1～10 的整数。' }
-  if (countChineseCharacters(input.log) < 80) return { ok: false, message: '工作日志至少需要 80 个汉字。' }
+  if (!isCheckinOption(input.hours)) return { ok: false, message: '请选择今天的出海时长。' }
+  if (!isCheckinOption(input.backlinks)) return { ok: false, message: '请选择今天的外链数量。' }
+  if (!/^\d+$/.test(input.quality) || Number(input.quality) < 1 || Number(input.quality) > 10) return { ok: false, message: '工作质量必须是 1～10 的整数。' }
+  if (input.log.length > 2000) return { ok: false, message: '工作日志最多 2000 个字符。' }
+  if (countChineseCharacters(input.log) < 20) return { ok: false, message: '工作日志至少需要 20 个汉字。' }
   return { ok: true }
 }
 
-/** 生成写入 D1 的数字字段，调用方已经完成范围校验。 */
-export function parseCheckinNumbers(input: { hours: string; backlinks: string; quality: string }) {
+/** 生成写入 D1 的枚举和评分字段，调用方已经完成范围校验。 */
+export function parseCheckinOptions(input: { hours: string; backlinks: string; quality: string }) {
   return {
-    hours: Number(input.hours),
-    backlinks: Number(input.backlinks),
+    hours: input.hours,
+    backlinks: input.backlinks,
     quality: Number(input.quality),
   }
 }

@@ -14,14 +14,16 @@ import {
 } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { submitCheckinFn } from '@/features/checkin/actions'
 import {
+  BACKLINK_OPTION_LABELS,
   countChineseCharacters,
+  HOURS_OPTION_LABELS,
   MAX_CHECKIN_IMAGE_BYTES,
   MAX_CHECKIN_IMAGE_DIMENSION,
+  type CheckinOption,
   type CheckinRecordView,
 } from '@/features/checkin/checkin.shared'
 
@@ -33,6 +35,20 @@ const BRUSH_SIZES: Record<BrushTool, number> = {
   mosaic: 30,
   red: 14,
 }
+
+/** 表单只展示中文选项，提交值使用后端约定的 A/B/C/D 枚举。 */
+const HOURS_OPTIONS: ReadonlyArray<{ value: CheckinOption; label: string }> = [
+  { value: 'A', label: HOURS_OPTION_LABELS.A },
+  { value: 'B', label: HOURS_OPTION_LABELS.B },
+  { value: 'C', label: HOURS_OPTION_LABELS.C },
+  { value: 'D', label: HOURS_OPTION_LABELS.D },
+]
+const BACKLINK_OPTIONS: ReadonlyArray<{ value: CheckinOption; label: string }> = [
+  { value: 'A', label: BACKLINK_OPTION_LABELS.A },
+  { value: 'B', label: BACKLINK_OPTION_LABELS.B },
+  { value: 'C', label: BACKLINK_OPTION_LABELS.C },
+  { value: 'D', label: BACKLINK_OPTION_LABELS.D },
+]
 
 /** 编辑画布最长边，和本轮确定的前端压缩策略保持一致。 */
 const MAX_EDITOR_WIDTH = MAX_CHECKIN_IMAGE_DIMENSION
@@ -132,7 +148,7 @@ function drawBrushSegment(
   targetContext.restore()
 }
 
-/** 将编辑画布按比例输出为 JPEG，并逐步降低质量/尺寸直到不超过 600KB。 */
+/** 将编辑画布按比例输出为 JPEG，并逐步降低质量/尺寸直到不超过 300KB。 */
 async function compressEditedCanvas(canvas: HTMLCanvasElement): Promise<Blob | null> {
   const qualityLevels = [0.92, 0.84, 0.76, 0.68, 0.6, 0.5, 0.4, 0.3]
   const scaleLevels = [1, 0.9, 0.8, 0.7, 0.6, 0.5]
@@ -162,8 +178,8 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
   const [brushTool, setBrushTool] = useState<BrushTool>('mosaic')
   const [imageReady, setImageReady] = useState(false)
   const [editorError, setEditorError] = useState<string | null>(null)
-  const [hours, setHours] = useState('')
-  const [backlinks, setBacklinks] = useState('')
+  const [hours, setHours] = useState<CheckinOption | ''>('')
+  const [backlinks, setBacklinks] = useState<CheckinOption | ''>('')
   const [quality, setQuality] = useState(5)
   const [log, setLog] = useState('')
   const [submitMessage, setSubmitMessage] = useState<string | null>(null)
@@ -173,7 +189,6 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
   const sourceCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const drawingRef = useRef(false)
   const lastPointRef = useRef<{ x: number; y: number } | null>(null)
-  const logLength = countChineseCharacters(log)
 
   /** 统一处理选择或粘贴进来的图片，并把图片文件同步到原生 file input。 */
   function handleImageFile(file: File) {
@@ -307,8 +322,8 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
       setSubmitMessage('请先选择并编辑 GSC 截图。')
       return
     }
-    if (countChineseCharacters(log) < 80) {
-      setSubmitMessage('工作日志至少需要 80 个汉字。')
+    if (countChineseCharacters(log) < 20) {
+      setSubmitMessage('工作日志至少需要 20 个汉字。')
       return
     }
 
@@ -432,53 +447,46 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
             </div>
         </div>
 
-        {/* 2. 出海时长：1 到 24 小时，只允许正整数 */}
+        {/* 2. 出海时长：页面展示四档中文选项，提交时使用 A/B/C/D 枚举。 */}
         <div className="grid gap-1.5">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <Label htmlFor="daily-hours">2. 今天出海了几个小时？ <span className="text-destructive">*</span></Label>
-            <Input
-              id="daily-hours"
-              name="hours"
-              type="number"
-              min={1}
-              max={24}
-              step={1}
-              inputMode="numeric"
-              required
-              value={hours}
-              onChange={(event) => {
-                setHours(event.target.value)
-                setSubmitMessage(null)
-              }}
-              className="sm:w-32 sm:text-right"
-              aria-describedby="daily-hours-hint"
-            />
+          <Label>2. 今天出海了几个小时？ <span className="text-destructive">*</span></Label>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" role="radiogroup" aria-label="今天出海了几个小时">
+            {HOURS_OPTIONS.map((option) => (
+              <label key={option.value} className={`flex cursor-pointer items-center justify-center rounded-md border px-3 py-2.5 text-sm font-semibold transition-colors ${hours === option.value ? 'border-primary bg-soft text-primary' : 'border-border bg-background text-foreground hover:bg-bg-alt'}`}>
+                <input
+                  className="sr-only"
+                  type="radio"
+                  name="hours"
+                  value={option.value}
+                  checked={hours === option.value}
+                  onChange={() => { setHours(option.value); setSubmitMessage(null) }}
+                  required
+                />
+                {option.label}
+              </label>
+            ))}
           </div>
-          <p id="daily-hours-hint" className="m-0 text-xs text-fg-3">请输入 1～24 之间的正整数。</p>
         </div>
 
-        {/* 3. 外链数量：至少 1 条，只允许正整数 */}
+        {/* 3. 外链数量：页面展示四档中文选项，提交时使用 A/B/C/D 枚举。 */}
         <div className="grid gap-1.5">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <Label htmlFor="daily-backlinks">3. 今天添加了几个外链？ <span className="text-destructive">*</span></Label>
-            <Input
-              id="daily-backlinks"
-              name="backlinks"
-              type="number"
-              min={1}
-              step={1}
-              inputMode="numeric"
-              required
-              value={backlinks}
-              onChange={(event) => {
-                setBacklinks(event.target.value)
-                setSubmitMessage(null)
-              }}
-              className="sm:w-32 sm:text-right"
-              aria-describedby="daily-backlinks-hint"
-            />
+          <Label>3. 今天添加了几个外链？ <span className="text-destructive">*</span></Label>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" role="radiogroup" aria-label="今天添加了几个外链">
+            {BACKLINK_OPTIONS.map((option) => (
+              <label key={option.value} className={`flex cursor-pointer items-center justify-center rounded-md border px-3 py-2.5 text-sm font-semibold transition-colors ${backlinks === option.value ? 'border-primary bg-soft text-primary' : 'border-border bg-background text-foreground hover:bg-bg-alt'}`}>
+                <input
+                  className="sr-only"
+                  type="radio"
+                  name="backlinks"
+                  value={option.value}
+                  checked={backlinks === option.value}
+                  onChange={() => { setBacklinks(option.value); setSubmitMessage(null) }}
+                  required
+                />
+                {option.label}
+              </label>
+            ))}
           </div>
-          <p id="daily-backlinks-hint" className="m-0 text-xs text-fg-3">请输入大于 0 的正整数。</p>
         </div>
 
         {/* 4. 工作质量：1 到 10 的十档滑杆，并实时显示当前分数 */}
@@ -509,29 +517,27 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
           </div>
         </div>
 
-        {/* 5. 工作日志：原生 minLength + 字数计数，确保至少 80 个汉字 */}
+        {/* 5. 工作日志：至少 20 个汉字，最多 2000 个字符；达到上限时才提醒。 */}
         <div className="grid gap-1.5">
           <div className="flex items-center justify-between gap-3">
             <Label htmlFor="daily-log">5. 今天的工作日志 <span className="text-destructive">*</span></Label>
-            <span className={`text-xs ${logLength >= 80 ? 'text-success' : 'text-fg-3'}`}>
-              {logLength}/80 字
-            </span>
+            {log.length >= 2000 && <span className="text-xs text-destructive">已达到 2000 字符上限</span>}
           </div>
           <Textarea
             id="daily-log"
             name="log"
             required
-            minLength={80}
+            maxLength={2000}
             rows={7}
             value={log}
             onChange={(event) => {
               setLog(event.target.value)
-              setSubmitMessage(null)
+              setSubmitMessage(event.target.value.length >= 2000 ? '工作日志已达到 2000 字符上限。' : null)
             }}
-            placeholder="记录今天做了什么、遇到什么问题、明天准备怎么继续……"
+            placeholder="今天做了... 最大的问题是... 明天决定..."
             aria-describedby="daily-log-hint"
           />
-          <p id="daily-log-hint" className="m-0 text-xs text-fg-3">至少填写 80 个汉字，标点、数字和英文不计入。</p>
+          <p id="daily-log-hint" className="m-0 text-xs text-fg-3">至少填写 20 个汉字。</p>
         </div>
 
         <div className="grid gap-2 pt-1">

@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { getMyCheckinDetailFn, getYearCheckinSummaryFn } from '@/features/checkin/actions'
-import { formatBeijingDate, type CheckinRecordView } from '@/features/checkin/checkin.shared'
+import { displayBacklinkOption, displayHoursOption, formatBeijingDate, type CheckinRecordView } from '@/features/checkin/checkin.shared'
 import { DailyCheckinForm } from './daily-checkin-form'
 
 /** 星期表头：最左列是星期一。 */
@@ -70,8 +70,8 @@ function CheckinDetail({ record }: { record: CheckinRecordView }) {
       </div>
       <img src={record.imageUrl} alt={`${record.checkinDate} 的 GSC 截图`} className="mt-5 h-auto w-full rounded-lg border border-border" />
       <dl className="mt-5 grid grid-cols-3 gap-3 text-center">
-        <div className="rounded-lg bg-bg-alt p-3"><dt className="text-xs text-fg-3">出海小时</dt><dd className="m-0 mt-1 text-xl font-semibold">{record.hours}</dd></div>
-        <div className="rounded-lg bg-bg-alt p-3"><dt className="text-xs text-fg-3">新增外链</dt><dd className="m-0 mt-1 text-xl font-semibold">{record.backlinks}</dd></div>
+        <div className="rounded-lg bg-bg-alt p-3"><dt className="text-xs text-fg-3">出海小时</dt><dd className="m-0 mt-1 text-xl font-semibold">{displayHoursOption(record.hours)}</dd></div>
+        <div className="rounded-lg bg-bg-alt p-3"><dt className="text-xs text-fg-3">新增外链</dt><dd className="m-0 mt-1 text-xl font-semibold">{displayBacklinkOption(record.backlinks)}</dd></div>
         <div className="rounded-lg bg-bg-alt p-3"><dt className="text-xs text-fg-3">工作质量</dt><dd className="m-0 mt-1 text-xl font-semibold">{record.quality}/10</dd></div>
       </dl>
       <section className="mt-5">
@@ -157,6 +157,15 @@ export function YearCalendar({ userId }: { userId: string | null }) {
     timerRef.current = window.setTimeout(() => setHighlight(false), 3000)
   }
 
+  /** 打开今天的打卡表单时只定位到今年，不触发日期闪烁。 */
+  function openTodayCheckinForm() {
+    const now = new Date()
+    setYear(now.getFullYear())
+    setHighlight(false)
+    if (timerRef.current !== null) window.clearTimeout(timerRef.current)
+    setShowCheckinForm(true)
+  }
+
   /** 读取某个已打卡日期的完整记录；未打卡日期保持默认光标且不响应。 */
   async function openCheckinDetail(checkinDate: string) {
     if (!userId || !checkedDates.has(checkinDate)) return
@@ -186,8 +195,7 @@ export function YearCalendar({ userId }: { userId: string | null }) {
       void openCheckinDetail(todayKey)
       return
     }
-    goToday()
-    setShowCheckinForm(true)
+    openTodayCheckinForm()
   }
 
   /** 提交成功后立即更新日历和只读详情，避免等待下一次页面刷新。 */

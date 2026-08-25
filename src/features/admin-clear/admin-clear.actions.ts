@@ -27,8 +27,8 @@ export interface AdminClearPreview {
   checkinDate: string
   imageKey: string
   imageBytes: number
-  hours: number
-  backlinks: number
+  hours: string
+  backlinks: string
   quality: number
   logLength: number
   createdAt: string
@@ -54,8 +54,8 @@ function toAdminClearPreview(row: {
   checkinDate: string
   imageKey: string
   imageBytes: number
-  hours: number
-  backlinks: number
+  hours: string
+  backlinks: string
   quality: number
   log: string
   createdAt: Date
