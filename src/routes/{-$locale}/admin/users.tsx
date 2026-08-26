@@ -122,7 +122,7 @@ function UsersPage() {
           <label className="flex items-center gap-2 text-[13px] text-fg-3">
             {t('admin.rowsPerPage')}
             <select
-              className="h-9 w-auto rounded-[7px] border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-ring"
+              className="h-9 w-auto rounded-[7px] border border-input bg-background px-3 text-sm text-foreground"
               value={pageSize}
               onChange={(e) => setSearch({ pageSize: Number(e.target.value), page: 0 })}
             >

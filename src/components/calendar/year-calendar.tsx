@@ -262,7 +262,7 @@ export function YearCalendar({ userId }: { userId: string | null }) {
         aria-label={statusReady ? (!userId ? '登录后打卡今天' : todayChecked ? '今日已打卡' : '打卡今天') : '正在判断今日打卡状态'}
         aria-expanded={showCheckinForm}
         aria-controls="daily-checkin-form"
-        className={`mx-auto mt-8 flex min-h-12 w-full max-w-sm items-center justify-center rounded-lg border px-6 py-3 text-lg font-semibold shadow-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${!statusReady ? 'cursor-wait border-border bg-bg-alt text-transparent' : todayChecked ? 'border-destructive/30 bg-destructive/15 text-destructive hover:bg-destructive/20' : 'border-transparent bg-primary text-primary-foreground hover:bg-primary/90'}`}
+        className={`mx-auto mt-8 flex min-h-12 w-full max-w-sm items-center justify-center rounded-lg border px-6 py-3 text-lg font-semibold shadow-lg transition-colors ${!statusReady ? 'cursor-wait border-border bg-bg-alt text-transparent' : todayChecked ? 'border-destructive/30 bg-destructive/15 text-destructive hover:bg-destructive/20' : 'border-transparent bg-primary text-primary-foreground hover:bg-primary/90'}`}
       >
         {statusReady && (!userId ? '登录后打卡今天' : todayChecked ? '今日已打卡' : '打卡今天')}
       </button>

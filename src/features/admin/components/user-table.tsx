@@ -53,7 +53,7 @@ export function UserTable({ rows, sortBy, sortDir, onSort, onRowClick }: Props) 
         {rows.map((u) => (
           <TableRow
             key={u.id}
-            className="cursor-pointer focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
+            className="cursor-pointer"
             tabIndex={0}
             onClick={() => onRowClick(u)}
             onKeyDown={(e) => {

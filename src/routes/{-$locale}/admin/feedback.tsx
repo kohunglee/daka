@@ -64,7 +64,7 @@ function Row({ r, onSaved }: { r: AdminFeedbackRow; onSaved: () => void }) {
               自绘 lucide 箭头(右间距对齐左侧 12px 内边距)并补设计系统 focus 环 */}
           <div className="relative">
             <select
-              className="h-[38px] appearance-none rounded-[7px] border border-input bg-background pl-3 pr-9 text-sm text-foreground focus-visible:border-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
+              className="h-[38px] appearance-none rounded-[7px] border border-input bg-background pl-3 pr-9 text-sm text-foreground"
               value={status}
               onChange={(e) => setStatus(e.target.value as FeedbackStatus)}
             >

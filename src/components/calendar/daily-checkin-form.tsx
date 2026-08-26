@@ -361,6 +361,9 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
     }
   }
 
+  /** 实时显示日志中的汉字数量，和提交时的最低字数校验保持一致。 */
+  const logChineseCount = countChineseCharacters(log)
+
   return (
     <Card className="mx-auto mt-8 w-full max-w-[640px] p-5 sm:p-6">
 
@@ -377,7 +380,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
               accept="image/png,image/jpeg,image/webp"
               required
               onChange={handleImageChange}
-              className="h-auto min-h-[42px] w-[400px] shrink-0 rounded-[7px] border border-input bg-background px-3 py-2 text-sm text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-soft file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-primary focus-visible:border-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
+              className="h-auto min-h-[42px] w-[400px] shrink-0 rounded-[7px] border border-input bg-background px-3 py-2 text-sm text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-soft file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-primary"
               style={{ width: '400px', minWidth: '400px' }}
             />
           </div>
@@ -394,40 +397,31 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
         </div>
 
         <div className={imageReady ? 'grid gap-3 rounded-lg border border-border bg-bg-alt p-3 sm:p-4' : 'hidden'}>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="m-0 text-sm font-semibold">截图编辑器</p>
-                <p className="m-0 mt-1 text-xs text-fg-3">在图片上按住鼠标或手指拖动，自由遮挡或标记。</p>
+            {/* 将恢复按钮与画笔操作放在同一行，并统一靠右对齐。 */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap gap-2" role="group" aria-label="画笔类型">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={brushTool === 'mosaic' ? 'default' : 'outline'}
+                  aria-pressed={brushTool === 'mosaic'}
+                  onClick={() => setBrushTool('mosaic')}
+                  disabled={!imageReady}
+                >
+                  马赛克
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={brushTool === 'red' ? 'default' : 'outline'}
+                  aria-pressed={brushTool === 'red'}
+                  onClick={() => setBrushTool('red')}
+                  disabled={!imageReady}
+                >
+                  涂抹
+                </Button>
               </div>
               <Button type="button" variant="outline" size="sm" onClick={resetEditor} disabled={!imageReady}>恢复原图</Button>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="grid gap-1.5">
-                <span className="text-xs font-semibold text-fg-2">画笔</span>
-                <div className="flex flex-wrap gap-2" role="group" aria-label="画笔类型">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={brushTool === 'mosaic' ? 'default' : 'outline'}
-                    aria-pressed={brushTool === 'mosaic'}
-                    onClick={() => setBrushTool('mosaic')}
-                    disabled={!imageReady}
-                  >
-                    马赛克遮挡（粗）
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={brushTool === 'red' ? 'default' : 'outline'}
-                    aria-pressed={brushTool === 'red'}
-                    onClick={() => setBrushTool('red')}
-                    disabled={!imageReady}
-                  >
-                    红色涂抹（细）
-                  </Button>
-                </div>
-              </div>
             </div>
 
             <div className="overflow-auto rounded-md border border-border bg-background p-2">
@@ -517,7 +511,15 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
         <div className="grid gap-1.5">
           <div className="flex items-center justify-between gap-3">
             <Label htmlFor="daily-log">5. 今天的工作日志 </Label>
-            {log.length >= 2000 && <span className="text-xs text-destructive">已达到 2000 字符上限</span>}
+            <div className="flex items-center gap-3">
+              <span
+                className={`font-mono text-sm font-semibold ${logChineseCount >= 20 ? 'text-black' : 'text-fg-3'}`}
+                aria-live="polite"
+              >
+                {logChineseCount} / 20 个汉字
+              </span>
+              {log.length >= 2000 && <span className="text-xs text-destructive">已达到 2000 字符上限</span>}
+            </div>
           </div>
           <Textarea
             id="daily-log"

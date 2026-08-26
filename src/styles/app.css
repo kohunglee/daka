@@ -222,6 +222,13 @@ body {
   }
 }
 
+/* 全局取消控件获得焦点时的橙色发光边框，避免点击输入框产生视觉干扰。 */
+:where(input, textarea, select, button, a, [tabindex]):focus,
+:where(input, textarea, select, button, a, [tabindex]):focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 code {
   font-family: var(--font-mono);
   font-size: 0.9em;
@@ -565,7 +572,7 @@ input {
   background: var(--bg-alt);
 }
 .auth-home:focus-visible {
-  box-shadow: 0 0 0 3px var(--ring);
+  box-shadow: none;
 }
 .auth-back {
   display: inline-flex;
