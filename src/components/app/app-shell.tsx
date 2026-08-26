@@ -76,9 +76,15 @@ export function AppShell({
       rail ? <div className="mx-auto my-2 h-px w-6 bg-border" aria-hidden="true" /> : <div className="grp">{text}</div>
     return (
       <>
-        <div className={rail ? 'brand justify-center' : 'brand'}>
-          <Logo compact={rail} />
-        </div>
+        {/* 后台品牌入口回到首页，桌面收起成图标时也保留可点击区域。 */}
+        <Link
+          to="/{-$locale}"
+          aria-label="返回首页"
+          title="返回首页"
+          className={`${rail ? 'brand justify-center' : 'brand'} cursor-pointer`}
+        >
+          <Logo compact={rail} showCheckinLabel={false} />
+        </Link>
         {grp(t('app.navWorkspace'))}
         <Link to="/{-$locale}/app" activeProps={{}} className={item(active === 'dashboard')} title={t('app.dashboard')}>
           <Home size={18} className="shrink-0" />

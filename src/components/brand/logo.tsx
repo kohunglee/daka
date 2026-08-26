@@ -1,5 +1,5 @@
-/** FlareStarter wordmark — 4-point spark mark + "Flare" (bold) + "Starter" (58%). `compact` renders the mark only. */
-export function Logo({ size = 18, compact = false }: { size?: number; compact?: boolean }) {
+/** 每天出海一小时品牌标识：用太阳、海浪和打卡勾表达持续出海与每日行动。 */
+export function Logo({ size = 18, compact = false, showCheckinLabel = true }: { size?: number; compact?: boolean; showCheckinLabel?: boolean }) {
   return (
     <span
       className="inline-flex items-center gap-[9px] font-display font-semibold tracking-[-0.3px] text-foreground"
@@ -14,13 +14,15 @@ export function Logo({ size = 18, compact = false }: { size?: number; compact?: 
           color: 'var(--primary-foreground)',
         }}
       >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M12 1.5 14.2 9.8 22.5 12 14.2 14.2 12 22.5 9.8 14.2 1.5 12 9.8 9.8Z" />
+        <svg width="17" height="17" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <circle cx="16" cy="16" r="12" stroke="currentColor" strokeWidth="2" />
+          <path d="M8 19c2.5-2 5-2 7.5 0s5 2 7.5 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="m11.5 15.5 3 3 6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </span>
       {!compact && (
         <span>
-          Flare<span className="font-medium opacity-[0.58]">Starter</span>
+          每天出海一小时{showCheckinLabel && <span className="font-medium opacity-[0.58]">（打卡）</span>}
         </span>
       )}
     </span>

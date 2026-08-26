@@ -39,7 +39,7 @@ function Home() {
       <main className="flex-1" aria-label="Main content">
         <YearCalendar userId={user?.id ?? null} />
       </main>
-      <Footer theme={theme} />
+      <Footer />
     </div>
   )
 }
