@@ -323,7 +323,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
       return
     }
     if (countChineseCharacters(log) < 20) {
-      setSubmitMessage('工作日志至少需要 20 个汉字。')
+      setSubmitMessage('工作日志至少需要 20 个汉字')
       return
     }
 
@@ -387,7 +387,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
           <Textarea
             aria-label="粘贴 GSC 截图"
             rows={2}
-            placeholder="在这里粘贴截图"
+            placeholder="或在此粘贴截图"
             onPaste={handlePasteBox}
             className="min-h-[64px] w-[600px] min-w-[600px] resize-none"
             style={{ width: '600px', minWidth: '600px' }}
@@ -516,7 +516,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
                 className={`font-mono text-sm font-semibold ${logChineseCount >= 20 ? 'text-black' : 'text-fg-3'}`}
                 aria-live="polite"
               >
-                {logChineseCount} / 20 个汉字
+                {logChineseCount} / 20
               </span>
               {log.length >= 2000 && <span className="text-xs text-destructive">已达到 2000 字符上限</span>}
             </div>
@@ -535,12 +535,11 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
             placeholder="今天做了... 最大的问题是... 明天决定..."
             aria-describedby="daily-log-hint"
           />
-          <p id="daily-log-hint" className="m-0 text-xs text-fg-3">至少写 20 个汉字。</p>
         </div>
 
         <div className="grid gap-2 pt-1">
           <Button type="submit" size="lg" disabled={isSubmitting} className="w-full sm:w-fit">
-            {isSubmitting ? '正在保存……' : '提交今日打卡'}
+            {isSubmitting ? '正在保存……' : '提交'}
           </Button>
           {submitMessage && <p className="m-0 text-sm text-success" role="status">{submitMessage}</p>}
         </div>
