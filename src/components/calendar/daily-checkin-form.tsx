@@ -362,18 +362,12 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
   }
 
   return (
-    <Card className="mt-8 p-5 sm:p-6">
-      <div className="mb-5">
-        <h3 className="m-0 text-xl font-semibold">今天的出海打卡</h3>
-        <p className="mb-0 mt-1.5 text-sm leading-relaxed text-fg-2">
-          这份记录和 GSC 截图未来会公开展示，请先遮挡域名、搜索词等敏感信息。
-        </p>
-      </div>
+    <Card className="mx-auto mt-8 w-full max-w-[640px] p-5 sm:p-6">
 
       <form onSubmit={handleSubmit} onPaste={handlePaste} className="grid gap-5">
         {/* 1. GSC 截图：选择后先在浏览器内打码，图片不会单独上传 */}
         <div className="grid gap-1.5">
-          <Label htmlFor="daily-gsc-screenshot">1. 选择今天的 GSC 截图 <span className="text-destructive">*</span></Label>
+          <Label htmlFor="daily-gsc-screenshot">1. 今天主攻的站 GSC 截图 </Label>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <input
               ref={fileInputRef}
@@ -383,15 +377,17 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
               accept="image/png,image/jpeg,image/webp"
               required
               onChange={handleImageChange}
-              className="h-auto min-h-[42px] w-full rounded-[7px] border border-input bg-background px-3 py-2 text-sm text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-soft file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-primary focus-visible:border-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring sm:flex-1"
+              className="h-auto min-h-[42px] w-[400px] shrink-0 rounded-[7px] border border-input bg-background px-3 py-2 text-sm text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-soft file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-primary focus-visible:border-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
+              style={{ width: '400px', minWidth: '400px' }}
             />
           </div>
           <Textarea
             aria-label="粘贴 GSC 截图"
             rows={2}
-            placeholder="在这里粘贴截图（Cmd+V / Ctrl+V）"
+            placeholder="在这里粘贴截图"
             onPaste={handlePasteBox}
-            className="min-h-[64px] resize-none"
+            className="min-h-[64px] w-[600px] min-w-[600px] resize-none"
+            style={{ width: '600px', minWidth: '600px' }}
           />
           {gscFile && <p className="m-0 text-xs text-fg-3">已选择：{gscFile.name}</p>}
           {editorError && <p className="m-0 text-sm text-destructive" role="alert">{editorError}</p>}
@@ -449,7 +445,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
 
         {/* 2. 出海时长：页面展示四档中文选项，提交时使用 A/B/C/D 枚举。 */}
         <div className="grid gap-1.5">
-          <Label>2. 今天出海了几个小时？ <span className="text-destructive">*</span></Label>
+          <Label>2. 今天出海了几小时？ </Label>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" role="radiogroup" aria-label="今天出海了几个小时">
             {HOURS_OPTIONS.map((option) => (
               <label key={option.value} className={`flex cursor-pointer items-center justify-center rounded-md border px-3 py-2.5 text-sm font-semibold transition-colors ${hours === option.value ? 'border-primary bg-soft text-primary' : 'border-border bg-background text-foreground hover:bg-bg-alt'}`}>
@@ -470,7 +466,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
 
         {/* 3. 外链数量：页面展示四档中文选项，提交时使用 A/B/C/D 枚举。 */}
         <div className="grid gap-1.5">
-          <Label>3. 今天添加了几个外链？ <span className="text-destructive">*</span></Label>
+          <Label>3. 今天添加了几外链？ </Label>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" role="radiogroup" aria-label="今天添加了几个外链">
             {BACKLINK_OPTIONS.map((option) => (
               <label key={option.value} className={`flex cursor-pointer items-center justify-center rounded-md border px-3 py-2.5 text-sm font-semibold transition-colors ${backlinks === option.value ? 'border-primary bg-soft text-primary' : 'border-border bg-background text-foreground hover:bg-bg-alt'}`}>
@@ -492,7 +488,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
         {/* 4. 工作质量：1 到 10 的十档滑杆，并实时显示当前分数 */}
         <div className="grid gap-2">
           <div className="flex items-center justify-between gap-3">
-            <Label htmlFor="daily-quality">4. 今天的上站工作质量，自评几分？ <span className="text-destructive">*</span></Label>
+            <Label htmlFor="daily-quality">4. 今天的上站工作质量，自评几分？ </Label>
             <span className="min-w-12 rounded-md bg-soft px-2 py-1 text-center font-mono text-lg font-semibold text-primary">
               {quality}/10
             </span>
@@ -520,7 +516,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
         {/* 5. 工作日志：至少 20 个汉字，最多 2000 个字符；达到上限时才提醒。 */}
         <div className="grid gap-1.5">
           <div className="flex items-center justify-between gap-3">
-            <Label htmlFor="daily-log">5. 今天的工作日志 <span className="text-destructive">*</span></Label>
+            <Label htmlFor="daily-log">5. 今天的工作日志 </Label>
             {log.length >= 2000 && <span className="text-xs text-destructive">已达到 2000 字符上限</span>}
           </div>
           <Textarea
@@ -537,7 +533,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
             placeholder="今天做了... 最大的问题是... 明天决定..."
             aria-describedby="daily-log-hint"
           />
-          <p id="daily-log-hint" className="m-0 text-xs text-fg-3">至少填写 20 个汉字。</p>
+          <p id="daily-log-hint" className="m-0 text-xs text-fg-3">至少写 20 个汉字。</p>
         </div>
 
         <div className="grid gap-2 pt-1">

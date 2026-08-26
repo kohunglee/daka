@@ -20,7 +20,7 @@ export function SiteNav({ theme, loggedIn }: { theme: 'light' | 'dark'; loggedIn
 
   return (
     <header
-      className="sticky top-0 z-30 border-b border-border backdrop-blur"
+      className="border-b border-border backdrop-blur"
       style={{ background: 'color-mix(in srgb, var(--background) 82%, transparent)' }}
     >
       <nav className="flex h-16 items-center gap-3 px-4 md:px-7">
