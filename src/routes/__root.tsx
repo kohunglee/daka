@@ -12,14 +12,15 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'FlareStarter — Cloudflare 原生 SaaS 模板' },
+      { title: '每天出海一小时' },
       { name: 'description', content: '开源的 Cloudflare 原生 SaaS 模板，克隆即可部署到 Workers。' },
-      { property: 'og:title', content: 'FlareStarter' },
+      { property: 'og:title', content: '每天出海一小时' },
       { property: 'og:description', content: '开源的 Cloudflare 原生 SaaS 模板，克隆即可部署到 Workers。' },
       { property: 'og:type', content: 'website' },
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
+      { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
       { rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
       { rel: 'icon', type: 'image/png', href: '/logo192.png', sizes: '192x192' },
       { rel: 'apple-touch-icon', href: '/logo192.png' },
