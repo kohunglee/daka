@@ -1,9 +1,9 @@
 /**
- * 隐藏的打卡清理入口。
+ * 隐藏的巨大管理员模式入口。
  * 不挂入站内导航和 sitemap，仅用于管理员按用户 ID + 日期清理 D1/R2。
  */
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { Search, ShieldAlert, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -26,7 +26,7 @@ export const Route = createFileRoute('/n4v8q2m7x9r3k6p1')({
   loader: () => getAdminClearSessionFn(),
   head: () => ({
     meta: [
-      { title: 'Admin' },
+      { title: '巨大管理员模式' },
       { name: 'robots', content: 'noindex, nofollow, noarchive' },
     ],
   }),
@@ -73,7 +73,7 @@ function AdminLogin({ onLoggedIn }: { onLoggedIn: () => void }) {
         <div className="mb-6 flex items-start gap-3">
           <span className="rounded-lg bg-soft p-2 text-primary"><ShieldAlert size={22} /></span>
           <div>
-            <h1 className="m-0 text-xl font-semibold">管理入口</h1>
+            <h1 className="m-0 text-xl font-semibold">巨大管理员模式</h1>
             <p className="mb-0 mt-1 text-sm text-fg-2">请输入管理员密码继续。</p>
           </div>
         </div>
@@ -138,7 +138,7 @@ function AdminClearPanel() {
     set666ModeState(read666Mode())
   }, [])
 
-  /** 切换首页顶部的666模式标识，并将状态保存到当前浏览器。 */
+  /** 切换首页顶部的巨大管理员模式标识，并将状态保存到当前浏览器。 */
   function handle666ModeChange(enabled: boolean) {
     set666ModeState(enabled)
     set666Mode(enabled)
@@ -202,17 +202,20 @@ function AdminClearPanel() {
     <AdminFrame>
       <div className="mb-5 flex items-center justify-between gap-4 rounded-lg border border-border bg-bg-alt px-4 py-3">
         <div>
-          <p className="m-0 text-sm font-semibold">666模式</p>
+          <p className="m-0 text-sm font-semibold">巨大管理员模式</p>
         </div>
-        <label className="flex shrink-0 cursor-pointer items-center gap-2 text-sm font-semibold">
-          <input
-            type="checkbox"
-            checked={mode666}
-            onChange={(event) => handle666ModeChange(event.target.checked)}
-            className="h-4 w-4 accent-primary"
-          />
-          开启
-        </label>
+        <div className="flex shrink-0 items-center gap-4">
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
+            <input
+              type="checkbox"
+              checked={mode666}
+              onChange={(event) => handle666ModeChange(event.target.checked)}
+              className="h-4 w-4 accent-primary"
+            />
+            开启 666 模式
+          </label>
+          <Link to="/{-$locale}/admin/blog" className="text-sm font-semibold text-primary hover:underline">博客管理</Link>
+        </div>
       </div>
 
       <div className="mb-6">

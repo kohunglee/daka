@@ -96,7 +96,6 @@ function FeedbackAdmin() {
     <AppShell
       user={{ name: session?.user?.name, email: session?.user?.email ?? '', role: session?.user?.role ?? 'admin', image: session?.user?.image ?? null }}
       active="admin-feedback"
-      crumb={t('admin.navAdmin')}
     >
       <div className="mb-5">
         <h1 className="page-h">{t('admin.feedbackAdmin')} ({total})</h1>

@@ -45,7 +45,6 @@ function SponsorsAdmin() {
     <AppShell
       user={{ name: session?.user?.name, email: session?.user?.email ?? '', role: session?.user?.role ?? 'admin', image: session?.user?.image ?? null }}
       active="admin-sponsors"
-      crumb={t('admin.navAdmin')}
     >
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{t('admin.sponsors')} ({total})</h1>

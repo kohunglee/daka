@@ -49,7 +49,6 @@ function WaitlistAdmin() {
       }}
       isPro={false}
       active="admin-waitlist"
-      crumb={t('admin.navAdmin')}
     >
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{t('admin.waitlist')} ({total})</h1>

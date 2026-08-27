@@ -1,7 +1,9 @@
 import { createServerFn } from '@tanstack/react-start'
+import { notFound } from '@tanstack/react-router'
 import { env } from '@/lib/env'
 import { createDb } from '@/db/client'
 import { assertAdmin } from './assert-admin.server'
+import { hasAdminSession } from '@/features/admin-clear/admin-clear.auth.server'
 import { clampPage, clampPageSize, clampSortDir } from './params'
 import { getAdminStats } from './admin.server'
 import type { AdminStats } from './admin.server'
@@ -19,6 +21,12 @@ export type { AdminFeedbackRow }
 
 /** 仅管理员可过；非管理员 → 404（不泄露 admin 存在）。返回 admin user。 */
 export const requireAdmin = createServerFn({ method: 'GET' }).handler(() => assertAdmin())
+
+/** 博客管理页使用隐藏密码会话作为站长身份，未通过时同样返回 404。 */
+export const requireBlogAdminSession = createServerFn({ method: 'GET' }).handler(async () => {
+  if (!(await hasAdminSession())) throw notFound()
+  return true
+})
 
 /** server fn：assertAdmin → 聚合。 */
 export const getAdminStatsFn = createServerFn({ method: 'GET' }).handler(async (): Promise<AdminStats> => {

@@ -17,7 +17,7 @@ function AdminDashboard() {
   const user = { name: data?.user?.name, email: data?.user?.email ?? '', role: data?.user?.role ?? 'admin', image: data?.user?.image ?? null }
 
   return (
-    <AppShell user={user} isPro={false} active="admin-dashboard" crumb={t('admin.navAdmin')}>
+    <AppShell user={user} isPro={false} active="admin-dashboard">
       <div className="mb-6">
         <h1 className="page-h">{t('admin.title')}</h1>
         <p className="mt-1.5 text-[14.5px] text-fg-2">{t('admin.overviewSub')}</p>

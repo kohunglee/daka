@@ -50,7 +50,7 @@ function Pro() {
   // feature gate: paid Pro OR admin; the topbar badge stays on ent.plan (billing truth)
   const unlocked = hasProAccess(user.role, ent)
   return (
-    <AppShell user={user} isPro={ent.plan === 'pro'} active="pro" crumb={t('app.proDemo')} paymentFailed={ent.paymentFailed}>
+    <AppShell user={user} isPro={ent.plan === 'pro'} paymentFailed={ent.paymentFailed} active="pro">
       <div className="mb-6 flex items-center gap-2.5">
         <h1 className="page-h">{t('billing.proArea')}</h1>
         <Badge variant="pro">Pro</Badge>

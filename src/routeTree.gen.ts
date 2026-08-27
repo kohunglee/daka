@@ -22,6 +22,7 @@ import { Route as Char123LocaleChar125SponsorRouteImport } from './routes/{-$loc
 import { Route as Char123LocaleChar125PrivacyRouteImport } from './routes/{-$locale}/privacy'
 import { Route as Char123LocaleChar125PricingRouteImport } from './routes/{-$locale}/pricing'
 import { Route as Char123LocaleChar125ChangelogRouteImport } from './routes/{-$locale}/changelog'
+import { Route as Char123LocaleChar125BlogRouteImport } from './routes/{-$locale}/blog'
 import { Route as DocsSplatRouteImport } from './routes/docs/$'
 import { Route as DocsMdSplatRouteImport } from './routes/docs-md/$'
 import { Route as ApiSearchRouteImport } from './routes/api/search'
@@ -37,6 +38,7 @@ import { Route as Char123LocaleChar125AdminWaitlistRouteImport } from './routes/
 import { Route as Char123LocaleChar125AdminUsersRouteImport } from './routes/{-$locale}/admin/users'
 import { Route as Char123LocaleChar125AdminSponsorsRouteImport } from './routes/{-$locale}/admin/sponsors'
 import { Route as Char123LocaleChar125AdminFeedbackRouteImport } from './routes/{-$locale}/admin/feedback'
+import { Route as Char123LocaleChar125AdminBlogRouteImport } from './routes/{-$locale}/admin/blog'
 import { Route as Char123LocaleChar125authVerifyEmailRouteImport } from './routes/{-$locale}/(auth)/verify-email'
 import { Route as Char123LocaleChar125authResetPasswordRouteImport } from './routes/{-$locale}/(auth)/reset-password'
 import { Route as Char123LocaleChar125authRegisterRouteImport } from './routes/{-$locale}/(auth)/register'
@@ -119,6 +121,12 @@ const Char123LocaleChar125ChangelogRoute =
   Char123LocaleChar125ChangelogRouteImport.update({
     id: '/changelog',
     path: '/changelog',
+    getParentRoute: () => Char123LocaleChar125RouteRoute,
+  } as any)
+const Char123LocaleChar125BlogRoute =
+  Char123LocaleChar125BlogRouteImport.update({
+    id: '/blog',
+    path: '/blog',
     getParentRoute: () => Char123LocaleChar125RouteRoute,
   } as any)
 const DocsSplatRoute = DocsSplatRouteImport.update({
@@ -206,6 +214,12 @@ const Char123LocaleChar125AdminFeedbackRoute =
     path: '/feedback',
     getParentRoute: () => Char123LocaleChar125AdminRouteRoute,
   } as any)
+const Char123LocaleChar125AdminBlogRoute =
+  Char123LocaleChar125AdminBlogRouteImport.update({
+    id: '/blog',
+    path: '/blog',
+    getParentRoute: () => Char123LocaleChar125AdminRouteRoute,
+  } as any)
 const Char123LocaleChar125authVerifyEmailRoute =
   Char123LocaleChar125authVerifyEmailRouteImport.update({
     id: '/(auth)/verify-email',
@@ -276,6 +290,7 @@ export interface FileRoutesByFullPath {
   '/api/search': typeof ApiSearchRoute
   '/docs-md/$': typeof DocsMdSplatRoute
   '/docs/$': typeof DocsSplatRoute
+  '/{-$locale}/blog': typeof Char123LocaleChar125BlogRoute
   '/{-$locale}/changelog': typeof Char123LocaleChar125ChangelogRoute
   '/{-$locale}/pricing': typeof Char123LocaleChar125PricingRoute
   '/{-$locale}/privacy': typeof Char123LocaleChar125PrivacyRoute
@@ -291,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/register': typeof Char123LocaleChar125authRegisterRoute
   '/{-$locale}/reset-password': typeof Char123LocaleChar125authResetPasswordRoute
   '/{-$locale}/verify-email': typeof Char123LocaleChar125authVerifyEmailRoute
+  '/{-$locale}/admin/blog': typeof Char123LocaleChar125AdminBlogRoute
   '/{-$locale}/admin/feedback': typeof Char123LocaleChar125AdminFeedbackRoute
   '/{-$locale}/admin/sponsors': typeof Char123LocaleChar125AdminSponsorsRoute
   '/{-$locale}/admin/users': typeof Char123LocaleChar125AdminUsersRoute
@@ -314,6 +330,7 @@ export interface FileRoutesByTo {
   '/api/search': typeof ApiSearchRoute
   '/docs-md/$': typeof DocsMdSplatRoute
   '/docs/$': typeof DocsSplatRoute
+  '/{-$locale}/blog': typeof Char123LocaleChar125BlogRoute
   '/{-$locale}/changelog': typeof Char123LocaleChar125ChangelogRoute
   '/{-$locale}/pricing': typeof Char123LocaleChar125PricingRoute
   '/{-$locale}/privacy': typeof Char123LocaleChar125PrivacyRoute
@@ -329,6 +346,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/register': typeof Char123LocaleChar125authRegisterRoute
   '/{-$locale}/reset-password': typeof Char123LocaleChar125authResetPasswordRoute
   '/{-$locale}/verify-email': typeof Char123LocaleChar125authVerifyEmailRoute
+  '/{-$locale}/admin/blog': typeof Char123LocaleChar125AdminBlogRoute
   '/{-$locale}/admin/feedback': typeof Char123LocaleChar125AdminFeedbackRoute
   '/{-$locale}/admin/sponsors': typeof Char123LocaleChar125AdminSponsorsRoute
   '/{-$locale}/admin/users': typeof Char123LocaleChar125AdminUsersRoute
@@ -355,6 +373,7 @@ export interface FileRoutesById {
   '/api/search': typeof ApiSearchRoute
   '/docs-md/$': typeof DocsMdSplatRoute
   '/docs/$': typeof DocsSplatRoute
+  '/{-$locale}/blog': typeof Char123LocaleChar125BlogRoute
   '/{-$locale}/changelog': typeof Char123LocaleChar125ChangelogRoute
   '/{-$locale}/pricing': typeof Char123LocaleChar125PricingRoute
   '/{-$locale}/privacy': typeof Char123LocaleChar125PrivacyRoute
@@ -370,6 +389,7 @@ export interface FileRoutesById {
   '/{-$locale}/(auth)/register': typeof Char123LocaleChar125authRegisterRoute
   '/{-$locale}/(auth)/reset-password': typeof Char123LocaleChar125authResetPasswordRoute
   '/{-$locale}/(auth)/verify-email': typeof Char123LocaleChar125authVerifyEmailRoute
+  '/{-$locale}/admin/blog': typeof Char123LocaleChar125AdminBlogRoute
   '/{-$locale}/admin/feedback': typeof Char123LocaleChar125AdminFeedbackRoute
   '/{-$locale}/admin/sponsors': typeof Char123LocaleChar125AdminSponsorsRoute
   '/{-$locale}/admin/users': typeof Char123LocaleChar125AdminUsersRoute
@@ -397,6 +417,7 @@ export interface FileRouteTypes {
     | '/api/search'
     | '/docs-md/$'
     | '/docs/$'
+    | '/{-$locale}/blog'
     | '/{-$locale}/changelog'
     | '/{-$locale}/pricing'
     | '/{-$locale}/privacy'
@@ -412,6 +433,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/register'
     | '/{-$locale}/reset-password'
     | '/{-$locale}/verify-email'
+    | '/{-$locale}/admin/blog'
     | '/{-$locale}/admin/feedback'
     | '/{-$locale}/admin/sponsors'
     | '/{-$locale}/admin/users'
@@ -435,6 +457,7 @@ export interface FileRouteTypes {
     | '/api/search'
     | '/docs-md/$'
     | '/docs/$'
+    | '/{-$locale}/blog'
     | '/{-$locale}/changelog'
     | '/{-$locale}/pricing'
     | '/{-$locale}/privacy'
@@ -450,6 +473,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/register'
     | '/{-$locale}/reset-password'
     | '/{-$locale}/verify-email'
+    | '/{-$locale}/admin/blog'
     | '/{-$locale}/admin/feedback'
     | '/{-$locale}/admin/sponsors'
     | '/{-$locale}/admin/users'
@@ -475,6 +499,7 @@ export interface FileRouteTypes {
     | '/api/search'
     | '/docs-md/$'
     | '/docs/$'
+    | '/{-$locale}/blog'
     | '/{-$locale}/changelog'
     | '/{-$locale}/pricing'
     | '/{-$locale}/privacy'
@@ -490,6 +515,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/(auth)/register'
     | '/{-$locale}/(auth)/reset-password'
     | '/{-$locale}/(auth)/verify-email'
+    | '/{-$locale}/admin/blog'
     | '/{-$locale}/admin/feedback'
     | '/{-$locale}/admin/sponsors'
     | '/{-$locale}/admin/users'
@@ -614,6 +640,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125ChangelogRouteImport
       parentRoute: typeof Char123LocaleChar125RouteRoute
     }
+    '/{-$locale}/blog': {
+      id: '/{-$locale}/blog'
+      path: '/blog'
+      fullPath: '/{-$locale}/blog'
+      preLoaderRoute: typeof Char123LocaleChar125BlogRouteImport
+      parentRoute: typeof Char123LocaleChar125RouteRoute
+    }
     '/docs/$': {
       id: '/docs/$'
       path: '/docs/$'
@@ -719,6 +752,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125AdminFeedbackRouteImport
       parentRoute: typeof Char123LocaleChar125AdminRouteRoute
     }
+    '/{-$locale}/admin/blog': {
+      id: '/{-$locale}/admin/blog'
+      path: '/blog'
+      fullPath: '/{-$locale}/admin/blog'
+      preLoaderRoute: typeof Char123LocaleChar125AdminBlogRouteImport
+      parentRoute: typeof Char123LocaleChar125AdminRouteRoute
+    }
     '/{-$locale}/(auth)/verify-email': {
       id: '/{-$locale}/(auth)/verify-email'
       path: '/verify-email'
@@ -793,6 +833,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface Char123LocaleChar125AdminRouteRouteChildren {
+  Char123LocaleChar125AdminBlogRoute: typeof Char123LocaleChar125AdminBlogRoute
   Char123LocaleChar125AdminFeedbackRoute: typeof Char123LocaleChar125AdminFeedbackRoute
   Char123LocaleChar125AdminSponsorsRoute: typeof Char123LocaleChar125AdminSponsorsRoute
   Char123LocaleChar125AdminUsersRoute: typeof Char123LocaleChar125AdminUsersRoute
@@ -802,6 +843,7 @@ interface Char123LocaleChar125AdminRouteRouteChildren {
 
 const Char123LocaleChar125AdminRouteRouteChildren: Char123LocaleChar125AdminRouteRouteChildren =
   {
+    Char123LocaleChar125AdminBlogRoute: Char123LocaleChar125AdminBlogRoute,
     Char123LocaleChar125AdminFeedbackRoute:
       Char123LocaleChar125AdminFeedbackRoute,
     Char123LocaleChar125AdminSponsorsRoute:
@@ -819,6 +861,7 @@ const Char123LocaleChar125AdminRouteRouteWithChildren =
 
 interface Char123LocaleChar125RouteRouteChildren {
   Char123LocaleChar125AdminRouteRoute: typeof Char123LocaleChar125AdminRouteRouteWithChildren
+  Char123LocaleChar125BlogRoute: typeof Char123LocaleChar125BlogRoute
   Char123LocaleChar125ChangelogRoute: typeof Char123LocaleChar125ChangelogRoute
   Char123LocaleChar125PricingRoute: typeof Char123LocaleChar125PricingRoute
   Char123LocaleChar125PrivacyRoute: typeof Char123LocaleChar125PrivacyRoute
@@ -842,6 +885,7 @@ const Char123LocaleChar125RouteRouteChildren: Char123LocaleChar125RouteRouteChil
   {
     Char123LocaleChar125AdminRouteRoute:
       Char123LocaleChar125AdminRouteRouteWithChildren,
+    Char123LocaleChar125BlogRoute: Char123LocaleChar125BlogRoute,
     Char123LocaleChar125ChangelogRoute: Char123LocaleChar125ChangelogRoute,
     Char123LocaleChar125PricingRoute: Char123LocaleChar125PricingRoute,
     Char123LocaleChar125PrivacyRoute: Char123LocaleChar125PrivacyRoute,

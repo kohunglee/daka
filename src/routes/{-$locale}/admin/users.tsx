@@ -80,7 +80,7 @@ function UsersPage() {
   }
 
   return (
-    <AppShell user={{ name: session?.user?.name, email: session?.user?.email ?? '', role: session?.user?.role ?? 'admin', image: session?.user?.image ?? null }} isPro={false} active="admin-users" crumb={t('admin.navAdmin')}>
+    <AppShell user={{ name: session?.user?.name, email: session?.user?.email ?? '', role: session?.user?.role ?? 'admin', image: session?.user?.image ?? null }} isPro={false} active="admin-users">
       <div className="mb-5">
         <h1 className="page-h">{t('admin.users')}</h1>
         <p className="mt-1.5 text-[14.5px] text-fg-2">{t('admin.usersSub')}</p>

@@ -369,20 +369,44 @@ input {
 /* ==========================================================================
    app / admin shell
    ========================================================================== */
-/* (layout lives on the AppShell component via utilities; only the skins live here) */
-.app-side {
-  border-right: 1px solid var(--border);
+/* 统一后台外壳：页面背景铺满，后台内容在与首页一致的中心宽度内呈现。 */
+.app-shell-outer {
+  min-height: 100vh;
   background: var(--bg-alt);
-  padding: 16px 12px;
+}
+.app-shell-frame {
+  width: 100%;
+  max-width: 1450px;
+  min-height: calc(100vh - 64px);
+  margin: 0 auto;
+  background: var(--bg-alt);
+}
+.app-shell-body {
+  min-height: calc(100vh - 64px);
+}
+.app-side {
+  background: var(--bg-alt);
+  padding: 20px 12px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
-.app-side .brand {
+/* 竖线属于左侧整列，因此会跟随右侧内容一起延伸到页面底部。 */
+.app-sidebar-column {
+  border-right: 1px solid var(--border);
+  background: var(--bg-alt);
+}
+/* 桌面端侧栏保持自然高度，账户识别信息只保留在移动端抽屉内。 */
+@media (min-width: 768px) {
+  .app-user-card {
+    display: none;
+  }
+}
+.app-topbar-brand {
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 6px 8px 16px;
+  padding: 4px 0;
 }
 .app-side .grp {
   font-family: var(--font-mono);
@@ -390,14 +414,15 @@ input {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--fg-3);
-  padding: 14px 10px 6px;
+  padding: 18px 10px 7px;
 }
 .app-nav-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 10px;
-  border-radius: 7px;
+  min-height: 38px;
+  padding: 9px 12px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
   color: var(--fg-2);
@@ -408,45 +433,50 @@ input {
   color: var(--foreground);
 }
 .app-nav-item.active {
-  background: var(--soft);
-  color: var(--primary);
-  font-weight: 600;
-}
-.app-topbar {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: nowrap;
-  min-width: 0;
-  height: 60px;
-  padding: 0 24px;
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--background) 86%, transparent);
-}
-.app-topbar.compact {
-  gap: 8px;
-  padding: 0 14px;
-}
-.app-crumb {
-  font-size: 14px;
-  color: var(--fg-3);
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.app-crumb b {
+  background: var(--bg-inset);
   color: var(--foreground);
   font-weight: 600;
 }
+.app-topbar {
+  width: 100%;
+  height: 64px;
+  border-bottom: 1px solid var(--border);
+  background: var(--background);
+}
+.app-topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+  min-width: 0;
+  width: 100%;
+  max-width: 1450px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+@media (min-width: 768px) {
+  .app-topbar-inner {
+    padding: 0 28px;
+  }
+}
+.app-shell-content {
+  background: var(--bg-alt);
+}
 .app-main {
-  /* tighter gutters on phones — content width beats whitespace in the app/admin views */
-  padding: 20px 16px;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
 }
 @media (min-width: 768px) {
   .app-main {
-    padding: 28px 32px;
+    padding: 40px 32px 64px;
   }
+}
+.app-main [data-slot='card'] {
+  border-radius: 10px;
+  box-shadow: none;
 }
 .page-h {
   font-family: var(--font-display);

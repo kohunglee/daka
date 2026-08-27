@@ -3,7 +3,10 @@ import { useTranslation } from '@/features/i18n/provider'
 import { Logo } from '@/components/brand/logo'
 
 /** 首页页足：保留品牌说明、版权和必要法律入口，移除分散注意力的推广链接。 */
-export function Footer() {
+/**
+ * 页足主题参数保留为可选兼容项：旧页面仍会传入 theme，但页足颜色由全局 CSS 变量统一处理。
+ */
+export function Footer(_props?: { theme?: 'light' | 'dark' }) {
   const { t } = useTranslation()
 
   return (

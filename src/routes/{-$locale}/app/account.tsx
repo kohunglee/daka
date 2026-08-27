@@ -100,13 +100,13 @@ function AccountPage() {
   }
 
   return (
-    <AppShell user={user} isPro={ent.plan === 'pro'} active="account" crumb={t('app.account')} paymentFailed={ent.paymentFailed}>
+    <AppShell user={user} isPro={ent.plan === 'pro'} active="account" paymentFailed={ent.paymentFailed}>
       <div className="mb-6">
         <h1 className="page-h">{t('app.account')}</h1>
         <p className="mt-1.5 font-mono text-[13.5px] text-fg-3">{user.email}</p>
       </div>
 
-      <div className="max-w-[640px]">
+      <div className="app-account-content w-full max-w-[980px]">
         <Section title={t('storage.avatar')}>
           <AvatarUploader image={user.image} name={user.name} />
         </Section>

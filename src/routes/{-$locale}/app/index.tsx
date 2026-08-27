@@ -27,7 +27,7 @@ function AppHome() {
   const isPro = ent.plan === 'pro'
 
   return (
-    <AppShell user={user} isPro={isPro} active="dashboard" crumb={t('app.dashboard')} paymentFailed={ent.paymentFailed}>
+    <AppShell user={user} isPro={isPro} active="dashboard" paymentFailed={ent.paymentFailed}>
       <div className="mb-6">
         <h1 className="page-h">{t('app.dashboard')}</h1>
         <p className="mt-1.5 text-[14.5px] text-fg-2">{t('app.welcomeSub')}</p>
