@@ -211,9 +211,9 @@ export function YearCalendar({ userId }: { userId: string | null }) {
   return (
     <section className="mx-auto w-full max-w-[1150px] px-5 py-10">
       {/* 标题行：年份、连续打卡天数和左右切换按钮保持同一行。 */}
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="relative mb-4 flex items-center justify-between gap-3">
         <h2 className="font-mono text-3xl font-semibold tracking-tight">{year}</h2>
-        <p className="m-0 flex-1 text-center text-sm font-semibold text-fg-2">
+        <p className="pointer-events-none absolute left-1/2 top-1/2 m-0 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-center text-sm font-semibold text-fg-2">
           已经打卡 <span className="font-mono text-lg text-destructive">{currentStreak}</span> 天
         </p>
         <div className="flex items-center gap-1">
@@ -242,7 +242,7 @@ export function YearCalendar({ userId }: { userId: string | null }) {
                     type="button"
                     onClick={() => { if (isChecked) void openCheckinDetail(date) }}
                     aria-label={isChecked ? `${date}，已打卡，查看详情` : `${date}，未打卡`}
-                    className={`flex h-5 items-center justify-center border-0 bg-transparent p-0 text-xs leading-none ${isChecked ? 'cursor-pointer font-semibold text-destructive' : 'cursor-default text-foreground'} ${isToday ? 'today-cell' : ''} ${isToday && highlight ? 'today-blink' : ''}`}
+                    className={`flex h-5 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-xs leading-none ${isChecked ? 'font-semibold text-destructive' : 'text-foreground'} ${isToday ? 'today-cell' : ''} ${isToday && highlight ? 'today-blink' : ''}`}
                   >
                     {isChecked ? <CheckinMarker day={day} /> : day}
                   </button>
@@ -262,7 +262,7 @@ export function YearCalendar({ userId }: { userId: string | null }) {
         aria-label={statusReady ? (!userId ? '登录后打卡今天' : todayChecked ? '今日已打卡' : '打卡今天') : '正在判断今日打卡状态'}
         aria-expanded={showCheckinForm}
         aria-controls="daily-checkin-form"
-        className={`mx-auto mt-8 flex min-h-12 w-full max-w-sm items-center justify-center rounded-lg border px-6 py-3 text-lg font-semibold shadow-lg transition-colors ${!statusReady ? 'cursor-wait border-border bg-bg-alt text-transparent' : todayChecked ? 'border-destructive/30 bg-destructive/15 text-destructive hover:bg-destructive/20' : 'border-transparent bg-primary text-primary-foreground hover:bg-primary/90'}`}
+        className={`mx-auto mt-8 flex min-h-12 w-full max-w-sm items-center justify-center rounded-lg border px-6 py-3 text-lg font-semibold shadow-lg transition-colors ${!statusReady ? 'border-border bg-bg-alt text-transparent' : todayChecked ? 'border-destructive/30 bg-destructive/15 text-destructive hover:bg-destructive/20' : 'border-transparent bg-primary text-primary-foreground hover:bg-primary/90'}`}
       >
         {statusReady && (!userId ? '登录后打卡今天' : todayChecked ? '今日已打卡' : '打卡今天')}
       </button>

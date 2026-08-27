@@ -23,23 +23,27 @@ export function AuthCard({
   const { theme } = rootRoute.useLoaderData()
   return (
     <div className="auth-wrap grid-bg">
-      <div className="flex h-16 items-center gap-3 border-b border-border px-4 md:px-7">
-        <Link to="/{-$locale}" className="auth-home" aria-label="FlareStarter">
-          <span className="auth-back" aria-hidden="true">
-            <ChevronLeft size={16} />
-          </span>
-          <Logo />
-        </Link>
-        <div className="flex-1" />
-        <div className="flex items-center gap-1">
-          <ThemeToggle theme={theme} />
+      <div className="border-b border-border">
+        <div className="mx-auto flex h-16 w-full max-w-[1450px] items-center gap-3 px-4 md:px-7">
+          <Link to="/{-$locale}" className="auth-home" aria-label="FlareStarter">
+            <span className="auth-back" aria-hidden="true">
+              <ChevronLeft size={16} />
+            </span>
+            <Logo />
+          </Link>
+          <div className="flex-1" />
+          <div className="flex items-center gap-1">
+            <ThemeToggle theme={theme} />
+          </div>
         </div>
       </div>
       <div className="auth-body">
-        <div className="auth-card">
-          <h1 className="m-0 mb-1.5 font-display text-2xl font-semibold tracking-[-0.5px]">{title}</h1>
-          {subtitle && <p className="m-0 mb-6 text-[14.5px] text-fg-2">{subtitle}</p>}
-          {children}
+        <div className="mx-auto flex w-full max-w-[1450px] justify-center">
+          <div className="auth-card">
+            <h1 className="m-0 mb-1.5 font-display text-2xl font-semibold tracking-[-0.5px]">{title}</h1>
+            {subtitle && <p className="m-0 mb-6 text-[14.5px] text-fg-2">{subtitle}</p>}
+            {children}
+          </div>
         </div>
       </div>
     </div>

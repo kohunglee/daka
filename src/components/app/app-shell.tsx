@@ -7,6 +7,7 @@ import { ThemeToggle } from '@/features/theme/theme-toggle'
 import { useTranslation } from '@/features/i18n/provider'
 import { PaymentFailedBanner } from '@/features/billing/components/payment-failed-banner'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { use666Mode } from '@/features/admin/mode-666'
 
 const rootRoute = getRouteApi('__root__')
 
@@ -53,6 +54,7 @@ export function AppShell({
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const { enabled: mode666 } = use666Mode()
   useEffect(() => setCollapsed(localStorage.getItem(COLLAPSE_KEY) === '1'), [])
   function toggleCollapsed() {
     setCollapsed((v) => {
@@ -90,15 +92,19 @@ export function AppShell({
           <Home size={18} className="shrink-0" />
           {label(t('app.dashboard'))}
         </Link>
-        <Link to="/{-$locale}/app/pro" activeProps={{}} className={item(active === 'pro')} title={t('app.proDemo')}>
-          <Sparkles size={18} className="shrink-0" />
-          {label(t('app.proDemo'))}
-          {!rail && <Badge variant="pro" className="ml-auto">Pro</Badge>}
-        </Link>
-        <Link to="/{-$locale}/app/feedback" activeProps={{}} className={item(active === 'feedback')} title={t('feedback.nav')}>
-          <MessageSquare size={18} className="shrink-0" />
-          {label(t('feedback.nav'))}
-        </Link>
+        {mode666 && (
+          <>
+            <Link to="/{-$locale}/app/pro" activeProps={{}} className={item(active === 'pro')} title={t('app.proDemo')}>
+              <Sparkles size={18} className="shrink-0" />
+              {label(t('app.proDemo'))}
+              {!rail && <Badge variant="pro" className="ml-auto">Pro</Badge>}
+            </Link>
+            <Link to="/{-$locale}/app/feedback" activeProps={{}} className={item(active === 'feedback')} title={t('feedback.nav')}>
+              <MessageSquare size={18} className="shrink-0" />
+              {label(t('feedback.nav'))}
+            </Link>
+          </>
+        )}
         {grp(t('app.navAccount'))}
         <Link to="/{-$locale}/app/account" activeProps={{}} className={item(active === 'account')} title={t('app.account')}>
           <Settings size={18} className="shrink-0" />
@@ -168,7 +174,7 @@ export function AppShell({
       )}
 
       <div className="flex min-w-0 flex-col">
-        <div className="app-topbar">
+        <div className="app-topbar relative">
           <button
             type="button"
             className="inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg text-fg-2 hover:bg-bg-alt hover:text-foreground md:hidden"
@@ -192,6 +198,11 @@ export function AppShell({
             </span>
             <b>{crumb}</b>
           </span>
+          {mode666 && (
+            <div className="pointer-events-none absolute left-1/2 top-1/2 max-w-[45%] -translate-x-1/2 -translate-y-1/2 truncate rounded-full border border-destructive/30 bg-destructive/10 px-3 py-1 text-xs font-semibold text-destructive sm:text-sm">
+              666模式
+            </div>
+          )}
           <div className="flex-1" />
           {onAdminPage ? (
             <Badge variant="pro" dot className="shrink-0">

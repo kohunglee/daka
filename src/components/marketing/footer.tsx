@@ -8,7 +8,7 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border bg-bg-alt px-5 md:px-7 py-10">
-      <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+      <div className="mx-auto flex w-full max-w-[1450px] flex-col gap-8 md:flex-row md:items-start md:justify-between">
         {/* 品牌说明：使用陛下指定的页足描述，和首页打卡目标保持一致。 */}
         <div className="max-w-md">
           <Logo />

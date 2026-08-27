@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { requireUser } from '@/features/auth/middleware'
@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { fmtDate } from '@/lib/format-date'
+import { use666Mode } from '@/features/admin/mode-666'
 
 export const Route = createFileRoute('/{-$locale}/app/feedback')({
   head: () => ({ meta: [{ name: 'robots', content: 'noindex' }] }),
@@ -35,11 +36,18 @@ function FeedbackPage() {
   const { user, items } = Route.useLoaderData()
   const { t } = useTranslation()
   const router = useRouter()
+  const { enabled: mode666, ready } = use666Mode()
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [busy, setBusy] = useState(false)
   const openCount = items.filter((f) => f.status === 'open').length
   const atLimit = openCount >= OPEN_LIMIT
+
+  useEffect(() => {
+    if (ready && !mode666) void router.navigate({ to: '/{-$locale}/app', replace: true })
+  }, [mode666, ready, router])
+
+  if (!ready || !mode666) return null
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()

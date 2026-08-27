@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { displayBacklinkOption, displayHoursOption, formatBeijingDate } from '@/features/checkin/checkin.shared'
-import { readAdminMode, setAdminMode } from '@/features/admin/admin-mode'
+import { read666Mode, set666Mode } from '@/features/admin/mode-666'
 import {
   clearAdminCheckinFn,
   getAdminClearSessionFn,
@@ -100,7 +100,7 @@ function AdminLogin({ onLoggedIn }: { onLoggedIn: () => void }) {
 
 /** 已登录后的单条记录清理面板。 */
 function AdminClearPanel() {
-  const [adminMode, setAdminModeState] = useState(false)
+  const [mode666, set666ModeState] = useState(false)
   const [query, setQuery] = useState('')
   const [users, setUsers] = useState<AdminClearUserRow[]>([])
   const [userId, setUserId] = useState('')
@@ -135,13 +135,13 @@ function AdminClearPanel() {
   }, [])
 
   useEffect(() => {
-    setAdminModeState(readAdminMode())
+    set666ModeState(read666Mode())
   }, [])
 
-  /** 切换首页顶部的管理员模式标识，并将状态保存到当前浏览器。 */
-  function handleAdminModeChange(enabled: boolean) {
-    setAdminModeState(enabled)
-    setAdminMode(enabled)
+  /** 切换首页顶部的666模式标识，并将状态保存到当前浏览器。 */
+  function handle666ModeChange(enabled: boolean) {
+    set666ModeState(enabled)
+    set666Mode(enabled)
   }
 
   async function searchUsers() {
@@ -202,13 +202,13 @@ function AdminClearPanel() {
     <AdminFrame>
       <div className="mb-5 flex items-center justify-between gap-4 rounded-lg border border-border bg-bg-alt px-4 py-3">
         <div>
-          <p className="m-0 text-sm font-semibold">管理员模式</p>
+          <p className="m-0 text-sm font-semibold">666模式</p>
         </div>
         <label className="flex shrink-0 cursor-pointer items-center gap-2 text-sm font-semibold">
           <input
             type="checkbox"
-            checked={adminMode}
-            onChange={(event) => handleAdminModeChange(event.target.checked)}
+            checked={mode666}
+            onChange={(event) => handle666ModeChange(event.target.checked)}
             className="h-4 w-4 accent-primary"
           />
           开启

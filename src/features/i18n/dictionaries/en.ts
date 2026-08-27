@@ -144,7 +144,7 @@ export const en = {
     heroTitlePre: 'Clone it. Ship on Cloudflare by ', heroTitleHl: 'tonight', heroTitlePost: '.',
     heroSubtitle:
       'A Cloudflare-native SaaS starter. Auth, billing and an admin console — all wired up and production-ready out of the box.',
-    heroCtaPrimary: 'Get started', gitClone: 'git clone',
+    heroCtaPrimary: 'Get started', navCtaLoggedOut: 'Sign up / Log in', navCtaLoggedIn: 'Account', gitClone: 'git clone',
     builtOn: '// built on',
     featuresKicker: '// why edge-native',
     feature1Title: 'Runs on Workers',

@@ -13,6 +13,7 @@ import { Card } from '@/components/ui/card'
 import { LogOut, Trash2 } from 'lucide-react'
 import { ManageSubscription } from '@/features/billing/components/manage-subscription'
 import { AvatarUploader } from '@/features/storage/components/avatar-uploader'
+import { use666Mode } from '@/features/admin/mode-666'
 
 export const Route = createFileRoute('/{-$locale}/app/account')({
   head: () => ({ meta: [{ name: 'robots', content: 'noindex' }] }),
@@ -51,6 +52,7 @@ function AccountPage() {
   const { user, ent } = Route.useLoaderData()
   const { t } = useTranslation()
   const router = useRouter()
+  const { enabled: mode666 } = use666Mode()
 
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -129,9 +131,11 @@ function AccountPage() {
           </form>
         </Section>
 
-        <Section title={t('billing.currentPlan')}>
-          <ManageSubscription plan={ent.plan} status={ent.status} currentPeriodEnd={ent.currentPeriodEnd} lifetime={ent.lifetime} />
-        </Section>
+        {mode666 && (
+          <Section title={t('billing.currentPlan')}>
+            <ManageSubscription plan={ent.plan} status={ent.status} currentPeriodEnd={ent.currentPeriodEnd} lifetime={ent.lifetime} />
+          </Section>
+        )}
 
         {user.role === 'admin' && (
           <Section title={t('admin.title')}>
@@ -147,22 +151,24 @@ function AccountPage() {
           </Button>
         </Section>
 
-        <Section title={t('auth.deleteAccount')} danger>
-          <form onSubmit={handleDelete} className="grid gap-4">
-            <p className="m-0 text-[13.5px] text-fg-2">{t('auth.deleteConfirm')}</p>
-            <div className="field">
-              <Label htmlFor="deletePassword">{t('auth.password')}</Label>
-              <Input id="deletePassword" type="password" value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)} required autoComplete="current-password" />
-            </div>
-            {deleteError && <p className="text-sm text-destructive">{deleteError}</p>}
-            <div>
-              <Button type="submit" disabled={deleteBusy} style={{ background: 'var(--destructive)', color: '#fff' }}>
-                <Trash2 size={16} /> {t('auth.deleteAccount')}
-              </Button>
-            </div>
-          </form>
-        </Section>
+        {mode666 && (
+          <Section title={t('auth.deleteAccount')} danger>
+            <form onSubmit={handleDelete} className="grid gap-4">
+              <p className="m-0 text-[13.5px] text-fg-2">{t('auth.deleteConfirm')}</p>
+              <div className="field">
+                <Label htmlFor="deletePassword">{t('auth.password')}</Label>
+                <Input id="deletePassword" type="password" value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)} required autoComplete="current-password" />
+              </div>
+              {deleteError && <p className="text-sm text-destructive">{deleteError}</p>}
+              <div>
+                <Button type="submit" disabled={deleteBusy} style={{ background: 'var(--destructive)', color: '#fff' }}>
+                  <Trash2 size={16} /> {t('auth.deleteAccount')}
+                </Button>
+              </div>
+            </form>
+          </Section>
+        )}
       </div>
     </AppShell>
   )

@@ -130,7 +130,7 @@ export const zh: Dict = {
     heroTitlePre: '克隆即用，今晚就部署到 ', heroTitleHl: 'Cloudflare', heroTitlePost: '',
     heroSubtitle:
       '一套 Cloudflare 原生的 SaaS 起步模板。认证、计费与后台管理已全部接好，开箱即用。',
-    heroCtaPrimary: '开始使用', gitClone: 'git clone',
+    heroCtaPrimary: '开始使用', navCtaLoggedOut: '注册/登录', navCtaLoggedIn: '个人中心', gitClone: 'git clone',
     builtOn: '// 技术栈',
     featuresKicker: '// 为什么边缘原生',
     feature1Title: '运行于 Workers',

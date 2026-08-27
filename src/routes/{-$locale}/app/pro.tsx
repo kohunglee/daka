@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { Sparkles, Lock } from 'lucide-react'
 import { getEntitlement } from '@/features/billing/middleware'
 import { hasProAccess } from '@/features/billing/entitlement'
@@ -8,6 +9,7 @@ import { AppShell } from '@/components/app/app-shell'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { use666Mode } from '@/features/admin/mode-666'
 
 /* Soft-gated Pro area: free users may enter and get a blurred preview with an
  * upgrade CTA (a real "peek" converts better than a redirect). For routes that
@@ -36,6 +38,15 @@ function ProContent({ text }: { text: string }) {
 function Pro() {
   const { user, ent } = Route.useLoaderData()
   const { t } = useTranslation()
+  const router = useRouter()
+  const { enabled: mode666, ready } = use666Mode()
+
+  useEffect(() => {
+    if (ready && !mode666) void router.navigate({ to: '/{-$locale}/app', replace: true })
+  }, [mode666, ready, router])
+
+  if (!ready || !mode666) return null
+
   // feature gate: paid Pro OR admin; the topbar badge stays on ent.plan (billing truth)
   const unlocked = hasProAccess(user.role, ent)
   return (

@@ -427,7 +427,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
             <div className="overflow-auto rounded-md border border-border bg-background p-2">
               <canvas
                 ref={canvasRef}
-                className={`${imageReady ? 'mx-auto block' : 'hidden'} h-auto w-full touch-none`}
+                className={`${imageReady ? 'mx-auto block cursor-cell' : 'hidden'} h-auto w-full touch-none`}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
@@ -538,7 +538,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
         </div>
 
         <div className="grid gap-2 pt-1">
-          <Button type="submit" size="lg" disabled={isSubmitting} className="w-full sm:w-fit">
+          <Button type="submit" size="lg" disabled={isSubmitting} className="mx-auto w-full max-w-[240px]">
             {isSubmitting ? '正在保存……' : '提交'}
           </Button>
           {submitMessage && <p className="m-0 text-sm text-success" role="status">{submitMessage}</p>}
