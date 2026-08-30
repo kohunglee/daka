@@ -50,6 +50,26 @@ const BACKLINK_OPTIONS: ReadonlyArray<{ value: CheckinOption; label: string }> =
   { value: 'D', label: BACKLINK_OPTION_LABELS.D },
 ]
 
+/** 字段标题后的轻量说明提示：鼠标悬浮或键盘聚焦问号时显示，不干扰表单填写。 */
+function FieldHint({ text }: { text: string }) {
+  return (
+    <span className="group relative inline-flex" tabIndex={0} aria-label={`说明：${text}`}>
+      <span
+        aria-hidden="true"
+        className="inline-flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border border-fg-3/25 text-[11px] font-semibold leading-none text-fg-3 transition-colors group-hover:border-fg-3/35 group-focus-within:border-fg-3/35"
+      >
+        ?
+      </span>
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-0 z-30 mb-2 w-max max-w-[280px] rounded-md border border-border bg-bg-alt px-3 py-2 text-xs font-normal leading-5 text-fg-2 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+      >
+        {text}
+      </span>
+    </span>
+  )
+}
+
 /** 编辑画布最长边，和本轮确定的前端压缩策略保持一致。 */
 const MAX_EDITOR_WIDTH = MAX_CHECKIN_IMAGE_DIMENSION
 
@@ -370,7 +390,21 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
       <form onSubmit={handleSubmit} onPaste={handlePaste} className="grid gap-5">
         {/* 1. GSC 截图：选择后先在浏览器内打码，图片不会单独上传 */}
         <div className="grid gap-1.5">
-          <Label htmlFor="daily-gsc-screenshot">1. 今天主攻的站 GSC 截图 </Label>
+          <div className="flex items-center gap-1.5">
+            <Label htmlFor="daily-gsc-screenshot">
+              1. 今天主攻的站{' '}
+              <a
+                href="https://search.google.com/search-console"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#26384d] underline decoration-[#26384d]/20 underline-offset-2 transition-colors hover:text-[#1d5b8f] dark:text-[#c6d4e4] dark:decoration-[#c6d4e4]/25 dark:hover:text-[#a9c9e8]"
+              >
+                GSC
+              </a>{' '}
+              截图
+            </Label>
+            <FieldHint text="用于证明今天主要工作的站点数据，选择图片后可以先用画笔遮挡敏感信息。" />
+          </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <input
               ref={fileInputRef}
@@ -439,7 +473,10 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
 
         {/* 2. 出海时长：页面展示四档中文选项，提交时使用 A/B/C/D 枚举。 */}
         <div className="grid gap-1.5">
-          <Label>2. 今天出海了几小时？ </Label>
+          <div className="flex items-center gap-1.5">
+            <Label>2. 今天出海了几小时？</Label>
+            <FieldHint text="按今天实际投入出海工作的时间选择，不需要精确到分钟。" />
+          </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" role="radiogroup" aria-label="今天出海了几个小时">
             {HOURS_OPTIONS.map((option) => (
               <label key={option.value} className={`flex cursor-pointer items-center justify-center rounded-md border px-3 py-2.5 text-sm font-semibold transition-colors ${hours === option.value ? 'border-primary bg-soft text-primary' : 'border-border bg-background text-foreground hover:bg-bg-alt'}`}>
@@ -460,7 +497,10 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
 
         {/* 3. 外链数量：页面展示四档中文选项，提交时使用 A/B/C/D 枚举。 */}
         <div className="grid gap-1.5">
-          <Label>3. 今天添加了几外链？ </Label>
+          <div className="flex items-center gap-1.5">
+            <Label>3. 今天添加了几外链？</Label>
+            <FieldHint text="填写今天新增外链数量，按实际情况选择即可。" />
+          </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" role="radiogroup" aria-label="今天添加了几个外链">
             {BACKLINK_OPTIONS.map((option) => (
               <label key={option.value} className={`flex cursor-pointer items-center justify-center rounded-md border px-3 py-2.5 text-sm font-semibold transition-colors ${backlinks === option.value ? 'border-primary bg-soft text-primary' : 'border-border bg-background text-foreground hover:bg-bg-alt'}`}>
@@ -482,7 +522,10 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
         {/* 4. 工作质量：1 到 10 的十档滑杆，并实时显示当前分数 */}
         <div className="grid gap-2">
           <div className="flex items-center justify-between gap-3">
-            <Label htmlFor="daily-quality">4. 今天的上站工作质量，自评几分？ </Label>
+            <div className="flex items-center gap-1.5">
+              <Label htmlFor="daily-quality">4. 今天的上站工作质量，自评几分？</Label>
+              <FieldHint text="根据今天上站工作的整体完成度、质量和效果进行自评。" />
+            </div>
             <span className="min-w-12 rounded-md bg-soft px-2 py-1 text-center font-mono text-lg font-semibold text-primary">
               {quality}/10
             </span>
@@ -510,7 +553,10 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
         {/* 5. 工作日志：至少 20 个汉字，最多 2000 个字符；达到上限时才提醒。 */}
         <div className="grid gap-1.5">
           <div className="flex items-center justify-between gap-3">
-            <Label htmlFor="daily-log">5. 今天的工作日志 </Label>
+            <div className="flex items-center gap-1.5">
+              <Label htmlFor="daily-log">5. 今天的工作日志</Label>
+              <FieldHint text="记录今天做了什么、最大问题是什么，以及明天决定做什么。" />
+            </div>
             <div className="flex items-center gap-3">
               <span
                 className={`font-mono text-sm font-semibold ${logChineseCount >= 20 ? 'text-black' : 'text-fg-3'}`}
