@@ -22,7 +22,7 @@ export function Logo({ size = 18, compact = false, showCheckinLabel = true }: { 
       </span>
       {!compact && (
         <span>
-          每天出海一小时{showCheckinLabel && <span className="font-medium opacity-[0.58]">（打卡）</span>}
+          每天出海一小时{showCheckinLabel && <span className="font-medium opacity-[0.58]">（打卡润）</span>}
         </span>
       )}
     </span>

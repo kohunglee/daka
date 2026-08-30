@@ -1,4 +1,4 @@
-import { desc, eq } from 'drizzle-orm'
+import { desc, eq, sql } from 'drizzle-orm'
 import type { DB } from '@/db/client'
 import { blogPost, type BlogPost } from './blog.schema'
 
@@ -12,11 +12,21 @@ export interface BlogPostInput {
   content: string
 }
 
-/** 把管理表单的 YYYY-MM-DD 转成稳定的 UTC 日期，避免服务器时区造成日期漂移。 */
+/** 公开列表额外携带 SQLite 的稳定行号，用于生成短数字文章地址。 */
+export type PublicBlogPost = BlogPost & { publicId: number }
+
+/** 将旧版日期或新版 ISO 时间转成 Date，统一保存为毫秒时间戳。 */
 function parsePublishedAt(value: string): Date {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error('invalid published date')
-  const date = new Date(`${value}T00:00:00.000Z`)
+  const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value)
+  const isIsoDateTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)
+  if (!isDateOnly && !isIsoDateTime) throw new Error('invalid published date')
+
+  // 旧文章仍按 UTC 零点兼容；新表单提交 ISO 字符串，保留用户选择的分钟。
+  const date = new Date(isDateOnly ? `${value}T00:00:00.000Z` : value)
   if (Number.isNaN(date.getTime())) throw new Error('invalid published date')
+
+  if (!isDateOnly) return date
+
   const [yearText, monthText, dayText] = value.split('-')
   if (
     date.getUTCFullYear() !== Number(yearText)
@@ -35,9 +45,32 @@ function normalizeInput(input: BlogPostInput): { title: string; publishedAt: Dat
   return { title, publishedAt: parsePublishedAt(input.publishedAt), content }
 }
 
-/** 公开博客列表：不需要登录，按文章时间从新到旧返回。 */
-export function listBlogPosts(db: DB): Promise<BlogPost[]> {
-  return db.select().from(blogPost).orderBy(desc(blogPost.publishedAt))
+/** 公开博客列表：不需要登录，按最新更新时间从新到旧返回。 */
+export function listBlogPosts(db: DB): Promise<PublicBlogPost[]> {
+  return db.select({
+    id: blogPost.id,
+    title: blogPost.title,
+    publishedAt: blogPost.publishedAt,
+    content: blogPost.content,
+    createdAt: blogPost.createdAt,
+    updatedAt: blogPost.updatedAt,
+    publicId: sql<number>`rowid`,
+  }).from(blogPost).orderBy(desc(blogPost.updatedAt))
+}
+
+/** 按文章 ID 读取公开文章详情，找不到时返回空值交给页面展示提示。 */
+export async function getBlogPost(db: DB, id: string): Promise<BlogPost | null> {
+  const [post] = await db.select().from(blogPost).where(eq(blogPost.id, id)).limit(1)
+  return post ?? null
+}
+
+/** 按短数字地址读取文章；超过 8 位或不是正整数的地址直接视为不存在。 */
+export async function getBlogPostByPublicId(db: DB, value: string): Promise<BlogPost | null> {
+  if (!/^\d{1,8}$/.test(value)) return null
+  const publicId = Number(value)
+  if (!Number.isSafeInteger(publicId) || publicId < 1) return null
+  const [post] = await db.select().from(blogPost).where(eq(sql`rowid`, publicId)).limit(1)
+  return post ?? null
 }
 
 /** 管理员新增文章，并记录创建/更新时间供后续扩展审计使用。 */

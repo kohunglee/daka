@@ -33,10 +33,13 @@ export function SiteNav({ theme, loggedIn }: { theme: 'light' | 'dark'; loggedIn
 
         {mode666 && (
           <div className="pointer-events-none absolute left-1/2 top-1/2 max-w-[45%] -translate-x-1/2 -translate-y-1/2 truncate rounded-full border border-destructive/30 bg-destructive/10 px-3 py-1 text-xs font-semibold text-destructive sm:text-sm">
-            巨大管理员模式
+            666模式
           </div>
         )}
 
+        <Link to="/{-$locale}/blog" className="px-2 py-1 text-sm text-fg-2 transition-colors hover:text-foreground">
+          博客
+        </Link>
         <div className="flex items-center gap-1">
           <ThemeToggle theme={theme} />
         </div>

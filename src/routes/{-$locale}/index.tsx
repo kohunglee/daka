@@ -32,8 +32,9 @@ function Home() {
   const { theme, user } = rootRoute.useLoaderData()
   const loggedIn = !!user
 
+  // 使用动态视口高度：短页面让页足贴近底部，长页面仍由正文自然撑开。
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-[100dvh] flex-col bg-background text-foreground">
       <SiteNav theme={theme} loggedIn={loggedIn} />
       {/* 首页正文：打卡系统 MVP 的全年日历占位 */}
       <main className="flex-1" aria-label="Main content">

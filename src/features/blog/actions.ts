@@ -2,12 +2,22 @@ import { createServerFn } from '@tanstack/react-start'
 import { env } from '@/lib/env'
 import { createDb } from '@/db/client'
 import { requireAdminSession } from '@/features/admin-clear/admin-clear.auth.server'
-import { createBlogPost, deleteBlogPost, listBlogPosts, updateBlogPost, type BlogPostInput } from './blog.server'
+import { createBlogPost, deleteBlogPost, getBlogPost, getBlogPostByPublicId, listBlogPosts, updateBlogPost, type BlogPostInput } from './blog.server'
 
 /** 公开读取入口：博客内容可直接用于 /blog 的服务端 loader。 */
 export const getBlogPostsFn = createServerFn({ method: 'GET' }).handler(async () => {
   return listBlogPosts(createDb(env.DB))
 })
+
+/** 公开读取单篇文章，详情页只根据文章 ID 返回对应内容。 */
+export const getBlogPostFn = createServerFn({ method: 'GET' })
+  .validator((data: { id: string }) => ({ id: typeof data?.id === 'string' ? data.id : '' }))
+  .handler(async ({ data }) => getBlogPost(createDb(env.DB), data.id))
+
+/** 公开读取短数字文章地址，例如 /blog/1.html。 */
+export const getBlogPostByPublicIdFn = createServerFn({ method: 'GET' })
+  .validator((data: { publicId: string }) => ({ publicId: typeof data?.publicId === 'string' ? data.publicId : '' }))
+  .handler(async ({ data }) => getBlogPostByPublicId(createDb(env.DB), data.publicId))
 
 /** 管理后台读取入口：即使直接访问管理路由，也必须通过真实管理员校验。 */
 export const getAdminBlogPostsFn = createServerFn({ method: 'GET' }).handler(async () => {

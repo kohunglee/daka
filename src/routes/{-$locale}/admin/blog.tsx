@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { FileText, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { use666Mode } from '@/features/admin/mode-666'
@@ -14,6 +14,10 @@ import { Label } from '@/components/ui/label'
 import { fmtDate } from '@/lib/format-date'
 
 export const Route = createFileRoute('/{-$locale}/admin/blog')({
+  validateSearch: (search: Record<string, unknown>): { edit?: string } => {
+    const edit = typeof search.edit === 'string' && search.edit.length > 0 ? search.edit : undefined
+    return edit ? { edit } : {}
+  },
   loader: () => getAdminBlogPostsFn(),
   component: BlogAdmin,
 })
@@ -24,28 +28,53 @@ interface BlogFormState {
   content: string
 }
 
-/** 管理员表单初始值：日期使用浏览器当前 UTC 日期，避免空表单无法直接提交。 */
-function emptyForm(): BlogFormState {
-  return { title: '', publishedAt: new Date().toISOString().slice(0, 10), content: '' }
+/** 把 Date 转成 datetime-local 控件需要的本地时间字符串，精确到分钟。 */
+function formatDateTimeLocal(date: Date): string {
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
-/** 将数据库文章转换成 HTML 表单所需的日期字符串。 */
+/** 管理员表单初始值：使用浏览器当前本地时间，便于直接发布定时文章。 */
+function emptyForm(): BlogFormState {
+  return { title: '', publishedAt: formatDateTimeLocal(new Date()), content: '' }
+}
+
+/** 将数据库文章转换成 datetime-local 控件所需的本地时间字符串。 */
 function formFromPost(post: BlogPost): BlogFormState {
   return {
     title: post.title,
-    publishedAt: fmtDate(post.publishedAt),
+    publishedAt: formatDateTimeLocal(post.publishedAt),
     content: post.content,
   }
+}
+
+/** 将不带时区的浏览器输入转换为 ISO 时间，再交给服务端统一解析。 */
+function serializeForm(form: BlogFormState): BlogFormState {
+  const date = new Date(form.publishedAt)
+  if (Number.isNaN(date.getTime())) throw new Error('invalid published date')
+  return { ...form, publishedAt: date.toISOString() }
 }
 
 /** 管理员博客维护页：只有真实管理员且开启巨大管理员模式时显示可写控件。 */
 function BlogAdmin() {
   const posts = Route.useLoaderData()
+  const { edit } = Route.useSearch()
   const router = useRouter()
   const { enabled: mode666, ready: modeReady } = use666Mode()
   const [form, setForm] = useState<BlogFormState>(() => emptyForm())
   const [editingId, setEditingId] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const initializedEdit = useRef<string | null>(null)
+
+  /** 从公开博客的编辑链接进入时，自动把对应文章载入表单。 */
+  useEffect(() => {
+    if (!edit || initializedEdit.current === edit) return
+    const post = posts.find((item) => item.id === edit)
+    if (!post) return
+    initializedEdit.current = edit
+    setEditingId(post.id)
+    setForm(formFromPost(post))
+  }, [edit, posts])
 
   function resetForm() {
     setForm(emptyForm())
@@ -58,11 +87,12 @@ function BlogAdmin() {
     if (busy || !modeReady || !mode666) return
     setBusy(true)
     try {
+      const data = serializeForm(form)
       if (editingId) {
-        await updateBlogPostFn({ data: { id: editingId, ...form } })
+        await updateBlogPostFn({ data: { id: editingId, ...data } })
         toast.success('文章已更新')
       } else {
-        await createBlogPostFn({ data: form })
+        await createBlogPostFn({ data })
         toast.success('文章已发布')
       }
       resetForm()
@@ -125,9 +155,12 @@ function BlogAdmin() {
               <Label htmlFor="blog-title">标题</Label>
               <Input id="blog-title" value={form.title} maxLength={200} onChange={(event) => setForm({ ...form, title: event.target.value })} required />
             </div>
-            <div className="grid gap-1.5 sm:max-w-xs">
+            <div className="grid gap-1.5 sm:max-w-sm">
               <Label htmlFor="blog-date">文章日期</Label>
-              <Input id="blog-date" type="date" value={form.publishedAt} onChange={(event) => setForm({ ...form, publishedAt: event.target.value })} required />
+              <div className="flex items-center gap-2">
+                <Input id="blog-date" className="min-w-0 flex-1" type="datetime-local" step="60" value={form.publishedAt} onChange={(event) => setForm({ ...form, publishedAt: event.target.value })} required />
+                <Button type="button" variant="outline" onClick={() => setForm({ ...form, publishedAt: formatDateTimeLocal(new Date()) })} disabled={busy}>此时</Button>
+              </div>
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="blog-content">内容</Label>

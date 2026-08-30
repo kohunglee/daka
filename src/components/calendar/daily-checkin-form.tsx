@@ -328,7 +328,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
     }
 
     setIsSubmitting(true)
-    setSubmitMessage('正在压缩截图并保存今天的打卡……')
+    setSubmitMessage('上传内容中……')
     const editedImage = await compressEditedCanvas(canvas)
     if (!editedImage) {
       setIsSubmitting(false)

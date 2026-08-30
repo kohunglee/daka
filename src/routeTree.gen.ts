@@ -22,15 +22,17 @@ import { Route as Char123LocaleChar125SponsorRouteImport } from './routes/{-$loc
 import { Route as Char123LocaleChar125PrivacyRouteImport } from './routes/{-$locale}/privacy'
 import { Route as Char123LocaleChar125PricingRouteImport } from './routes/{-$locale}/pricing'
 import { Route as Char123LocaleChar125ChangelogRouteImport } from './routes/{-$locale}/changelog'
-import { Route as Char123LocaleChar125BlogRouteImport } from './routes/{-$locale}/blog'
 import { Route as DocsSplatRouteImport } from './routes/docs/$'
 import { Route as DocsMdSplatRouteImport } from './routes/docs-md/$'
 import { Route as ApiSearchRouteImport } from './routes/api/search'
 import { Route as AdminWaitlistDotcsvRouteImport } from './routes/admin/waitlist[.]csv'
 import { Route as AdminSponsorsDotcsvRouteImport } from './routes/admin/sponsors[.]csv'
+import { Route as Char123LocaleChar125BlogRouteRouteImport } from './routes/{-$locale}/blog/route'
 import { Route as Char123LocaleChar125AdminRouteRouteImport } from './routes/{-$locale}/admin/route'
+import { Route as Char123LocaleChar125BlogIndexRouteImport } from './routes/{-$locale}/blog/index'
 import { Route as Char123LocaleChar125AppIndexRouteImport } from './routes/{-$locale}/app/index'
 import { Route as Char123LocaleChar125AdminIndexRouteImport } from './routes/{-$locale}/admin/index'
+import { Route as Char123LocaleChar125BlogPostIdRouteImport } from './routes/{-$locale}/blog/$postId'
 import { Route as Char123LocaleChar125AppProRouteImport } from './routes/{-$locale}/app/pro'
 import { Route as Char123LocaleChar125AppFeedbackRouteImport } from './routes/{-$locale}/app/feedback'
 import { Route as Char123LocaleChar125AppAccountRouteImport } from './routes/{-$locale}/app/account'
@@ -123,12 +125,6 @@ const Char123LocaleChar125ChangelogRoute =
     path: '/changelog',
     getParentRoute: () => Char123LocaleChar125RouteRoute,
   } as any)
-const Char123LocaleChar125BlogRoute =
-  Char123LocaleChar125BlogRouteImport.update({
-    id: '/blog',
-    path: '/blog',
-    getParentRoute: () => Char123LocaleChar125RouteRoute,
-  } as any)
 const DocsSplatRoute = DocsSplatRouteImport.update({
   id: '/docs/$',
   path: '/docs/$',
@@ -154,11 +150,23 @@ const AdminSponsorsDotcsvRoute = AdminSponsorsDotcsvRouteImport.update({
   path: '/admin/sponsors.csv',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char123LocaleChar125BlogRouteRoute =
+  Char123LocaleChar125BlogRouteRouteImport.update({
+    id: '/blog',
+    path: '/blog',
+    getParentRoute: () => Char123LocaleChar125RouteRoute,
+  } as any)
 const Char123LocaleChar125AdminRouteRoute =
   Char123LocaleChar125AdminRouteRouteImport.update({
     id: '/admin',
     path: '/admin',
     getParentRoute: () => Char123LocaleChar125RouteRoute,
+  } as any)
+const Char123LocaleChar125BlogIndexRoute =
+  Char123LocaleChar125BlogIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => Char123LocaleChar125BlogRouteRoute,
   } as any)
 const Char123LocaleChar125AppIndexRoute =
   Char123LocaleChar125AppIndexRouteImport.update({
@@ -171,6 +179,12 @@ const Char123LocaleChar125AdminIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => Char123LocaleChar125AdminRouteRoute,
+  } as any)
+const Char123LocaleChar125BlogPostIdRoute =
+  Char123LocaleChar125BlogPostIdRouteImport.update({
+    id: '/$postId',
+    path: '/$postId',
+    getParentRoute: () => Char123LocaleChar125BlogRouteRoute,
   } as any)
 const Char123LocaleChar125AppProRoute =
   Char123LocaleChar125AppProRouteImport.update({
@@ -285,12 +299,12 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/{-$locale}/admin': typeof Char123LocaleChar125AdminRouteRouteWithChildren
+  '/{-$locale}/blog': typeof Char123LocaleChar125BlogRouteRouteWithChildren
   '/admin/sponsors.csv': typeof AdminSponsorsDotcsvRoute
   '/admin/waitlist.csv': typeof AdminWaitlistDotcsvRoute
   '/api/search': typeof ApiSearchRoute
   '/docs-md/$': typeof DocsMdSplatRoute
   '/docs/$': typeof DocsSplatRoute
-  '/{-$locale}/blog': typeof Char123LocaleChar125BlogRoute
   '/{-$locale}/changelog': typeof Char123LocaleChar125ChangelogRoute
   '/{-$locale}/pricing': typeof Char123LocaleChar125PricingRoute
   '/{-$locale}/privacy': typeof Char123LocaleChar125PrivacyRoute
@@ -314,8 +328,10 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/app/account': typeof Char123LocaleChar125AppAccountRoute
   '/{-$locale}/app/feedback': typeof Char123LocaleChar125AppFeedbackRoute
   '/{-$locale}/app/pro': typeof Char123LocaleChar125AppProRoute
+  '/{-$locale}/blog/$postId': typeof Char123LocaleChar125BlogPostIdRoute
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/app/': typeof Char123LocaleChar125AppIndexRoute
+  '/{-$locale}/blog/': typeof Char123LocaleChar125BlogIndexRoute
   '/api/checkins/$userId/$date': typeof ApiCheckinsUserIdDateRoute
   '/{-$locale}/checkin/$userId/$date': typeof Char123LocaleChar125CheckinUserIdDateRoute
 }
@@ -330,7 +346,6 @@ export interface FileRoutesByTo {
   '/api/search': typeof ApiSearchRoute
   '/docs-md/$': typeof DocsMdSplatRoute
   '/docs/$': typeof DocsSplatRoute
-  '/{-$locale}/blog': typeof Char123LocaleChar125BlogRoute
   '/{-$locale}/changelog': typeof Char123LocaleChar125ChangelogRoute
   '/{-$locale}/pricing': typeof Char123LocaleChar125PricingRoute
   '/{-$locale}/privacy': typeof Char123LocaleChar125PrivacyRoute
@@ -354,8 +369,10 @@ export interface FileRoutesByTo {
   '/{-$locale}/app/account': typeof Char123LocaleChar125AppAccountRoute
   '/{-$locale}/app/feedback': typeof Char123LocaleChar125AppFeedbackRoute
   '/{-$locale}/app/pro': typeof Char123LocaleChar125AppProRoute
+  '/{-$locale}/blog/$postId': typeof Char123LocaleChar125BlogPostIdRoute
   '/{-$locale}/admin': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/app': typeof Char123LocaleChar125AppIndexRoute
+  '/{-$locale}/blog': typeof Char123LocaleChar125BlogIndexRoute
   '/api/checkins/$userId/$date': typeof ApiCheckinsUserIdDateRoute
   '/{-$locale}/checkin/$userId/$date': typeof Char123LocaleChar125CheckinUserIdDateRoute
 }
@@ -368,12 +385,12 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/{-$locale}/admin': typeof Char123LocaleChar125AdminRouteRouteWithChildren
+  '/{-$locale}/blog': typeof Char123LocaleChar125BlogRouteRouteWithChildren
   '/admin/sponsors.csv': typeof AdminSponsorsDotcsvRoute
   '/admin/waitlist.csv': typeof AdminWaitlistDotcsvRoute
   '/api/search': typeof ApiSearchRoute
   '/docs-md/$': typeof DocsMdSplatRoute
   '/docs/$': typeof DocsSplatRoute
-  '/{-$locale}/blog': typeof Char123LocaleChar125BlogRoute
   '/{-$locale}/changelog': typeof Char123LocaleChar125ChangelogRoute
   '/{-$locale}/pricing': typeof Char123LocaleChar125PricingRoute
   '/{-$locale}/privacy': typeof Char123LocaleChar125PrivacyRoute
@@ -397,8 +414,10 @@ export interface FileRoutesById {
   '/{-$locale}/app/account': typeof Char123LocaleChar125AppAccountRoute
   '/{-$locale}/app/feedback': typeof Char123LocaleChar125AppFeedbackRoute
   '/{-$locale}/app/pro': typeof Char123LocaleChar125AppProRoute
+  '/{-$locale}/blog/$postId': typeof Char123LocaleChar125BlogPostIdRoute
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/app/': typeof Char123LocaleChar125AppIndexRoute
+  '/{-$locale}/blog/': typeof Char123LocaleChar125BlogIndexRoute
   '/api/checkins/$userId/$date': typeof ApiCheckinsUserIdDateRoute
   '/{-$locale}/checkin/$userId/$date': typeof Char123LocaleChar125CheckinUserIdDateRoute
 }
@@ -412,12 +431,12 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/{-$locale}/admin'
+    | '/{-$locale}/blog'
     | '/admin/sponsors.csv'
     | '/admin/waitlist.csv'
     | '/api/search'
     | '/docs-md/$'
     | '/docs/$'
-    | '/{-$locale}/blog'
     | '/{-$locale}/changelog'
     | '/{-$locale}/pricing'
     | '/{-$locale}/privacy'
@@ -441,8 +460,10 @@ export interface FileRouteTypes {
     | '/{-$locale}/app/account'
     | '/{-$locale}/app/feedback'
     | '/{-$locale}/app/pro'
+    | '/{-$locale}/blog/$postId'
     | '/{-$locale}/admin/'
     | '/{-$locale}/app/'
+    | '/{-$locale}/blog/'
     | '/api/checkins/$userId/$date'
     | '/{-$locale}/checkin/$userId/$date'
   fileRoutesByTo: FileRoutesByTo
@@ -457,7 +478,6 @@ export interface FileRouteTypes {
     | '/api/search'
     | '/docs-md/$'
     | '/docs/$'
-    | '/{-$locale}/blog'
     | '/{-$locale}/changelog'
     | '/{-$locale}/pricing'
     | '/{-$locale}/privacy'
@@ -481,8 +501,10 @@ export interface FileRouteTypes {
     | '/{-$locale}/app/account'
     | '/{-$locale}/app/feedback'
     | '/{-$locale}/app/pro'
+    | '/{-$locale}/blog/$postId'
     | '/{-$locale}/admin'
     | '/{-$locale}/app'
+    | '/{-$locale}/blog'
     | '/api/checkins/$userId/$date'
     | '/{-$locale}/checkin/$userId/$date'
   id:
@@ -494,12 +516,12 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/{-$locale}/admin'
+    | '/{-$locale}/blog'
     | '/admin/sponsors.csv'
     | '/admin/waitlist.csv'
     | '/api/search'
     | '/docs-md/$'
     | '/docs/$'
-    | '/{-$locale}/blog'
     | '/{-$locale}/changelog'
     | '/{-$locale}/pricing'
     | '/{-$locale}/privacy'
@@ -523,8 +545,10 @@ export interface FileRouteTypes {
     | '/{-$locale}/app/account'
     | '/{-$locale}/app/feedback'
     | '/{-$locale}/app/pro'
+    | '/{-$locale}/blog/$postId'
     | '/{-$locale}/admin/'
     | '/{-$locale}/app/'
+    | '/{-$locale}/blog/'
     | '/api/checkins/$userId/$date'
     | '/{-$locale}/checkin/$userId/$date'
   fileRoutesById: FileRoutesById
@@ -640,13 +664,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125ChangelogRouteImport
       parentRoute: typeof Char123LocaleChar125RouteRoute
     }
-    '/{-$locale}/blog': {
-      id: '/{-$locale}/blog'
-      path: '/blog'
-      fullPath: '/{-$locale}/blog'
-      preLoaderRoute: typeof Char123LocaleChar125BlogRouteImport
-      parentRoute: typeof Char123LocaleChar125RouteRoute
-    }
     '/docs/$': {
       id: '/docs/$'
       path: '/docs/$'
@@ -682,12 +699,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSponsorsDotcsvRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/{-$locale}/blog': {
+      id: '/{-$locale}/blog'
+      path: '/blog'
+      fullPath: '/{-$locale}/blog'
+      preLoaderRoute: typeof Char123LocaleChar125BlogRouteRouteImport
+      parentRoute: typeof Char123LocaleChar125RouteRoute
+    }
     '/{-$locale}/admin': {
       id: '/{-$locale}/admin'
       path: '/admin'
       fullPath: '/{-$locale}/admin'
       preLoaderRoute: typeof Char123LocaleChar125AdminRouteRouteImport
       parentRoute: typeof Char123LocaleChar125RouteRoute
+    }
+    '/{-$locale}/blog/': {
+      id: '/{-$locale}/blog/'
+      path: '/'
+      fullPath: '/{-$locale}/blog/'
+      preLoaderRoute: typeof Char123LocaleChar125BlogIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125BlogRouteRoute
     }
     '/{-$locale}/app/': {
       id: '/{-$locale}/app/'
@@ -702,6 +733,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/{-$locale}/admin/'
       preLoaderRoute: typeof Char123LocaleChar125AdminIndexRouteImport
       parentRoute: typeof Char123LocaleChar125AdminRouteRoute
+    }
+    '/{-$locale}/blog/$postId': {
+      id: '/{-$locale}/blog/$postId'
+      path: '/$postId'
+      fullPath: '/{-$locale}/blog/$postId'
+      preLoaderRoute: typeof Char123LocaleChar125BlogPostIdRouteImport
+      parentRoute: typeof Char123LocaleChar125BlogRouteRoute
     }
     '/{-$locale}/app/pro': {
       id: '/{-$locale}/app/pro'
@@ -859,9 +897,25 @@ const Char123LocaleChar125AdminRouteRouteWithChildren =
     Char123LocaleChar125AdminRouteRouteChildren,
   )
 
+interface Char123LocaleChar125BlogRouteRouteChildren {
+  Char123LocaleChar125BlogPostIdRoute: typeof Char123LocaleChar125BlogPostIdRoute
+  Char123LocaleChar125BlogIndexRoute: typeof Char123LocaleChar125BlogIndexRoute
+}
+
+const Char123LocaleChar125BlogRouteRouteChildren: Char123LocaleChar125BlogRouteRouteChildren =
+  {
+    Char123LocaleChar125BlogPostIdRoute: Char123LocaleChar125BlogPostIdRoute,
+    Char123LocaleChar125BlogIndexRoute: Char123LocaleChar125BlogIndexRoute,
+  }
+
+const Char123LocaleChar125BlogRouteRouteWithChildren =
+  Char123LocaleChar125BlogRouteRoute._addFileChildren(
+    Char123LocaleChar125BlogRouteRouteChildren,
+  )
+
 interface Char123LocaleChar125RouteRouteChildren {
   Char123LocaleChar125AdminRouteRoute: typeof Char123LocaleChar125AdminRouteRouteWithChildren
-  Char123LocaleChar125BlogRoute: typeof Char123LocaleChar125BlogRoute
+  Char123LocaleChar125BlogRouteRoute: typeof Char123LocaleChar125BlogRouteRouteWithChildren
   Char123LocaleChar125ChangelogRoute: typeof Char123LocaleChar125ChangelogRoute
   Char123LocaleChar125PricingRoute: typeof Char123LocaleChar125PricingRoute
   Char123LocaleChar125PrivacyRoute: typeof Char123LocaleChar125PrivacyRoute
@@ -885,7 +939,8 @@ const Char123LocaleChar125RouteRouteChildren: Char123LocaleChar125RouteRouteChil
   {
     Char123LocaleChar125AdminRouteRoute:
       Char123LocaleChar125AdminRouteRouteWithChildren,
-    Char123LocaleChar125BlogRoute: Char123LocaleChar125BlogRoute,
+    Char123LocaleChar125BlogRouteRoute:
+      Char123LocaleChar125BlogRouteRouteWithChildren,
     Char123LocaleChar125ChangelogRoute: Char123LocaleChar125ChangelogRoute,
     Char123LocaleChar125PricingRoute: Char123LocaleChar125PricingRoute,
     Char123LocaleChar125PrivacyRoute: Char123LocaleChar125PrivacyRoute,

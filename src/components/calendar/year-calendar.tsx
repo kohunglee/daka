@@ -65,7 +65,7 @@ function CheckinDetail({ record }: { record: CheckinRecordView }) {
           rel="noreferrer"
           className="inline-flex items-center gap-1.5 text-sm text-primary underline-offset-4 hover:underline"
         >
-          打开公开链接 <ExternalLink size={14} />
+          链接 <ExternalLink size={14} />
         </a>
       </div>
       <img src={record.imageUrl} alt={`${record.checkinDate} 的 GSC 截图`} className="mt-5 h-auto w-full rounded-lg border border-border" />
