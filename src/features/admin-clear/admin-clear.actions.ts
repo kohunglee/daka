@@ -9,6 +9,8 @@ import { env } from '@/lib/env'
 import { user } from '@/features/auth/auth.schema'
 import { dailyCheckin } from '@/features/checkin/checkin.schema'
 import { isValidCheckinDate } from '@/features/checkin/checkin.shared'
+import { clampPage } from '@/features/admin/params'
+import { getAdminUsers, type AdminUserRow, type AdminUsersParams } from '@/features/admin/getAdminUsers'
 import { hasAdminSession, loginAdmin, requireAdminSession } from './admin-clear.auth.server'
 
 /** 管理员搜索结果，只返回定位用户所需的公开字段。 */
@@ -44,6 +46,16 @@ export interface AdminClearRecordPage {
 }
 
 const ADMIN_RECORD_PAGE_SIZE = 50
+const ADMIN_USER_PAGE_SIZE = 50
+
+/** 注册用户管理列表，分页大小固定为 50，避免隐藏后台一次读取过多账号。 */
+export interface AdminUserPage {
+  rows: AdminUserRow[]
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+}
 
 /** 把数据库行转换成列表和预览共用的安全展示结构。 */
 function toAdminClearPreview(row: {
@@ -104,6 +116,31 @@ export const searchAdminClearUsersFn = createServerFn({ method: 'GET' })
       .where(or(like(user.id, `%${data.query}%`), like(user.name, `%${data.query}%`), like(user.email, `%${data.query}%`)))
       .orderBy(desc(user.createdAt))
       .limit(20)
+  })
+
+/** 隐藏 666 管理中心读取注册用户；与普通管理员列表共用查询实现，但权限改为隐藏管理员会话。 */
+export const listAdminUsersForHiddenFn = createServerFn({ method: 'GET' })
+  .validator((data: { q?: unknown; page?: unknown }) => ({
+    q: typeof data?.q === 'string' ? data.q.trim().slice(0, 200) : undefined,
+    page: clampPage(data?.page),
+  }))
+  .handler(async ({ data }): Promise<AdminUserPage> => {
+    await requireAdminSession()
+    const params: AdminUsersParams = {
+      page: data.page,
+      pageSize: ADMIN_USER_PAGE_SIZE,
+      sortBy: 'createdAt',
+      sortDir: 'desc',
+      ...(data.q ? { q: data.q } : {}),
+    }
+    const result = await getAdminUsers(createDb(env.DB), env.STRIPE_SECRET_KEY, params)
+    return {
+      rows: result.rows,
+      page: data.page,
+      pageSize: ADMIN_USER_PAGE_SIZE,
+      total: result.total,
+      totalPages: Math.max(1, Math.ceil(result.total / ADMIN_USER_PAGE_SIZE)),
+    }
   })
 
 /** 分页列出当前数据库里的全部打卡记录，默认按日期从新到旧排列。 */

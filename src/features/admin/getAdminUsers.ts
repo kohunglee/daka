@@ -1,6 +1,6 @@
 /**
  * Server-side admin user list: queries the user table directly with Drizzle
- * (search by email OR name, whitelisted sort, pagination) and left-joins each
+ * (search by email, name, or ID, whitelisted sort, pagination) and left-joins each
  * row's `subscription` (customerId/plan/status) + a Stripe dashboard URL.
  *
  * Deliberately NOT `auth.api.listUsers`: that endpoint re-checks the session's
@@ -53,6 +53,7 @@ export async function getAdminUsers(
     ? or(
         sql`${user.email} LIKE ${pattern} ESCAPE '!'`,
         sql`${user.name} LIKE ${pattern} ESCAPE '!'`,
+        sql`${user.id} LIKE ${pattern} ESCAPE '!'`,
       )
     : undefined
   const sortCol = SORT_COLUMNS[params.sortBy as keyof typeof SORT_COLUMNS] ?? user.createdAt

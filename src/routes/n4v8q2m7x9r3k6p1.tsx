@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AdminWorkspaceShell, type AdminWorkspacePage } from '@/features/admin-clear/components/admin-workspace-shell'
+import { AdminUsersPanel } from '@/features/admin-clear/components/admin-users-panel'
 import { BlogAdminPanel } from '@/features/blog/components/blog-admin-panel'
 import { getAdminBlogPostsFn } from '@/features/blog/actions'
 import type { BlogPost } from '@/features/blog/blog.schema'
@@ -28,7 +29,7 @@ import {
 
 export const Route = createFileRoute('/n4v8q2m7x9r3k6p1')({
   validateSearch: (search: Record<string, unknown>): { page: AdminWorkspacePage; edit?: string } => {
-    const page = search.page === 'blog' ? 'blog' : 'checkins'
+    const page = search.page === 'blog' ? 'blog' : search.page === 'users' ? 'users' : 'checkins'
     const edit = typeof search.edit === 'string' && search.edit.length > 0 ? search.edit : undefined
     return edit ? { page, edit } : { page }
   },
@@ -247,6 +248,8 @@ function AdminClearPanel({ page, editId }: { page: AdminWorkspacePage; editId?: 
           errorMessage={blogError}
           onRefresh={loadBlogPosts}
         />
+      ) : page === 'users' ? (
+        <AdminUsersPanel />
       ) : (
       <>
         <div className="mb-6">

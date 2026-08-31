@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { BookOpen, Home, ShieldCheck, Trash2 } from 'lucide-react'
+import { BookOpen, Home, ShieldCheck, Trash2, Users } from 'lucide-react'
 
 interface AdminWorkspaceShellProps {
   children: ReactNode
@@ -9,7 +9,7 @@ interface AdminWorkspaceShellProps {
 }
 
 /** 隐藏管理中心目前的页面标识，后续增加功能时继续扩展这里即可。 */
-export type AdminWorkspacePage = 'checkins' | 'blog'
+export type AdminWorkspacePage = 'checkins' | 'users' | 'blog'
 
 /**
  * 隐藏管理员后台的统一外壳。
@@ -19,6 +19,8 @@ export type AdminWorkspacePage = 'checkins' | 'blog'
  */
 export function AdminWorkspaceShell({ children, activePage, mode666, onMode666Change }: AdminWorkspaceShellProps) {
   const isCheckinsPage = activePage === 'checkins'
+  const isUsersPage = activePage === 'users'
+  const isBlogPage = activePage === 'blog'
 
   return (
     <main className="min-h-screen bg-bg-alt text-foreground">
@@ -49,11 +51,23 @@ export function AdminWorkspaceShell({ children, activePage, mode666, onMode666Ch
               <p className="mb-1 px-3 text-[11px] font-semibold tracking-wider text-fg-3">内容管理</p>
               <a
                 href="/n4v8q2m7x9r3k6p1?page=blog"
-                aria-current={!isCheckinsPage ? 'page' : undefined}
-                className={`flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm transition-colors hover:bg-bg-alt hover:text-foreground ${!isCheckinsPage ? 'bg-bg-alt font-semibold text-foreground' : 'text-fg-2'}`}
+                aria-current={isBlogPage ? 'page' : undefined}
+                className={`flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm transition-colors hover:bg-bg-alt hover:text-foreground ${isBlogPage ? 'bg-bg-alt font-semibold text-foreground' : 'text-fg-2'}`}
               >
                 <BookOpen size={17} className="shrink-0" />
                 博客管理
+              </a>
+            </div>
+
+            <div className="grid gap-1">
+              <p className="mb-1 px-3 text-[11px] font-semibold tracking-wider text-fg-3">用户管理</p>
+              <a
+                href="/n4v8q2m7x9r3k6p1?page=users"
+                aria-current={isUsersPage ? 'page' : undefined}
+                className={`flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm transition-colors hover:bg-bg-alt hover:text-foreground ${isUsersPage ? 'bg-bg-alt font-semibold text-foreground' : 'text-fg-2'}`}
+              >
+                <Users size={17} className="shrink-0" />
+                注册用户
               </a>
             </div>
           </nav>
@@ -78,7 +92,7 @@ export function AdminWorkspaceShell({ children, activePage, mode666, onMode666Ch
         <section className="min-w-0 flex-1">
           <header className="flex h-16 items-center justify-between border-b border-border bg-background px-5 md:px-8">
             <p className="m-0 text-sm font-semibold">管理功能</p>
-            <span className="text-xs text-fg-3">当前页面：{isCheckinsPage ? '打卡记录清理' : '博客管理'}</span>
+            <span className="text-xs text-fg-3">当前页面：{isCheckinsPage ? '打卡记录清理' : isUsersPage ? '注册用户' : '博客管理'}</span>
           </header>
           <div className="px-5 py-8 md:px-8 md:py-10">{children}</div>
         </section>
