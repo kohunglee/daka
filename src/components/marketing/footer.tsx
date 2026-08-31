@@ -10,7 +10,7 @@ export function Footer(_props?: { theme?: 'light' | 'dark' }) {
   const { t } = useTranslation()
 
   return (
-    <footer className="border-t border-border bg-bg-alt px-5 md:px-7 py-10">
+    <footer className="border-t border-border bg-background px-5 py-10 md:px-7">
       <div className="mx-auto flex w-full max-w-[1450px] flex-col gap-8 md:flex-row md:items-start md:justify-between">
         {/* 品牌说明：使用陛下指定的页足描述，和首页打卡目标保持一致。 */}
         <div className="max-w-md">

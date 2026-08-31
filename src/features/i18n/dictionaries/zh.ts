@@ -50,6 +50,11 @@ export const zh: Dict = {
     myRecordsHours: '出海小时', myRecordsBacklinks: '新增外链', myRecordsQuality: '工作质量',
     myRecordsLog: '工作日志', openImage: '在新窗口打开图片',
     recordsPageOf: '第 {page} / {total} 页', recordsPrevious: '上一页', recordsNext: '下一页',
+    logTemplate: '日志模板', logTemplateSub: '',
+    logTemplateIntro: '如果你的日志比较复杂，可以写一个样板，每天打卡时填空即可。（专门解决5个默认问题不够）',
+    logTemplateLabel: '我的日志模板', logTemplatePlaceholder: '例如：\n今天做了：\n最大的问题是：\n明天决定：',
+    logTemplateHint: '最多 2000 个字符；留空后，打卡日志将从空白开始。', logTemplateSave: '保存模板',
+    logTemplateSaved: '日志模板已保存', logTemplateSaveFailed: '模板保存失败，请稍后重试。',
   },
   storage: {
     avatar: '头像',

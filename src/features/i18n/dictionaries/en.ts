@@ -63,6 +63,11 @@ export const en = {
     myRecordsHours: 'Hours', myRecordsBacklinks: 'Backlinks', myRecordsQuality: 'Quality',
     myRecordsLog: 'Work log', openImage: 'Open image in a new window',
     recordsPageOf: 'Page {page} of {total}', recordsPrevious: 'Previous', recordsNext: 'Next',
+    logTemplate: 'Log template', logTemplateSub: 'Set the default content for your daily work log.',
+    logTemplateIntro: 'Whenever you open today’s check-in, this text is placed in the work log box. It is only a starting point and can be edited before submission; it never overwrites saved records.',
+    logTemplateLabel: 'My log template', logTemplatePlaceholder: 'For example:\nWhat I did today:\nBiggest problem:\nTomorrow I will:',
+    logTemplateHint: 'Up to 2,000 characters. Leave it blank to start each log empty.', logTemplateSave: 'Save template',
+    logTemplateSaved: 'Log template saved', logTemplateSaveFailed: 'Could not save the template. Please try again.',
   },
   storage: {
     avatar: 'Avatar',

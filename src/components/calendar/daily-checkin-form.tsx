@@ -5,6 +5,7 @@
  * 失败时不清空表单，方便陛下直接重试。
  */
 import {
+  useEffect,
   useRef,
   useState,
   type ChangeEvent,
@@ -18,6 +19,7 @@ import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { submitCheckinFn } from '@/features/checkin/actions'
+import { getMyCheckinLogTemplateFn } from '@/features/checkin/log-template.actions'
 import {
   BACKLINK_OPTION_LABELS,
   countChineseCharacters,
@@ -204,6 +206,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
   const [backlinks, setBacklinks] = useState<CheckinOption | ''>('')
   const [quality, setQuality] = useState(5)
   const [log, setLog] = useState('')
+  const logEditedRef = useRef(false)
   const [submitMessage, setSubmitMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -211,6 +214,19 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
   const sourceCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const drawingRef = useRef(false)
   const lastPointRef = useRef<{ x: number; y: number } | null>(null)
+
+  /** 首次打开打卡表单时读取个人模板；用户已开始输入后不再覆盖手工内容。 */
+  useEffect(() => {
+    let cancelled = false
+    void getMyCheckinLogTemplateFn()
+      .then((template) => {
+        if (!cancelled && !logEditedRef.current && template) setLog(template)
+      })
+      .catch(() => {
+        // 模板读取失败不影响正常打卡，用户仍可从空白日志开始填写。
+      })
+    return () => { cancelled = true }
+  }, [])
 
   /** 统一处理选择或粘贴进来的图片，并把图片文件同步到原生 file input。 */
   function handleImageFile(file: File) {
@@ -605,6 +621,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
             rows={7}
             value={log}
             onChange={(event) => {
+              logEditedRef.current = true
               setLog(event.target.value)
               setSubmitMessage(event.target.value.length >= 2000 ? '工作日志已达到 2000 字符上限。' : null)
             }}

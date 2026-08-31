@@ -35,6 +35,7 @@ import { Route as Char123LocaleChar125AdminIndexRouteImport } from './routes/{-$
 import { Route as Char123LocaleChar125BlogPostIdRouteImport } from './routes/{-$locale}/blog/$postId'
 import { Route as Char123LocaleChar125AppRecordsRouteImport } from './routes/{-$locale}/app/records'
 import { Route as Char123LocaleChar125AppProRouteImport } from './routes/{-$locale}/app/pro'
+import { Route as Char123LocaleChar125AppLogTemplateRouteImport } from './routes/{-$locale}/app/log-template'
 import { Route as Char123LocaleChar125AppFeedbackRouteImport } from './routes/{-$locale}/app/feedback'
 import { Route as Char123LocaleChar125AppAccountRouteImport } from './routes/{-$locale}/app/account'
 import { Route as Char123LocaleChar125AdminWaitlistRouteImport } from './routes/{-$locale}/admin/waitlist'
@@ -199,6 +200,12 @@ const Char123LocaleChar125AppProRoute =
     path: '/app/pro',
     getParentRoute: () => Char123LocaleChar125RouteRoute,
   } as any)
+const Char123LocaleChar125AppLogTemplateRoute =
+  Char123LocaleChar125AppLogTemplateRouteImport.update({
+    id: '/app/log-template',
+    path: '/app/log-template',
+    getParentRoute: () => Char123LocaleChar125RouteRoute,
+  } as any)
 const Char123LocaleChar125AppFeedbackRoute =
   Char123LocaleChar125AppFeedbackRouteImport.update({
     id: '/app/feedback',
@@ -334,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/admin/waitlist': typeof Char123LocaleChar125AdminWaitlistRoute
   '/{-$locale}/app/account': typeof Char123LocaleChar125AppAccountRoute
   '/{-$locale}/app/feedback': typeof Char123LocaleChar125AppFeedbackRoute
+  '/{-$locale}/app/log-template': typeof Char123LocaleChar125AppLogTemplateRoute
   '/{-$locale}/app/pro': typeof Char123LocaleChar125AppProRoute
   '/{-$locale}/app/records': typeof Char123LocaleChar125AppRecordsRoute
   '/{-$locale}/blog/$postId': typeof Char123LocaleChar125BlogPostIdRoute
@@ -376,6 +384,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/admin/waitlist': typeof Char123LocaleChar125AdminWaitlistRoute
   '/{-$locale}/app/account': typeof Char123LocaleChar125AppAccountRoute
   '/{-$locale}/app/feedback': typeof Char123LocaleChar125AppFeedbackRoute
+  '/{-$locale}/app/log-template': typeof Char123LocaleChar125AppLogTemplateRoute
   '/{-$locale}/app/pro': typeof Char123LocaleChar125AppProRoute
   '/{-$locale}/app/records': typeof Char123LocaleChar125AppRecordsRoute
   '/{-$locale}/blog/$postId': typeof Char123LocaleChar125BlogPostIdRoute
@@ -422,6 +431,7 @@ export interface FileRoutesById {
   '/{-$locale}/admin/waitlist': typeof Char123LocaleChar125AdminWaitlistRoute
   '/{-$locale}/app/account': typeof Char123LocaleChar125AppAccountRoute
   '/{-$locale}/app/feedback': typeof Char123LocaleChar125AppFeedbackRoute
+  '/{-$locale}/app/log-template': typeof Char123LocaleChar125AppLogTemplateRoute
   '/{-$locale}/app/pro': typeof Char123LocaleChar125AppProRoute
   '/{-$locale}/app/records': typeof Char123LocaleChar125AppRecordsRoute
   '/{-$locale}/blog/$postId': typeof Char123LocaleChar125BlogPostIdRoute
@@ -469,6 +479,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/waitlist'
     | '/{-$locale}/app/account'
     | '/{-$locale}/app/feedback'
+    | '/{-$locale}/app/log-template'
     | '/{-$locale}/app/pro'
     | '/{-$locale}/app/records'
     | '/{-$locale}/blog/$postId'
@@ -511,6 +522,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/waitlist'
     | '/{-$locale}/app/account'
     | '/{-$locale}/app/feedback'
+    | '/{-$locale}/app/log-template'
     | '/{-$locale}/app/pro'
     | '/{-$locale}/app/records'
     | '/{-$locale}/blog/$postId'
@@ -556,6 +568,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/waitlist'
     | '/{-$locale}/app/account'
     | '/{-$locale}/app/feedback'
+    | '/{-$locale}/app/log-template'
     | '/{-$locale}/app/pro'
     | '/{-$locale}/app/records'
     | '/{-$locale}/blog/$postId'
@@ -768,6 +781,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125AppProRouteImport
       parentRoute: typeof Char123LocaleChar125RouteRoute
     }
+    '/{-$locale}/app/log-template': {
+      id: '/{-$locale}/app/log-template'
+      path: '/app/log-template'
+      fullPath: '/{-$locale}/app/log-template'
+      preLoaderRoute: typeof Char123LocaleChar125AppLogTemplateRouteImport
+      parentRoute: typeof Char123LocaleChar125RouteRoute
+    }
     '/{-$locale}/app/feedback': {
       id: '/{-$locale}/app/feedback'
       path: '/app/feedback'
@@ -950,6 +970,7 @@ interface Char123LocaleChar125RouteRouteChildren {
   Char123LocaleChar125authVerifyEmailRoute: typeof Char123LocaleChar125authVerifyEmailRoute
   Char123LocaleChar125AppAccountRoute: typeof Char123LocaleChar125AppAccountRoute
   Char123LocaleChar125AppFeedbackRoute: typeof Char123LocaleChar125AppFeedbackRoute
+  Char123LocaleChar125AppLogTemplateRoute: typeof Char123LocaleChar125AppLogTemplateRoute
   Char123LocaleChar125AppProRoute: typeof Char123LocaleChar125AppProRoute
   Char123LocaleChar125AppRecordsRoute: typeof Char123LocaleChar125AppRecordsRoute
   Char123LocaleChar125AppIndexRoute: typeof Char123LocaleChar125AppIndexRoute
@@ -980,6 +1001,8 @@ const Char123LocaleChar125RouteRouteChildren: Char123LocaleChar125RouteRouteChil
       Char123LocaleChar125authVerifyEmailRoute,
     Char123LocaleChar125AppAccountRoute: Char123LocaleChar125AppAccountRoute,
     Char123LocaleChar125AppFeedbackRoute: Char123LocaleChar125AppFeedbackRoute,
+    Char123LocaleChar125AppLogTemplateRoute:
+      Char123LocaleChar125AppLogTemplateRoute,
     Char123LocaleChar125AppProRoute: Char123LocaleChar125AppProRoute,
     Char123LocaleChar125AppRecordsRoute: Char123LocaleChar125AppRecordsRoute,
     Char123LocaleChar125AppIndexRoute: Char123LocaleChar125AppIndexRoute,
