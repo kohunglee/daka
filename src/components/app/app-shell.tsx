@@ -194,11 +194,3 @@ export function AppShell({
     </div>
   )
 }
-
-reword  edit  squash  fixup
-
-pick <commit> = use commit
- 10 # r, reword <commit> = use commit, but edit the commit message
- 11 # e, edit <commit> = use commit, but stop for amending
- 12 # s, squash <commit> = use commit, but meld into previous commit
- 13 # f, fixup [-C | -c] <commit> = like "squash" but keep only the previous

@@ -2,13 +2,17 @@
  * 隐藏的巨大管理员模式入口。
  * 不挂入站内导航和 sitemap，仅用于管理员按用户 ID + 日期清理 D1/R2。
  */
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
+import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { Search, ShieldAlert, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { AdminWorkspaceShell, type AdminWorkspacePage } from '@/features/admin-clear/components/admin-workspace-shell'
+import { BlogAdminPanel } from '@/features/blog/components/blog-admin-panel'
+import { getAdminBlogPostsFn } from '@/features/blog/actions'
+import type { BlogPost } from '@/features/blog/blog.schema'
 import { displayBacklinkOption, displayHoursOption, formatBeijingDate } from '@/features/checkin/checkin.shared'
 import { read666Mode, set666Mode } from '@/features/admin/mode-666'
 import {
@@ -23,6 +27,11 @@ import {
 } from '@/features/admin-clear/admin-clear.actions'
 
 export const Route = createFileRoute('/n4v8q2m7x9r3k6p1')({
+  validateSearch: (search: Record<string, unknown>): { page: AdminWorkspacePage; edit?: string } => {
+    const page = search.page === 'blog' ? 'blog' : 'checkins'
+    const edit = typeof search.edit === 'string' && search.edit.length > 0 ? search.edit : undefined
+    return edit ? { page, edit } : { page }
+  },
   loader: () => getAdminClearSessionFn(),
   head: () => ({
     meta: [
@@ -36,10 +45,11 @@ export const Route = createFileRoute('/n4v8q2m7x9r3k6p1')({
 /** 隐藏管理员页面：先密码登录，再搜索用户、预览并清空单日记录。 */
 function HiddenAdminPage() {
   const session = Route.useLoaderData()
+  const { page, edit } = Route.useSearch()
   const router = useRouter()
 
   if (!session.authenticated) return <AdminLogin onLoggedIn={() => router.invalidate()} />
-  return <AdminClearPanel />
+  return <AdminClearPanel page={page} editId={edit} />
 }
 
 /** 密码入口，不显示普通用户登录入口，也不暴露密码配置状态。 */
@@ -99,8 +109,9 @@ function AdminLogin({ onLoggedIn }: { onLoggedIn: () => void }) {
 }
 
 /** 已登录后的单条记录清理面板。 */
-function AdminClearPanel() {
+function AdminClearPanel({ page, editId }: { page: AdminWorkspacePage; editId?: string }) {
   const [mode666, set666ModeState] = useState(false)
+  const [modeReady, setModeReady] = useState(false)
   const [query, setQuery] = useState('')
   const [users, setUsers] = useState<AdminClearUserRow[]>([])
   const [userId, setUserId] = useState('')
@@ -113,6 +124,9 @@ function AdminClearPanel() {
   const [recordTotal, setRecordTotal] = useState(0)
   const [recordTotalPages, setRecordTotalPages] = useState(1)
   const [recordsBusy, setRecordsBusy] = useState(true)
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
+  const [blogBusy, setBlogBusy] = useState(false)
+  const [blogError, setBlogError] = useState<string | null>(null)
 
   /** 生成管理员确认卡片使用的图片读取地址，实际对象仍由服务端按 D1 中的 R2 Key 读取。 */
   function getPreviewImageUrl(record: AdminClearPreview): string {
@@ -120,7 +134,7 @@ function AdminClearPanel() {
   }
 
   /** 读取管理员记录总表的指定分页。 */
-  async function loadRecords(page: number) {
+  const loadRecords = useCallback(async (page: number) => {
     setRecordsBusy(true)
     try {
       const result = await listAdminCheckinsFn({ data: { page } })
@@ -133,15 +147,33 @@ function AdminClearPanel() {
     } finally {
       setRecordsBusy(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
-    void loadRecords(0)
-  }, [])
+    if (page === 'checkins') void loadRecords(0)
+  }, [loadRecords, page])
 
   useEffect(() => {
     set666ModeState(read666Mode())
+    setModeReady(true)
   }, [])
+
+  /** 只在切换到博客管理时读取文章，避免打开清理页时额外请求博客数据。 */
+  const loadBlogPosts = useCallback(async () => {
+    setBlogBusy(true)
+    setBlogError(null)
+    try {
+      setBlogPosts(await getAdminBlogPostsFn())
+    } catch {
+      setBlogError('文章列表读取失败，请刷新页面重试。')
+    } finally {
+      setBlogBusy(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (page === 'blog') void loadBlogPosts()
+  }, [loadBlogPosts, page])
 
   /** 切换首页顶部的巨大管理员模式标识，并将状态保存到当前浏览器。 */
   function handle666ModeChange(enabled: boolean) {
@@ -204,26 +236,20 @@ function AdminClearPanel() {
   }
 
   return (
-    <AdminFrame>
-      <div className="mb-5 flex items-center justify-between gap-4 rounded-lg border border-border bg-bg-alt px-4 py-3">
-        <div>
-          <p className="m-0 text-sm font-semibold">巨大管理员模式</p>
-        </div>
-        <div className="flex shrink-0 items-center gap-4">
-          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
-            <input
-              type="checkbox"
-              checked={mode666}
-              onChange={(event) => handle666ModeChange(event.target.checked)}
-              className="h-4 w-4 accent-primary"
-            />
-            开启 666 模式
-          </label>
-          <Link to="/{-$locale}/admin/blog" className="text-sm font-semibold text-primary hover:underline">博客管理</Link>
-        </div>
-      </div>
-
-      <div className="mb-6">
+    <AdminWorkspaceShell activePage={page} mode666={mode666} onMode666Change={handle666ModeChange}>
+      {page === 'blog' ? (
+        <BlogAdminPanel
+          posts={blogPosts}
+          editId={editId}
+          modeEnabled={mode666}
+          modeReady={modeReady}
+          loading={blogBusy}
+          errorMessage={blogError}
+          onRefresh={loadBlogPosts}
+        />
+      ) : (
+      <>
+        <div className="mb-6">
         <div className="flex items-center gap-3">
           <span className="rounded-lg bg-destructive/10 p-2 text-destructive"><Trash2 size={22} /></span>
           <div>
@@ -358,8 +384,10 @@ function AdminClearPanel() {
           <span className="font-mono text-xs text-fg-3">每页 50 条</span>
           <Button type="button" variant="outline" size="sm" disabled={recordsBusy || recordPage + 1 >= recordTotalPages} onClick={() => void loadRecords(recordPage + 1)}>下一页</Button>
         </div>
-      </Card>
-    </AdminFrame>
+        </Card>
+      </>
+      )}
+    </AdminWorkspaceShell>
   )
 }
 

@@ -36,7 +36,7 @@ function BlogPostPage() {
               </Link>
               {canEdit && (
                 <a
-                  href={`/admin/blog?edit=${encodeURIComponent(post.id)}`}
+                  href={`/n4v8q2m7x9r3k6p1?page=blog&edit=${encodeURIComponent(post.id)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="shrink-0 text-sm text-fg-3 transition-colors hover:text-primary hover:underline"
