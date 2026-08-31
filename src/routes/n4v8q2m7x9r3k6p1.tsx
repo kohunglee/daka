@@ -114,6 +114,11 @@ function AdminClearPanel() {
   const [recordTotalPages, setRecordTotalPages] = useState(1)
   const [recordsBusy, setRecordsBusy] = useState(true)
 
+  /** 生成管理员确认卡片使用的图片读取地址，实际对象仍由服务端按 D1 中的 R2 Key 读取。 */
+  function getPreviewImageUrl(record: AdminClearPreview): string {
+    return `/api/checkins/${encodeURIComponent(record.userId)}/${encodeURIComponent(record.checkinDate)}`
+  }
+
   /** 读取管理员记录总表的指定分页。 */
   async function loadRecords(page: number) {
     setRecordsBusy(true)
@@ -274,7 +279,31 @@ function AdminClearPanel() {
               <div><dt className="text-xs text-fg-3">图片大小</dt><dd className="m-0">{Math.ceil(preview.imageBytes / 1024)}KB</dd></div>
               <div><dt className="text-xs text-fg-3">出海 / 外链 / 质量</dt><dd className="m-0">{displayHoursOption(preview.hours)} 小时 / {displayBacklinkOption(preview.backlinks)} 条 / {preview.quality}/10</dd></div>
             </dl>
-            <p className="m-0 break-all text-xs text-fg-3">R2：{preview.imageKey}</p>
+            <a
+              href={getPreviewImageUrl(preview)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block overflow-hidden rounded-md border border-border bg-background transition-opacity hover:opacity-85"
+              title="在新窗口打开图片"
+            >
+              <img
+                src={getPreviewImageUrl(preview)}
+                alt={`${preview.checkinDate} 打卡截图`}
+                className="block max-h-80 w-full object-contain"
+                loading="lazy"
+              />
+            </a>
+            <p className="m-0 break-all text-xs text-fg-3">
+              R2：{' '}
+              <a
+                href={getPreviewImageUrl(preview)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline underline-offset-2 hover:opacity-80"
+              >
+                {preview.imageKey}
+              </a>
+            </p>
             <Button type="button" variant="default" className="bg-destructive text-white hover:bg-destructive/90" onClick={() => void clearRecord()} disabled={busy}>
               {busy ? '清理中……' : '确认清空这条记录和图片'}
             </Button>

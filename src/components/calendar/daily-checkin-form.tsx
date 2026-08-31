@@ -9,6 +9,7 @@ import {
   useState,
   type ChangeEvent,
   type ClipboardEvent as ReactClipboardEvent,
+  type DragEvent as ReactDragEvent,
   type FormEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
@@ -56,13 +57,13 @@ function FieldHint({ text }: { text: string }) {
     <span className="group relative inline-flex" tabIndex={0} aria-label={`说明：${text}`}>
       <span
         aria-hidden="true"
-        className="inline-flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border border-fg-3/25 text-[11px] font-semibold leading-none text-fg-3 transition-colors group-hover:border-fg-3/35 group-focus-within:border-fg-3/35"
+        className="inline-flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border border-fg-3/24 text-[11px] font-semibold leading-none text-fg-3/24 transition-colors group-hover:border-fg-3/32 group-hover:text-fg-3/32 group-focus-within:border-fg-3/32 group-focus-within:text-fg-3/32"
       >
         ?
       </span>
       <span
         role="tooltip"
-        className="pointer-events-none absolute bottom-full left-0 z-30 mb-2 w-max max-w-[280px] rounded-md border border-border bg-bg-alt px-3 py-2 text-xs font-normal leading-5 text-fg-2 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+        className="pointer-events-none absolute bottom-full left-0 z-30 w-max max-w-[280px] rounded-md border border-border bg-bg-alt px-3 py-2 text-xs font-normal leading-5 text-fg-2 opacity-0 shadow-sm transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
       >
         {text}
       </span>
@@ -197,6 +198,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
   const [gscFile, setGscFile] = useState<File | null>(null)
   const [brushTool, setBrushTool] = useState<BrushTool>('mosaic')
   const [imageReady, setImageReady] = useState(false)
+  const [isDraggingImage, setIsDraggingImage] = useState(false)
   const [editorError, setEditorError] = useState<string | null>(null)
   const [hours, setHours] = useState<CheckinOption | ''>('')
   const [backlinks, setBacklinks] = useState<CheckinOption | ''>('')
@@ -268,6 +270,18 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
   function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (file) handleImageFile(file)
+  }
+
+  /** 接收拖入按钮的图片，让点击选择和拖拽添加共用同一个入口。 */
+  function handleImageDrop(event: ReactDragEvent<HTMLButtonElement>) {
+    event.preventDefault()
+    setIsDraggingImage(false)
+    const file = Array.from(event.dataTransfer.files).find((item) => item.type.startsWith('image/'))
+    if (file) {
+      handleImageFile(file)
+    } else {
+      setEditorError('请拖入 PNG、JPG 或 WebP 图片。')
+    }
   }
 
   /** 支持在表单或下方粘贴框内直接使用 Cmd+V / Ctrl+V 粘贴截图。 */
@@ -414,9 +428,25 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
               accept="image/png,image/jpeg,image/webp"
               required
               onChange={handleImageChange}
-              className="h-auto min-h-[42px] w-[400px] shrink-0 rounded-[7px] border border-input bg-background px-3 py-2 text-sm text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-soft file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-primary"
-              style={{ width: '400px', minWidth: '400px' }}
+              className="sr-only"
             />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              onDragEnter={(event) => {
+                event.preventDefault()
+                setIsDraggingImage(true)
+              }}
+              onDragOver={(event) => {
+                event.preventDefault()
+                setIsDraggingImage(true)
+              }}
+              onDragLeave={() => setIsDraggingImage(false)}
+              onDrop={handleImageDrop}
+              className={`flex h-11 w-full max-w-[180px] cursor-pointer items-center justify-center rounded-md border px-4 text-sm font-semibold transition-colors ${isDraggingImage ? 'border-primary bg-soft text-primary' : 'border-border bg-background text-foreground hover:border-primary hover:bg-soft hover:text-primary'}`}
+            >
+              {isDraggingImage ? '松开图片' : '本地选择 or 拖拽到此'}
+            </button>
           </div>
           <Textarea
             aria-label="粘贴 GSC 截图"
