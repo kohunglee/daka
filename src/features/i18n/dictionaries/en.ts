@@ -56,6 +56,13 @@ export const en = {
     openAccountSub: 'Profile, password, danger zone',
     openPro: 'Pro demo',
     openProSub: 'A peek at what Pro unlocks',
+    myRecords: 'My records',
+    myRecordsSub: 'Your check-in history, one day at a time.',
+    myRecordsEmpty: 'No check-in records yet.',
+    myRecordsTotal: '{count} records',
+    myRecordsHours: 'Hours', myRecordsBacklinks: 'Backlinks', myRecordsQuality: 'Quality',
+    myRecordsLog: 'Work log', openImage: 'Open image in a new window',
+    recordsPageOf: 'Page {page} of {total}', recordsPrevious: 'Previous', recordsNext: 'Next',
   },
   storage: {
     avatar: 'Avatar',

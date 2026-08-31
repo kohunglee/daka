@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import { Link, getRouteApi } from '@tanstack/react-router'
-import { Home, Sparkles, Settings, Gauge, Users, Menu, ClipboardList, Heart, MessageSquare, FileText } from 'lucide-react'
+import { Home, Sparkles, Settings, Gauge, Users, Menu, ClipboardList, Heart, MessageSquare, FileText, BookOpen } from 'lucide-react'
 import { Logo } from '@/components/brand/logo'
+import { Footer } from '@/components/marketing/footer'
 import { Badge } from '@/components/ui/badge'
 import { ThemeToggle } from '@/features/theme/theme-toggle'
 import { useTranslation } from '@/features/i18n/provider'
@@ -65,6 +66,10 @@ export function AppShell({
               <Home size={18} className="shrink-0" />
               {t('app.dashboard')}
             </Link>
+        <Link to="/{-$locale}/app/records" activeProps={{}} className={item(active === 'records')} title={t('app.myRecords')}>
+          <BookOpen size={18} className="shrink-0" />
+          {t('app.myRecords')}
+        </Link>
         {mode666 && (
           <>
             <Link to="/{-$locale}/app/pro" activeProps={{}} className={item(active === 'pro')} title={t('app.proDemo')}>
@@ -191,6 +196,7 @@ export function AppShell({
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

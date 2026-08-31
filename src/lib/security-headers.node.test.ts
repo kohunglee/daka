@@ -25,12 +25,14 @@ test('CSP is omitted in dev (PROD=false)', () => {
   expect(res.headers.get('content-security-policy')).toBeNull()
 })
 
-test('CSP is set in production and allows Turnstile/analytics', () => {
+test('CSP is set in production and allows Turnstile/analytics/Waline', () => {
   vi.stubEnv('PROD', true)
   const csp = withSecurityHeaders(new Response('x')).headers.get('content-security-policy')
   expect(csp).toContain("default-src 'self'")
   expect(csp).toContain('https://challenges.cloudflare.com') // Turnstile
   expect(csp).toContain('https://static.cloudflareinsights.com') // Web Analytics
+  expect(csp).toContain('https://cdn.rawlab.win') // Waline 脚本和样式
+  expect(csp).toContain('https://waline.rawlab.win') // Waline API
   expect(csp).not.toContain('fonts.googleapis.com') // fonts are self-hosted
   expect(csp).not.toContain('fonts.gstatic.com')
   expect(csp).toContain("frame-ancestors 'none'")

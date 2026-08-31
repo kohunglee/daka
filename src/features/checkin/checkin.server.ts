@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, lte } from 'drizzle-orm'
+import { and, asc, count, desc, eq, gte, lte } from 'drizzle-orm'
 import type { DB } from '@/db/client'
 import { dailyCheckin } from './checkin.schema'
 import {
@@ -68,6 +68,44 @@ export async function getUserCheckin(db: DB, userId: string, checkinDate: string
 /** 读取公开链接对应的某日记录，不要求登录，也不提供记录列表入口。 */
 export async function getPublicCheckin(db: DB, userId: string, checkinDate: string) {
   return getUserCheckin(db, userId, checkinDate)
+}
+
+/** 我的记录固定每页 20 条，服务端与页面分页保持同一个常量。 */
+export const MY_CHECKIN_PAGE_SIZE = 20
+
+/** 当前登录用户的历史打卡分页结果。 */
+export interface MyCheckinPage {
+  rows: CheckinRecordView[]
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+}
+
+/** 只按当前用户 ID 查询历史打卡，避免把别人的记录带入个人信息流。 */
+export async function listMyCheckins(db: DB, userId: string, page: number): Promise<MyCheckinPage> {
+  const safePage = Number.isInteger(page) && page >= 0 ? Math.min(page, 100_000) : 0
+  const [rows, totalRows] = await Promise.all([
+    db
+      .select()
+      .from(dailyCheckin)
+      .where(eq(dailyCheckin.userId, userId))
+      .orderBy(desc(dailyCheckin.checkinDate), desc(dailyCheckin.createdAt))
+      .limit(MY_CHECKIN_PAGE_SIZE)
+      .offset(safePage * MY_CHECKIN_PAGE_SIZE),
+    db
+      .select({ total: count() })
+      .from(dailyCheckin)
+      .where(eq(dailyCheckin.userId, userId)),
+  ])
+  const total = totalRows[0]?.total ?? 0
+  return {
+    rows: rows.map(toCheckinRecordView),
+    page: safePage,
+    pageSize: MY_CHECKIN_PAGE_SIZE,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / MY_CHECKIN_PAGE_SIZE)),
+  }
 }
 
 /** 服务端最终校验表单字段，前端校验只能作为体验优化。 */

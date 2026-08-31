@@ -43,6 +43,13 @@ export const zh: Dict = {
     openAccountSub: '资料、密码、危险操作',
     openPro: 'Pro 演示',
     openProSub: '抢先看看 Pro 解锁了什么',
+    myRecords: '我的记录',
+    myRecordsSub: '按时间查看过往的每日打卡。',
+    myRecordsEmpty: '还没有打卡记录。',
+    myRecordsTotal: '共 {count} 条记录',
+    myRecordsHours: '出海小时', myRecordsBacklinks: '新增外链', myRecordsQuality: '工作质量',
+    myRecordsLog: '工作日志', openImage: '在新窗口打开图片',
+    recordsPageOf: '第 {page} / {total} 页', recordsPrevious: '上一页', recordsNext: '下一页',
   },
   storage: {
     avatar: '头像',

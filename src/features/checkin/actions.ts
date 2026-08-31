@@ -14,7 +14,7 @@ import {
   type CheckinCalendarSummary,
   type SubmitCheckinResult,
 } from './checkin.shared'
-import { getPublicCheckin, getUserCheckin, getYearCheckinData, parseCheckinOptions, validateCheckinFields, validateYear } from './checkin.server'
+import { getPublicCheckin, getUserCheckin, getYearCheckinData, listMyCheckins, parseCheckinOptions, validateCheckinFields, validateYear } from './checkin.server'
 
 /** 未登录时只返回空日历；打卡动作本身仍然会跳转登录。 */
 export const getYearCheckinSummaryFn = createServerFn({ method: 'GET' })
@@ -34,6 +34,17 @@ export const getMyCheckinDetailFn = createServerFn({ method: 'GET' })
     const user = await readUser()
     if (!user) throw redirect({ to: '/{-$locale}/login' })
     return getUserCheckin(createDb(env.DB), user.id, data.date)
+  })
+
+/** 读取当前登录用户的历史打卡分页，个人记录页只通过服务端会话确定归属。 */
+export const getMyCheckinsFn = createServerFn({ method: 'GET' })
+  .validator((data: { page?: unknown }) => ({
+    page: typeof data?.page === 'number' && Number.isInteger(data.page) && data.page >= 0 ? data.page : 0,
+  }))
+  .handler(async ({ data }) => {
+    const user = await readUser()
+    if (!user) throw redirect({ to: '/{-$locale}/login' })
+    return listMyCheckins(createDb(env.DB), user.id, data.page)
   })
 
 /** 公开链接使用 userId/date 读取单条记录，不提供按用户枚举记录的接口。 */

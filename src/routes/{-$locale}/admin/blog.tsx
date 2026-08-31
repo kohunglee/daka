@@ -65,6 +65,7 @@ function BlogAdmin() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const initializedEdit = useRef<string | null>(null)
+  const editorFormRef = useRef<HTMLFormElement | null>(null)
 
   /** 从公开博客的编辑链接进入时，自动把对应文章载入表单。 */
   useEffect(() => {
@@ -94,8 +95,9 @@ function BlogAdmin() {
       } else {
         await createBlogPostFn({ data })
         toast.success('文章已发布')
+        // 新建完成后清空表单，方便继续发布下一篇；编辑已有文章时保留当前内容。
+        resetForm()
       }
-      resetForm()
       await router.invalidate()
     } catch {
       toast.error('保存失败，请确认管理员会话仍然有效。')
@@ -124,6 +126,20 @@ function BlogAdmin() {
 
   const canEdit = modeReady && mode666
 
+  /** 编辑文章时拦截浏览器默认的“保存网页”，改为提交当前文章内容。 */
+  useEffect(() => {
+    if (!editingId || !canEdit) return
+
+    function handleSaveShortcut(event: KeyboardEvent) {
+      if ((!event.ctrlKey && !event.metaKey) || event.key.toLowerCase() !== 's') return
+      event.preventDefault()
+      if (!busy) editorFormRef.current?.requestSubmit()
+    }
+
+    window.addEventListener('keydown', handleSaveShortcut)
+    return () => window.removeEventListener('keydown', handleSaveShortcut)
+  }, [busy, canEdit, editingId])
+
   return (
     <AppShell
       user={{ name: '站长', email: '巨大管理员模式', role: null, image: null }}
@@ -150,7 +166,7 @@ function BlogAdmin() {
             <h2 className="m-0 text-lg font-semibold">{editingId ? '编辑文章' : '新增文章'}</h2>
             {editingId && <Button type="button" variant="ghost" size="sm" onClick={resetForm}><X size={15} />取消编辑</Button>}
           </div>
-          <form className="grid gap-4" onSubmit={savePost}>
+          <form ref={editorFormRef} className="grid gap-4" onSubmit={savePost}>
             <div className="grid gap-1.5">
               <Label htmlFor="blog-title">标题</Label>
               <Input id="blog-title" value={form.title} maxLength={200} onChange={(event) => setForm({ ...form, title: event.target.value })} required />

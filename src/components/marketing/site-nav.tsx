@@ -40,6 +40,14 @@ export function SiteNav({ theme, loggedIn }: { theme: 'light' | 'dark'; loggedIn
         <Link to="/{-$locale}/blog" className="px-2 py-1 text-sm text-fg-2 transition-colors hover:text-foreground">
           博客
         </Link>
+        <a
+          href="https://daka.run/blog/1.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-2 py-1 text-sm text-fg-2 transition-colors hover:text-foreground"
+        >
+          关于
+        </a>
         <div className="flex items-center gap-1">
           <ThemeToggle theme={theme} />
         </div>
