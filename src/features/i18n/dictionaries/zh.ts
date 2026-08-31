@@ -37,7 +37,7 @@ export const zh: Dict = {
     navWorkspace: '工作区',
     collapseSidebar: '收起侧边栏', expandSidebar: '展开侧边栏',
     navAccount: '账号',
-    welcomeSub: '这是你的 FlareStarter 工作区。',
+    welcomeSub: '',
     quickActions: '快捷操作',
     openAccount: '账号设置',
     openAccountSub: '资料、密码、危险操作',
@@ -53,7 +53,7 @@ export const zh: Dict = {
     logTemplate: '日志模板', logTemplateSub: '',
     logTemplateIntro: '如果你的日志比较复杂，可以写一个样板，每天打卡时填空即可。（专门解决5个默认问题不够）',
     logTemplateLabel: '我的日志模板', logTemplatePlaceholder: '例如：\n今天做了：\n最大的问题是：\n明天决定：',
-    logTemplateHint: '最多 2000 个字符；留空后，打卡日志将从空白开始。', logTemplateSave: '保存模板',
+    logTemplateHint: '最多 2000 个字符', logTemplateSave: '保存模板',
     logTemplateSaved: '日志模板已保存', logTemplateSaveFailed: '模板保存失败，请稍后重试。',
   },
   storage: {

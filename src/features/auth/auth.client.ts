@@ -21,6 +21,7 @@ export const {
   requestPasswordReset,   // formerly called forgetPassword in the task template
   resetPassword,
   changePassword,
+  updateUser,
   deleteUser,
   useSession,
   sendVerificationEmail,

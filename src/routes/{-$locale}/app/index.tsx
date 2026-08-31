@@ -4,7 +4,6 @@ import { requireUser } from '@/features/auth/middleware'
 import { getEntitlement } from '@/features/billing/middleware'
 import { useTranslation } from '@/features/i18n/provider'
 import { AppShell } from '@/components/app/app-shell'
-import { Badge } from '@/components/ui/badge'
 import { use666Mode } from '@/features/admin/mode-666'
 
 export const Route = createFileRoute('/{-$locale}/app/')({
@@ -39,9 +38,6 @@ function AppHome() {
 
       <div className="mb-7 flex flex-wrap items-center gap-3 text-sm text-fg-2">
         <span>{t('app.loggedInAs', { email: user.email })}</span>
-        <Badge variant={isPro ? 'pro' : 'free'} dot>
-          {isPro ? t('billing.pro') : t('billing.free')}
-        </Badge>
       </div>
 
       <h2 className="mb-3.5 font-mono text-sm uppercase tracking-wide text-fg-3">{t('app.quickActions')}</h2>

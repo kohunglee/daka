@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link, getRouteApi } from '@tanstack/react-router'
-import { Home, Sparkles, Settings, Gauge, Users, Menu, ClipboardList, Heart, MessageSquare, FileText } from 'lucide-react'
+import { Home, Sparkles, Settings, Gauge, Users, Menu, ClipboardList, Heart, MessageSquare, FileText, BookOpen } from 'lucide-react'
 import { Logo } from '@/components/brand/logo'
 import { Footer } from '@/components/marketing/footer'
 import { Badge } from '@/components/ui/badge'
@@ -66,6 +66,10 @@ export function AppShell({
               <Home size={18} className="shrink-0" />
               {t('app.dashboard')}
             </Link>
+        <Link to="/{-$locale}/app/records" activeProps={{}} className={item(active === 'records')} title={t('app.myRecords')}>
+          <BookOpen size={18} className="shrink-0" />
+          {t('app.myRecords')}
+        </Link>
         <Link to="/{-$locale}/app/log-template" activeProps={{}} className={item(active === 'log-template')} title={t('app.logTemplate')}>
           <FileText size={18} className="shrink-0" />
           {t('app.logTemplate')}
@@ -160,11 +164,11 @@ export function AppShell({
             <Badge variant="pro" dot className="shrink-0">
               {user.role || 'admin'}
             </Badge>
-          ) : (
+          ) : isPro ? (
             <Badge variant={isPro ? 'pro' : 'free'} dot className="shrink-0">
-              {isPro ? t('billing.pro') : t('billing.free')}
+              {t('billing.pro')}
             </Badge>
-          )}
+          ) : null}
           <ThemeToggle theme={theme} />
         </div>
       </div>

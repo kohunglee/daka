@@ -1,6 +1,6 @@
 /**
  * 隐藏管理员页的服务端动作。
- * 只提供用户搜索、单日预览和 D1/R2 双清理，不暴露普通用户登录信息。
+ * 提供用户搜索、用户删除、单日预览和 D1/R2 双清理，不暴露普通用户登录信息。
  */
 import { createServerFn } from '@tanstack/react-start'
 import { and, count, desc, eq, like, or } from 'drizzle-orm'
@@ -11,7 +11,10 @@ import { dailyCheckin } from '@/features/checkin/checkin.schema'
 import { isValidCheckinDate } from '@/features/checkin/checkin.shared'
 import { clampPage } from '@/features/admin/params'
 import { getAdminUsers, type AdminUserRow, type AdminUsersParams } from '@/features/admin/getAdminUsers'
-import { hasAdminSession, loginAdmin, requireAdminSession } from './admin-clear.auth.server'
+import { cancelSubscriptionsForUser } from '@/features/billing/billing.server'
+import { createStripeProvider } from '@/features/billing/stripe'
+import { avatarObjectKey } from '@/features/storage/storage'
+import { hasAdminSession, loginAdmin, requireAdminSession, verifyAdminPassword } from './admin-clear.auth.server'
 
 /** 管理员搜索结果，只返回定位用户所需的公开字段。 */
 export interface AdminClearUserRow {
@@ -141,6 +144,53 @@ export const listAdminUsersForHiddenFn = createServerFn({ method: 'GET' })
       total: result.total,
       totalPages: Math.max(1, Math.ceil(result.total / ADMIN_USER_PAGE_SIZE)),
     }
+  })
+
+/** 删除用户的结果；密码错误单独返回，方便前端保留当前列表和输入状态。 */
+export type DeleteAdminUserResult =
+  | { status: 'deleted'; deletedCheckins: number }
+  | { status: 'not_found' }
+  | { status: 'invalid_password' }
+
+/**
+ * 删除注册用户及其关联数据。
+ *
+ * 这是隐藏 666 管理中心的高风险操作：先检查管理员会话，再重新核对本次输入的
+ * 管理员密码；随后取消生效中的 Stripe 订阅、清理头像和所有打卡截图，最后删除
+ * user 行，让 D1 外键级联清理 session/account/feedback/订阅等关联记录。
+ */
+export const deleteAdminUserForHiddenFn = createServerFn({ method: 'POST' })
+  .validator((data: { userId?: unknown; password?: unknown; confirmed?: unknown }) => ({
+    userId: typeof data?.userId === 'string' ? data.userId.trim().slice(0, 200) : '',
+    password: typeof data?.password === 'string' ? data.password.slice(0, 200) : '',
+    confirmed: data?.confirmed === true,
+  }))
+  .handler(async ({ data }): Promise<DeleteAdminUserResult> => {
+    await requireAdminSession()
+    if (!data.userId || !data.confirmed) throw new Error('删除参数无效。')
+    if (!verifyAdminPassword(data.password)) return { status: 'invalid_password' }
+
+    const db = createDb(env.DB)
+    const userRows = await db.select({ id: user.id }).from(user).where(eq(user.id, data.userId)).limit(1)
+    if (!userRows[0]) return { status: 'not_found' }
+
+    const checkinRows = await db
+      .select({ imageKey: dailyCheckin.imageKey })
+      .from(dailyCheckin)
+      .where(eq(dailyCheckin.userId, data.userId))
+
+    // 删除前先终止活跃订阅，避免 customerId 随级联删除后留下无法对账的扣费。
+    if (env.STRIPE_SECRET_KEY) {
+      const provider = createStripeProvider(env)
+      await cancelSubscriptionsForUser(db, (id) => provider.cancelSubscription(id), data.userId)
+    }
+
+    // R2 删除按已知归属键执行，先完成对象清理，再删除 D1 用户行，失败时可安全重试。
+    const imageKeys = new Set([avatarObjectKey(data.userId), ...checkinRows.map((row) => row.imageKey)])
+    await Promise.all(Array.from(imageKeys, (imageKey) => env.BUCKET.delete(imageKey)))
+    await db.delete(user).where(eq(user.id, data.userId))
+
+    return { status: 'deleted', deletedCheckins: checkinRows.length }
   })
 
 /** 分页列出当前数据库里的全部打卡记录，默认按日期从新到旧排列。 */

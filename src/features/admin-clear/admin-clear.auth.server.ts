@@ -37,6 +37,12 @@ function getAdminPassword(): string {
   return import.meta.env.DEV ? LOCAL_ADMIN_PASSWORD : ''
 }
 
+/** 单次高风险操作重新核对管理员密码，不复用已经存在的页面会话。 */
+export function verifyAdminPassword(password: string): boolean {
+  const expected = getAdminPassword()
+  return Boolean(expected && password === expected)
+}
+
 /** 根据管理员密码生成 HMAC 密钥。密码本身不会写入 Cookie。 */
 async function getSigningKey(password: string): Promise<CryptoKey> {
   return crypto.subtle.importKey(

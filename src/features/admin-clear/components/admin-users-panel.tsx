@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Copy, Search, UserRound, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Copy, Search, Trash2, UserRound, X } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { fmtDate } from '@/lib/format-date'
-import { listAdminUsersForHiddenFn, type AdminUserPage } from '@/features/admin-clear/admin-clear.actions'
+import { deleteAdminUserForHiddenFn, listAdminUsersForHiddenFn, type AdminUserPage } from '@/features/admin-clear/admin-clear.actions'
 import type { AdminUserRow } from '@/features/admin/getAdminUsers'
 
 /** 从用户昵称或邮箱生成简短头像文字，避免没有头像时出现空白。 */
@@ -25,8 +26,7 @@ function userRole(row: AdminUserRow): string {
 /**
  * 注册用户管理面板。
  *
- * 第一版聚焦“找得到、看得懂”：支持邮箱/昵称/用户 ID 搜索、50 条分页和
- * 基础详情查看。封禁、删除等高风险操作暂不放进隐藏后台，避免误操作。
+ * 支持邮箱/昵称/用户 ID 搜索、50 条分页、基础详情查看和带密码复核的用户删除。
  */
 export function AdminUsersPanel() {
   const [queryInput, setQueryInput] = useState('')
@@ -35,14 +35,21 @@ export function AdminUsersPanel() {
   const [pageData, setPageData] = useState<AdminUserPage>({ rows: [], page: 0, pageSize: 50, total: 0, totalPages: 1 })
   const [selected, setSelected] = useState<AdminUserRow | null>(null)
   const [loading, setLoading] = useState(true)
+  const [deleteTarget, setDeleteTarget] = useState<AdminUserRow | null>(null)
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [deleteBusy, setDeleteBusy] = useState(false)
 
   /** 读取当前搜索条件和页码的用户列表。 */
-  const loadUsers = useCallback(async (page: number, q: string) => {
+  const loadUsers = useCallback(async (page: number, q: string): Promise<AdminUserPage | null> => {
     setLoading(true)
     try {
-      setPageData(await listAdminUsersForHiddenFn({ data: { page, q } }))
+      const result = await listAdminUsersForHiddenFn({ data: { page, q } })
+      setPageData(result)
+      return result
     } catch {
       toast.error('用户列表读取失败，请刷新页面重试。')
+      return null
     } finally {
       setLoading(false)
     }
@@ -62,6 +69,55 @@ export function AdminUsersPanel() {
   /** 复制用户 ID，方便继续到其他管理工具定位同一个用户。 */
   function copyUserId(id: string) {
     void navigator.clipboard.writeText(id).then(() => toast.success('用户 ID 已复制')).catch(() => toast.error('复制失败，请手动选择。'))
+  }
+
+  /** 打开删除确认框；每次打开都会清空密码，确保每次删除都必须重新输入。 */
+  function openDeleteDialog(row: AdminUserRow) {
+    setDeleteTarget(row)
+    setDeletePassword('')
+    setDeleteError(null)
+  }
+
+  /** 关闭删除确认框，并丢弃本次输入的管理员密码。 */
+  function closeDeleteDialog() {
+    if (deleteBusy) return
+    setDeleteTarget(null)
+    setDeletePassword('')
+    setDeleteError(null)
+  }
+
+  /** 向服务端提交用户删除；密码在服务端重新核对，前端状态不具备授权能力。 */
+  async function handleDeleteUser(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!deleteTarget) return
+
+    setDeleteBusy(true)
+    setDeleteError(null)
+    try {
+      const result = await deleteAdminUserForHiddenFn({
+        data: { userId: deleteTarget.id, password: deletePassword, confirmed: true },
+      })
+      if (result.status === 'invalid_password') {
+        setDeleteError('管理员密码错误，请重新输入。')
+        return
+      }
+      if (result.status === 'not_found') {
+        setDeleteError('该用户已经不存在，列表可能已经更新。')
+        return
+      }
+
+      const deletedName = deleteTarget.name || deleteTarget.email
+      setSelected((current) => (current?.id === deleteTarget.id ? null : current))
+      setDeleteTarget(null)
+      setDeletePassword('')
+      toast.success(`已删除用户 ${deletedName}，同时清理 ${result.deletedCheckins} 条打卡记录。`)
+      const refreshed = await loadUsers(page, query)
+      if (refreshed && refreshed.rows.length === 0 && page > 0) setPage(page - 1)
+    } catch {
+      setDeleteError('删除失败，请检查网络或管理员会话后重试。')
+    } finally {
+      setDeleteBusy(false)
+    }
   }
 
   /** 切换分页，同时关闭已经不属于当前列表的详情卡片。 */
@@ -119,6 +175,7 @@ export function AdminUsersPanel() {
                 <TableHead>状态</TableHead>
                 <TableHead className="hidden md:table-cell">套餐</TableHead>
                 <TableHead className="hidden md:table-cell">注册时间</TableHead>
+                <TableHead className="text-right">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -151,6 +208,21 @@ export function AdminUsersPanel() {
                   <TableCell>{row.banned ? <Badge variant="warn" dot>已封禁</Badge> : <Badge variant="ok" dot>正常</Badge>}</TableCell>
                   <TableCell className="hidden md:table-cell">{row.plan === 'pro' ? <Badge variant="pro">Pro</Badge> : <span className="text-fg-3">{row.plan ? '免费版' : '—'}</span>}</TableCell>
                   <TableCell className="hidden text-fg-3 md:table-cell">{fmtDate(row.createdAt)}</TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      disabled={deleteBusy}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        openDeleteDialog(row)
+                      }}
+                    >
+                      <Trash2 size={15} />删除
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -173,7 +245,7 @@ export function AdminUsersPanel() {
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
               <h2 className="m-0 text-lg font-semibold">用户详情</h2>
-              <p className="mb-0 mt-1 text-sm text-fg-2">当前版本只读查看，不执行封禁或删除。</p>
+              <p className="mb-0 mt-1 text-sm text-fg-2">详情只读；删除操作需在列表中发起，并重新输入管理员密码。</p>
             </div>
             <Button type="button" variant="ghost" size="sm" onClick={() => setSelected(null)}><X size={15} />关闭</Button>
           </div>
@@ -197,6 +269,38 @@ export function AdminUsersPanel() {
           </dl>
         </Card>
       )}
+
+      <Dialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) closeDeleteDialog() }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>删除注册用户</DialogTitle>
+            <DialogDescription>
+              将删除“{deleteTarget?.name || deleteTarget?.email || '该用户'}”及其账号关联数据、头像和全部打卡截图。此操作不可恢复。
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleDeleteUser} className="grid gap-4">
+            <div className="grid gap-1.5">
+              <label htmlFor="hidden-admin-delete-password" className="text-sm font-semibold">管理员密码</label>
+              <Input
+                id="hidden-admin-delete-password"
+                type="password"
+                value={deletePassword}
+                onChange={(event) => setDeletePassword(event.target.value)}
+                autoComplete="current-password"
+                required
+                autoFocus
+              />
+            </div>
+            {deleteError && <p className="m-0 text-sm text-destructive" role="alert">{deleteError}</p>}
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={closeDeleteDialog} disabled={deleteBusy}>取消</Button>
+              <Button type="submit" disabled={deleteBusy} className="bg-destructive text-white hover:bg-destructive/90">
+                <Trash2 size={15} />{deleteBusy ? '正在删除……' : '确认删除'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

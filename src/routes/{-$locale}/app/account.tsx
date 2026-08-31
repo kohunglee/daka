@@ -2,7 +2,7 @@ import { createFileRoute, useRouter, Link } from '@tanstack/react-router'
 import { useState, type ReactNode } from 'react'
 import { requireUser } from '@/features/auth/middleware'
 import { getEntitlement } from '@/features/billing/middleware'
-import { signOut, changePassword, deleteUser } from '@/features/auth/auth.client'
+import { signOut, changePassword, updateUser, deleteUser } from '@/features/auth/auth.client'
 import { mapAuthError } from '@/features/auth/errors'
 import { useTranslation } from '@/features/i18n/provider'
 import { AppShell } from '@/components/app/app-shell'
@@ -60,9 +60,38 @@ function AccountPage() {
   const [pwSuccess, setPwSuccess] = useState(false)
   const [pwBusy, setPwBusy] = useState(false)
 
+  const [nickname, setNickname] = useState(user.name)
+  const [nicknameError, setNicknameError] = useState<string | null>(null)
+  const [nicknameSuccess, setNicknameSuccess] = useState(false)
+  const [nicknameBusy, setNicknameBusy] = useState(false)
+
   const [deletePassword, setDeletePassword] = useState('')
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [deleteBusy, setDeleteBusy] = useState(false)
+
+  /** 保存账号昵称；昵称沿用 Better Auth 的 name 字段，保存后刷新外壳中的用户信息。 */
+  async function handleNickname(e: React.FormEvent) {
+    e.preventDefault()
+    const nextNickname = nickname.trim()
+    if (!nextNickname) {
+      setNicknameError('昵称不能为空。')
+      return
+    }
+
+    setNicknameBusy(true)
+    setNicknameError(null)
+    setNicknameSuccess(false)
+    const res = await updateUser({ name: nextNickname })
+    setNicknameBusy(false)
+    if (res.error) {
+      setNicknameError(t(mapAuthError(res.error)))
+      return
+    }
+
+    setNickname(nextNickname)
+    setNicknameSuccess(true)
+    await router.invalidate()
+  }
 
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault()
@@ -107,8 +136,31 @@ function AccountPage() {
       </div>
 
       <div className="app-account-content w-full max-w-[980px]">
-        <Section title={t('storage.avatar')}>
-          <AvatarUploader image={user.image} name={user.name} />
+        {mode666 && (
+          <Section title={t('storage.avatar')}>
+            <AvatarUploader image={user.image} name={user.name} />
+          </Section>
+        )}
+
+        <Section title="昵称">
+          <form onSubmit={handleNickname} className="grid gap-4">
+            <div className="field">
+              <Label htmlFor="nickname">昵称</Label>
+              <Input
+                id="nickname"
+                value={nickname}
+                onChange={(e) => { setNickname(e.target.value); setNicknameSuccess(false) }}
+                maxLength={50}
+                required
+                autoComplete="nickname"
+              />
+            </div>
+            {nicknameError && <p className="text-sm text-destructive">{nicknameError}</p>}
+            {nicknameSuccess && <p className="text-sm text-success">昵称已保存。</p>}
+            <div>
+              <Button type="submit" disabled={nicknameBusy}>{nicknameBusy ? '正在保存……' : '保存昵称'}</Button>
+            </div>
+          </form>
         </Section>
 
         <Section title={t('auth.changePassword')}>
