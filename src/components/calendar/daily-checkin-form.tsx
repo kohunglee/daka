@@ -13,6 +13,7 @@ import {
   type DragEvent as ReactDragEvent,
   type FormEvent,
   type PointerEvent as ReactPointerEvent,
+  type ReactNode,
 } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -54,18 +55,54 @@ const BACKLINK_OPTIONS: ReadonlyArray<{ value: CheckinOption; label: string }> =
 ]
 
 /** 字段标题后的轻量说明提示：鼠标悬浮或键盘聚焦问号时显示，不干扰表单填写。 */
-function FieldHint({ text }: { text: string }) {
+function FieldHint({ text, ariaLabel }: { text: ReactNode; ariaLabel?: string }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  /** 组件卸载时清理延迟收起计时器，避免留下无意义的异步回调。 */
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current !== null) clearTimeout(closeTimerRef.current)
+    }
+  }, [])
+
+  /** 延迟收起提示框，让鼠标从问号移动到说明文字时有足够的容错时间。 */
+  const keepOpen = () => {
+    if (closeTimerRef.current !== null) {
+      clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
+    }
+    setIsOpen(true)
+  }
+
+  /** 鼠标离开问号和说明框后再收起，避免移动路径稍有偏差就立刻消失。 */
+  const scheduleClose = () => {
+    if (closeTimerRef.current !== null) clearTimeout(closeTimerRef.current)
+    closeTimerRef.current = setTimeout(() => {
+      setIsOpen(false)
+      closeTimerRef.current = null
+    }, 120)
+  }
+
   return (
-    <span className="group relative inline-flex" tabIndex={0} aria-label={`说明：${text}`}>
+    <span
+      className="relative inline-flex"
+      tabIndex={0}
+      aria-label={ariaLabel ?? '字段说明'}
+      onMouseEnter={keepOpen}
+      onMouseLeave={scheduleClose}
+      onFocus={keepOpen}
+      onBlur={scheduleClose}
+    >
       <span
         aria-hidden="true"
-        className="inline-flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border border-fg-3/24 text-[11px] font-semibold leading-none text-fg-3/24 transition-colors group-hover:border-fg-3/32 group-hover:text-fg-3/32 group-focus-within:border-fg-3/32 group-focus-within:text-fg-3/32"
+        className={`inline-flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border border-fg-3/24 text-[11px] font-semibold leading-none text-fg-3/24 transition-colors ${isOpen ? 'border-fg-3/32 text-fg-3/32' : ''}`}
       >
         ?
       </span>
       <span
         role="tooltip"
-        className="pointer-events-none absolute bottom-full left-0 z-30 w-max max-w-[280px] rounded-md border border-border bg-bg-alt px-3 py-2 text-xs font-normal leading-5 text-fg-2 opacity-0 shadow-sm transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
+        className={`absolute bottom-full left-0 z-30 w-max max-w-[280px] rounded-md border border-border bg-bg-alt px-3 py-2 text-xs font-normal leading-5 text-fg-2 shadow-sm transition-opacity duration-150 ${isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'}`}
       >
         {text}
       </span>
@@ -433,7 +470,23 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
               </a>{' '}
               截图
             </Label>
-            <FieldHint text="用于证明今天主要工作的站点数据，选择图片后可以先用画笔遮挡敏感信息。" />
+            <FieldHint
+              ariaLabel="用于证明今天主要工作的站点数据，也可以提交必应搜索工具截图。"
+              text={
+                <>
+                  除了 GSC，截图{' '}
+                  <a
+                    href="https://www.bing.com/webmasters"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#26384d] underline decoration-[#26384d]/20 underline-offset-2 transition-colors hover:text-[#1d5b8f] dark:text-[#c6d4e4] dark:decoration-[#c6d4e4]/25 dark:hover:text-[#a9c9e8]"
+                  >
+                    必应搜索工具
+                  </a>{' '}
+                  等类似平台也可以哦。必须漏出今天的折线数据！网址是否打码请自行判断。
+                </>
+              }
+            />
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <input
@@ -521,7 +574,6 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
         <div className="grid gap-1.5">
           <div className="flex items-center gap-1.5">
             <Label>2. 今天出海了几小时？</Label>
-            <FieldHint text="按今天实际投入出海工作的时间选择，不需要精确到分钟。" />
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" role="radiogroup" aria-label="今天出海了几个小时">
             {HOURS_OPTIONS.map((option) => (
@@ -570,7 +622,6 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-1.5">
               <Label htmlFor="daily-quality">4. 今天的上站工作质量，自评几分？</Label>
-              <FieldHint text="根据今天上站工作的整体完成度、质量和效果进行自评。" />
             </div>
             <span className="min-w-12 rounded-md bg-soft px-2 py-1 text-center font-mono text-lg font-semibold text-primary">
               {quality}/10
@@ -601,7 +652,6 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-1.5">
               <Label htmlFor="daily-log">5. 今天的工作日志</Label>
-              <FieldHint text="记录今天做了什么、最大问题是什么，以及明天决定做什么。" />
             </div>
             <div className="flex items-center gap-3">
               <span
@@ -634,6 +684,8 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
           <Button type="submit" size="lg" disabled={isSubmitting} className="mx-auto w-full max-w-[240px]">
             {isSubmitting ? '正在保存……' : '提交'}
           </Button>
+          {/* 用一句克制的灰色文案，提醒陛下保持记录真实，同时不干扰提交操作。 */}
+          <p className="m-0 text-center text-sm text-fg-3"><br/>如实记录 未来可鉴</p>
           {submitMessage && <p className="m-0 text-sm text-success" role="status">{submitMessage}</p>}
         </div>
       </form>
