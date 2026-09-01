@@ -1,12 +1,13 @@
 import { useState, type SyntheticEvent } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { BookOpen, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react'
+import { BookOpen, ChevronLeft, ChevronRight, Download, Image as ImageIcon } from 'lucide-react'
+import { toast } from 'sonner'
 import { AppShell } from '@/components/app/app-shell'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { requireUser } from '@/features/auth/middleware'
-import { getMyCheckinsFn } from '@/features/checkin/actions'
+import { getMyCheckinsFn, getMyCheckinsForExportFn } from '@/features/checkin/actions'
 import { displayBacklinkOption, displayHoursOption, type CheckinRecordView } from '@/features/checkin/checkin.shared'
 import { getEntitlement } from '@/features/billing/middleware'
 import { useTranslation } from '@/features/i18n/provider'
@@ -41,21 +42,70 @@ function MyRecordsPage() {
   const page = records.page
   const totalPages = records.totalPages
   const primaryName = user.name || user.email
+  const [exporting, setExporting] = useState(false)
 
   /** 翻页时保留 URL 状态，让服务端重新读取对应的 20 条记录。 */
   function setPage(nextPage: number) {
     void router.navigate({ to: '/{-$locale}/app/records', search: { page: nextPage } })
   }
 
+  /**
+   * 下载当前账号的全部打卡记录。
+   * 文件名使用本地导出时间与加密随机后缀，便于用户区分多次备份文件。
+   */
+  async function exportRecords() {
+    setExporting(true)
+    try {
+      const exportedAt = new Date()
+      const rows = await getMyCheckinsForExportFn()
+      const payload = {
+        format: 'daka.run/checkins',
+        version: 1,
+        exportedAt: exportedAt.toISOString(),
+        total: rows.length,
+        records: rows.map((record) => ({
+          id: record.id,
+          date: record.checkinDate,
+          hours: record.hours,
+          backlinks: record.backlinks,
+          quality: record.quality,
+          log: record.log,
+          imageUrl: record.imageUrl,
+          imageBytes: record.imageBytes,
+          createdAt: record.createdAt,
+        })),
+      }
+      const file = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' })
+      const objectUrl = URL.createObjectURL(file)
+      const link = document.createElement('a')
+      link.href = objectUrl
+      link.download = createExportFileName(exportedAt)
+      document.body.append(link)
+      link.click()
+      link.remove()
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0)
+      toast.success(t('app.exportRecordsSuccess', { count: String(rows.length) }))
+    } catch {
+      toast.error(t('app.exportRecordsFailed'))
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <AppShell user={user} isPro={ent.plan === 'pro'} active="records" paymentFailed={ent.paymentFailed}>
       <div className="mb-6">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
           <span className="rounded-lg bg-soft p-2 text-primary"><BookOpen size={22} /></span>
           <div>
             <h1 className="page-h">{t('app.myRecords')}</h1>
             <p className="mt-1.5 text-[14.5px] text-fg-2">{t('app.myRecordsSub')}</p>
           </div>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => { void exportRecords() }} disabled={exporting}>
+            <Download size={15} />{exporting ? t('app.exportRecordsBusy') : t('app.exportRecords')}
+          </Button>
         </div>
         <div className="mt-4 flex items-center gap-3 text-sm text-fg-2">
           <span>{t('app.myRecordsTotal', { count: String(records.total) })}</span>
@@ -84,6 +134,16 @@ function MyRecordsPage() {
       </div>
     </AppShell>
   )
+}
+
+/** 生成不覆盖旧备份的 JSON 文件名，例如 daka-records-20260901-143045-a4k7m2.json。 */
+function createExportFileName(date: Date): string {
+  const pad = (value: number) => String(value).padStart(2, '0')
+  const timestamp = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`
+  const alphabet = 'abcdefghjkmnpqrstuvwxyz23456789'
+  const randomBytes = crypto.getRandomValues(new Uint8Array(6))
+  const suffix = Array.from(randomBytes, (value) => alphabet.charAt(value % alphabet.length)).join('')
+  return `daka-records-${timestamp}-${suffix}.json`
 }
 
 /** 单条记录卡片：图片保持 450px 固定宽度，窄屏通过横向滚动保持原尺寸。 */

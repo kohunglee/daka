@@ -14,12 +14,17 @@ import { LogOut, Trash2 } from 'lucide-react'
 import { ManageSubscription } from '@/features/billing/components/manage-subscription'
 import { AvatarUploader } from '@/features/storage/components/avatar-uploader'
 import { use666Mode } from '@/features/admin/mode-666'
+import { getMyUserSettingsFn, setMyUserTestSettingFn } from '@/features/settings/user-settings.actions'
 
 export const Route = createFileRoute('/{-$locale}/app/account')({
   head: () => ({ meta: [{ name: 'robots', content: 'noindex' }] }),
   loader: async ({ params }) => {
-    const [user, ent] = await Promise.all([requireUser({ data: { locale: (params as { locale?: string }).locale } }), getEntitlement()])
-    return { user, ent }
+    const [user, ent, settings] = await Promise.all([
+      requireUser({ data: { locale: (params as { locale?: string }).locale } }),
+      getEntitlement(),
+      getMyUserSettingsFn(),
+    ])
+    return { user, ent, settings }
   },
   component: AccountPage,
 })
@@ -49,7 +54,7 @@ function Section({
 }
 
 function AccountPage() {
-  const { user, ent } = Route.useLoaderData()
+  const { user, ent, settings } = Route.useLoaderData()
   const { t } = useTranslation()
   const router = useRouter()
   const { enabled: mode666 } = use666Mode()
@@ -64,6 +69,10 @@ function AccountPage() {
   const [nicknameError, setNicknameError] = useState<string | null>(null)
   const [nicknameSuccess, setNicknameSuccess] = useState(false)
   const [nicknameBusy, setNicknameBusy] = useState(false)
+
+  const [testEnabled, setTestEnabled] = useState(settings.testEnabled)
+  const [testSettingBusy, setTestSettingBusy] = useState(false)
+  const [testSettingMessage, setTestSettingMessage] = useState<string | null>(null)
 
   const [deletePassword, setDeletePassword] = useState('')
   const [deleteError, setDeleteError] = useState<string | null>(null)
@@ -107,6 +116,21 @@ function AccountPage() {
     setPwSuccess(true)
     setCurrentPassword('')
     setNewPassword('')
+  }
+
+  /** 保存当前用户自己的 JSON 测试设置，未来个人偏好继续沿用同一配置字段。 */
+  async function handleUserTestSetting(enabled: boolean) {
+    setTestSettingBusy(true)
+    setTestSettingMessage(null)
+    try {
+      const nextSettings = await setMyUserTestSettingFn({ data: { enabled } })
+      setTestEnabled(nextSettings.testEnabled)
+      setTestSettingMessage(nextSettings.testEnabled ? '个人测试设置已开启。' : '个人测试设置已关闭。')
+    } catch {
+      setTestSettingMessage('个人测试设置保存失败，请稍后重试。')
+    } finally {
+      setTestSettingBusy(false)
+    }
   }
 
   async function handleLogout() {
@@ -162,6 +186,31 @@ function AccountPage() {
             </div>
           </form>
         </Section>
+
+        {mode666 && (
+          <Section title="个人设置demo">
+            <div className="grid gap-4">
+              <div>
+                <p className="m-0 font-semibold">个人测试设置</p>
+                <p className="mb-0 mt-1 text-sm leading-6 text-fg-2">对应 user.settings_json：<code>{'{"version":1,"testEnabled":true}'}</code>。用于验证个人配置的读写链路。</p>
+              </div>
+              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-border p-4 text-sm">
+                <span>
+                  <span className="block font-semibold">开启个人测试开关</span>
+                  <span className="mt-1 block text-fg-2">当前状态：{testEnabled ? '已开启' : '已关闭'}</span>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={testEnabled}
+                  disabled={testSettingBusy}
+                  onChange={(event) => { void handleUserTestSetting(event.target.checked) }}
+                  className="h-4 w-4 accent-primary"
+                />
+              </label>
+              {testSettingMessage && <p className="m-0 text-sm text-fg-2" role="status">{testSettingMessage}</p>}
+            </div>
+          </Section>
+        )}
 
         <Section title={t('auth.changePassword')}>
           <form onSubmit={handleChangePassword} className="grid gap-4">

@@ -9,6 +9,10 @@ export const user = sqliteTable("user", {
     .default(false)
     .notNull(),
   image: text("image"),
+  // 用户低频、可扩展的个性化配置；常用查询字段仍应单独建列，避免 JSON 成为查询入口。
+  settingsJson: text("settings_json")
+    .default('{"version":1,"testEnabled":true}')
+    .notNull(),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),
@@ -104,6 +108,5 @@ export const rateLimit = sqliteTable(
   },
   (table) => [index("rateLimit_key_idx").on(table.key)],
 );
-
 
 

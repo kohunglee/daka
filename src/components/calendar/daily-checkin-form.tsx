@@ -81,7 +81,7 @@ function FieldHint({ text, ariaLabel }: { text: ReactNode; ariaLabel?: string })
     closeTimerRef.current = setTimeout(() => {
       setIsOpen(false)
       closeTimerRef.current = null
-    }, 120)
+    }, 180)
   }
 
   return (

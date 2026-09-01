@@ -14,7 +14,7 @@ import {
   type CheckinCalendarSummary,
   type SubmitCheckinResult,
 } from './checkin.shared'
-import { getPublicCheckin, getUserCheckin, getYearCheckinData, listMyCheckins, parseCheckinOptions, validateCheckinFields, validateYear } from './checkin.server'
+import { getPublicCheckin, getUserCheckin, getYearCheckinData, listMyCheckins, listMyCheckinsForExport, parseCheckinOptions, validateCheckinFields, validateYear } from './checkin.server'
 
 /** 未登录时只返回空日历；打卡动作本身仍然会跳转登录。 */
 export const getYearCheckinSummaryFn = createServerFn({ method: 'GET' })
@@ -45,6 +45,14 @@ export const getMyCheckinsFn = createServerFn({ method: 'GET' })
     const user = await readUser()
     if (!user) throw redirect({ to: '/{-$locale}/login' })
     return listMyCheckins(createDb(env.DB), user.id, data.page)
+  })
+
+/** 导出时只按服务端会话读取当前账号的全部记录，不接受用户 ID 等外部参数。 */
+export const getMyCheckinsForExportFn = createServerFn({ method: 'GET' })
+  .handler(async () => {
+    const user = await readUser()
+    if (!user) throw redirect({ to: '/{-$locale}/login' })
+    return listMyCheckinsForExport(createDb(env.DB), user.id)
   })
 
 /** 公开链接使用 userId/date 读取单条记录，不提供按用户枚举记录的接口。 */

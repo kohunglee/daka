@@ -108,6 +108,22 @@ export async function listMyCheckins(db: DB, userId: string, page: number): Prom
   }
 }
 
+/**
+ * 导出当前用户的全部历史打卡记录。
+ *
+ * 导出量远小于常规列表的分页上限；图片仍保留为受现有接口控制的访问地址，
+ * 不把 R2 二进制编码进 JSON，避免用户下载一个难以保存和打开的超大文件。
+ */
+export async function listMyCheckinsForExport(db: DB, userId: string): Promise<CheckinRecordView[]> {
+  const rows = await db
+    .select()
+    .from(dailyCheckin)
+    .where(eq(dailyCheckin.userId, userId))
+    .orderBy(desc(dailyCheckin.checkinDate), desc(dailyCheckin.createdAt))
+
+  return rows.map(toCheckinRecordView)
+}
+
 /** 服务端最终校验表单字段，前端校验只能作为体验优化。 */
 export function validateCheckinFields(input: {
   hours: string
