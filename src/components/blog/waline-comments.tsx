@@ -45,5 +45,6 @@ export function WalineComments() {
     }
   }, [])
 
-  return <div id="waline" ref={containerRef} />
+  // 评论区与正文之间留 100px 的空白间距，视觉上把「读」和「聊」两块分隔开。
+  return <div id="waline" ref={containerRef} className="mt-[100px]" />
 }

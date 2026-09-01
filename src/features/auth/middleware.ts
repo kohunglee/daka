@@ -8,7 +8,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { redirect } from '@tanstack/react-router'
 import { env } from '@/lib/env'
-import { readUser } from './readUser.server'
+import { hasCredentialAccount, readUser } from './readUser.server'
 
 export const getOptionalUser = createServerFn({ method: 'GET' }).handler(
   async (): Promise<{ id: string; email: string } | null> => readUser(),
@@ -29,6 +29,12 @@ export const getEnabledSocialProviders = createServerFn({ method: 'GET' }).handl
   if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) out.push('google')
   if (env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET) out.push('github')
   return out
+})
+
+/** 返回当前会话用户是否拥有本地邮箱密码，供账户页安全决定是否显示改密入口。 */
+export const getCurrentUserHasPassword = createServerFn({ method: 'GET' }).handler(async (): Promise<boolean> => {
+  const currentUser = await readUser()
+  return currentUser ? hasCredentialAccount(currentUser.id) : false
 })
 
 /**

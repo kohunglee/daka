@@ -1,18 +1,27 @@
 import { eq } from 'drizzle-orm'
 import type { DB } from '@/db/client'
 import { siteSettings } from './site-settings.schema'
-import { DEFAULT_SETTINGS_JSON, readTestSettings, updateTestSettingsJson, type TestSettingsView } from './settings.shared'
+import {
+  DEFAULT_SETTINGS_JSON,
+  readSiteSettings,
+  updateCustomFooterHtmlJson,
+  updateTestSettingsJson,
+  type SiteSettingsView,
+} from './settings.shared'
 
 /** 全站配置固定使用的单行主键。 */
 const GLOBAL_SITE_SETTINGS_ID = 'global'
 
-/** 666 管理中心可读取的全站配置测试视图。 */
-export type SiteSettingsView = TestSettingsView
-
 /** 读取全站单行设置；迁移异常或旧库缺行时会安全补齐默认配置。 */
 export async function getSiteSettings(db: DB): Promise<SiteSettingsView> {
   const row = await getOrCreateSiteSettingsRow(db)
-  return readTestSettings(row.settingsJson)
+  return readSiteSettings(row.settingsJson)
+}
+
+/** 公开页面仅取得会被输出到 Footer 的 HTML，不下发其他全站 JSON 配置。 */
+export async function getPublicCustomFooterHtml(db: DB): Promise<string> {
+  const row = await getOrCreateSiteSettingsRow(db)
+  return readSiteSettings(row.settingsJson).customFooterHtml
 }
 
 /** 更新全站测试开关，并保留 JSON 中由未来功能写入的未知键。 */
@@ -23,7 +32,18 @@ export async function setSiteTestSetting(db: DB, testEnabled: boolean): Promise<
     .update(siteSettings)
     .set({ settingsJson, updatedAt: new Date() })
     .where(eq(siteSettings.id, GLOBAL_SITE_SETTINGS_ID))
-  return readTestSettings(settingsJson)
+  return readSiteSettings(settingsJson)
+}
+
+/** 保存站长的自定义 Footer HTML；调用方负责管理员会话和长度校验。 */
+export async function setSiteCustomFooterHtml(db: DB, customFooterHtml: string): Promise<SiteSettingsView> {
+  const row = await getOrCreateSiteSettingsRow(db)
+  const settingsJson = updateCustomFooterHtmlJson(row.settingsJson, customFooterHtml)
+  await db
+    .update(siteSettings)
+    .set({ settingsJson, updatedAt: new Date() })
+    .where(eq(siteSettings.id, GLOBAL_SITE_SETTINGS_ID))
+  return readSiteSettings(settingsJson)
 }
 
 /** 取得全站设置行；onConflictDoNothing 处理并发首次读取时的重复初始化。 */

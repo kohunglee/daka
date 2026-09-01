@@ -1,6 +1,9 @@
-import { Link } from '@tanstack/react-router'
+import { Link, getRouteApi } from '@tanstack/react-router'
 import { useTranslation } from '@/features/i18n/provider'
 import { Logo } from '@/components/brand/logo'
+import { CustomFooterHtml } from './custom-footer-html'
+
+const rootRoute = getRouteApi('__root__')
 
 /** 首页页足：保留品牌说明、版权和必要法律入口，移除分散注意力的推广链接。 */
 /**
@@ -8,6 +11,7 @@ import { Logo } from '@/components/brand/logo'
  */
 export function Footer(_props?: { theme?: 'light' | 'dark' }) {
   const { t } = useTranslation()
+  const { customFooterHtml } = rootRoute.useLoaderData()
 
   return (
     <footer className="border-t border-border bg-background px-5 py-10 md:px-7">
@@ -26,6 +30,9 @@ export function Footer(_props?: { theme?: 'light' | 'dark' }) {
           <Link className="transition-colors hover:text-foreground" to="/{-$locale}/privacy">{t('marketing.footerPrivacy')}</Link>
         </nav>
       </div>
+
+      {/* 站长在 666 全站设置中保存的可信 Footer HTML（如统计或页面脚本）。 */}
+      <CustomFooterHtml html={customFooterHtml} />
 
     </footer>
   )

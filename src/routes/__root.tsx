@@ -3,7 +3,9 @@ import { isLocale, defaultLocale } from '@/features/i18n/locale'
 import { getPreferences } from '@/server/preferences'
 import { getOptionalUser } from '@/features/auth/middleware'
 import { getAnalyticsToken } from '@/features/analytics/analytics'
+import { getPublicCustomFooterHtmlFn } from '@/features/settings/site-settings.admin.actions'
 import { Toaster } from '@/components/ui/sonner'
+import { AreaEditorProvider, AREA_EDITOR_SCRIPT_ID, AREA_EDITOR_SCRIPT_INTEGRITY, AREA_EDITOR_SCRIPT_URL } from '@/components/editor/area-editor-provider'
 import { useResolvedTheme } from '@/features/theme/use-resolved-theme'
 import appCss from '@/styles/app.css?url'
 
@@ -37,9 +39,10 @@ export const Route = createRootRoute({
       const { theme, themeFromCookie } = await getPreferences()
       const user = await getOptionalUser()
       const analyticsToken = await getAnalyticsToken()
-      return { theme, themeFromCookie, user, analyticsToken }
+      const customFooterHtml = await getPublicCustomFooterHtmlFn()
+      return { theme, themeFromCookie, user, analyticsToken, customFooterHtml }
     } catch {
-      return { theme: 'dark' as const, themeFromCookie: false, user: null, analyticsToken: null }
+      return { theme: 'dark' as const, themeFromCookie: false, user: null, analyticsToken: null, customFooterHtml: '' }
     }
   },
   component: RootComponent,
@@ -64,12 +67,22 @@ function RootComponent() {
   return (
     <html lang={lang} className={theme} suppressHydrationWarning>
       <head>
+        {/* 预先放入 HTML head，确保第三方运行库在 React 首次水合前即可被浏览器正常加载。 */}
+        <script
+          id={AREA_EDITOR_SCRIPT_ID}
+          defer
+          src={AREA_EDITOR_SCRIPT_URL}
+          integrity={AREA_EDITOR_SCRIPT_INTEGRITY}
+          crossOrigin="anonymous"
+        />
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>
         <Outlet />
         <Scripts />
+        {/* 全站 textarea 编辑增强：异步加载失败时自动保留原生输入体验。 */}
+        <AreaEditorProvider />
         <Toaster theme={resolvedTheme} />
         {/* Cloudflare Web Analytics — only when a beacon token is configured. */}
         {analyticsToken && (
