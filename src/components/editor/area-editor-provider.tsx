@@ -1,11 +1,9 @@
 import { useEffect } from 'react'
 
 /** 陛下指定的 AreaEditor CDN：为原生 textarea 提供缩进和括号配对。 */
-// 固定到已核验的提交，避免 jsDelivr 的分支地址更新后与 SRI 校验值失配、被浏览器拒绝执行。
-export const AREA_EDITOR_SCRIPT_ID = 'areaeditor-runtime'
-// 标准压缩版不依赖 eval；比极限压缩版略大，但能在严格浏览器环境稳定执行。
-export const AREA_EDITOR_SCRIPT_URL = 'https://cdn.jsdelivr.net/gh/kohunglee/areaeditor@4653962414692dceaa26f60696d449e8bc17c53a/src/areaeditor.2.0.min.js'
-export const AREA_EDITOR_SCRIPT_INTEGRITY = 'sha256-Fbwo/zqhKo5u8nTfbm2h3lFKtvn6hkcsooa6mHWW2aQ='
+const AREA_EDITOR_SCRIPT_URL = 'https://cdn.jsdelivr.net/gh/kohunglee/areaeditor/src/areaeditor.2.0.x.min.js'
+const AREA_EDITOR_SCRIPT_INTEGRITY = 'sha256-sP3tIYbNNHejSjhs3X0SBLULz54YEbR3g1dSJMvpCME='
+const AREA_EDITOR_SCRIPT_ID = 'areaeditor-runtime'
 
 /** AreaEditor 只需要接收一个 textarea 元素；保留其公开缩进配置的最小类型。 */
 interface AreaEditorInstance {
@@ -17,7 +15,7 @@ interface AreaEditorInstance {
 
 /** 第三方脚本写入 window 的构造函数类型，避免在业务代码里使用 any。 */
 type AreaEditorConstructor = new (
-  elements: string | ArrayLike<Element>,
+  elements: string | Element | NodeListOf<Element>,
   options?: { indentType?: { type?: 'space' | 'tab'; count?: number } },
 ) => AreaEditorInstance
 
@@ -82,8 +80,7 @@ function enhanceNodeTextareas(node: Node, AreaEditor: AreaEditorConstructor) {
 function enhanceTextarea(textarea: HTMLTextAreaElement, AreaEditor: AreaEditorConstructor) {
   if (enhancedTextareas.has(textarea)) return
   try {
-    // AreaEditor 运行库实际遍历的是传入值的 length，因此传入单元素列表而非裸 Element。
-    new AreaEditor([textarea])
+    new AreaEditor(textarea)
     enhancedTextareas.add(textarea)
   } catch {
     // 第三方增强失败时保留原生 textarea，不能阻塞表单填写和保存。

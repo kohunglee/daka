@@ -1,6 +1,6 @@
 import { createFileRoute, useRouter, Link } from '@tanstack/react-router'
 import { useState, type ReactNode } from 'react'
-import { getCurrentUserHasPassword, requireUser } from '@/features/auth/middleware'
+import { requireUser } from '@/features/auth/middleware'
 import { getEntitlement } from '@/features/billing/middleware'
 import { signOut, changePassword, updateUser, deleteUser } from '@/features/auth/auth.client'
 import { mapAuthError } from '@/features/auth/errors'
@@ -19,13 +19,12 @@ import { getMyUserSettingsFn, setMyUserTestSettingFn } from '@/features/settings
 export const Route = createFileRoute('/{-$locale}/app/account')({
   head: () => ({ meta: [{ name: 'robots', content: 'noindex' }] }),
   loader: async ({ params }) => {
-    const [user, ent, settings, hasPassword] = await Promise.all([
+    const [user, ent, settings] = await Promise.all([
       requireUser({ data: { locale: (params as { locale?: string }).locale } }),
       getEntitlement(),
       getMyUserSettingsFn(),
-      getCurrentUserHasPassword(),
     ])
-    return { user, ent, settings, hasPassword }
+    return { user, ent, settings }
   },
   component: AccountPage,
 })
@@ -55,7 +54,7 @@ function Section({
 }
 
 function AccountPage() {
-  const { user, ent, settings, hasPassword } = Route.useLoaderData()
+  const { user, ent, settings } = Route.useLoaderData()
   const { t } = useTranslation()
   const router = useRouter()
   const { enabled: mode666 } = use666Mode()
@@ -213,27 +212,25 @@ function AccountPage() {
           </Section>
         )}
 
-        {hasPassword && (
-          <Section title={t('auth.changePassword')}>
-            <form onSubmit={handleChangePassword} className="grid gap-4">
-              <div className="field">
-                <Label htmlFor="currentPassword">{t('auth.currentPassword')}</Label>
-                <Input id="currentPassword" type="password" value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)} required autoComplete="current-password" />
-              </div>
-              <div className="field">
-                <Label htmlFor="newPassword">{t('auth.newPassword')}</Label>
-                <Input id="newPassword" type="password" value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)} required minLength={8} autoComplete="new-password" />
-              </div>
-              {pwError && <p className="text-sm text-destructive">{pwError}</p>}
-              {pwSuccess && <p className="text-sm text-success">{t('app.passwordChanged')}</p>}
-              <div>
-                <Button type="submit" disabled={pwBusy}>{t('auth.changePassword')}</Button>
-              </div>
-            </form>
-          </Section>
-        )}
+        <Section title={t('auth.changePassword')}>
+          <form onSubmit={handleChangePassword} className="grid gap-4">
+            <div className="field">
+              <Label htmlFor="currentPassword">{t('auth.currentPassword')}</Label>
+              <Input id="currentPassword" type="password" value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)} required autoComplete="current-password" />
+            </div>
+            <div className="field">
+              <Label htmlFor="newPassword">{t('auth.newPassword')}</Label>
+              <Input id="newPassword" type="password" value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)} required minLength={8} autoComplete="new-password" />
+            </div>
+            {pwError && <p className="text-sm text-destructive">{pwError}</p>}
+            {pwSuccess && <p className="text-sm text-success">{t('app.passwordChanged')}</p>}
+            <div>
+              <Button type="submit" disabled={pwBusy}>{t('auth.changePassword')}</Button>
+            </div>
+          </form>
+        </Section>
 
         {mode666 && (
           <Section title={t('billing.currentPlan')}>

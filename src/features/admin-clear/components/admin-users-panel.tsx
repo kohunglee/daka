@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Copy, Search, Trash2, UserRound, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Copy, KeyRound, Search, Trash2, UserRound, X } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { fmtDate } from '@/lib/format-date'
-import { deleteAdminUserForHiddenFn, listAdminUsersForHiddenFn, type AdminUserPage } from '@/features/admin-clear/admin-clear.actions'
+import { deleteAdminUserForHiddenFn, listAdminUsersForHiddenFn, resetUserPasswordForHiddenFn, type AdminUserPage } from '@/features/admin-clear/admin-clear.actions'
 import type { AdminUserRow } from '@/features/admin/getAdminUsers'
 
 /** 从用户昵称或邮箱生成简短头像文字，避免没有头像时出现空白。 */
@@ -39,6 +39,12 @@ export function AdminUsersPanel() {
   const [deletePassword, setDeletePassword] = useState('')
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [deleteBusy, setDeleteBusy] = useState(false)
+  const [resetTarget, setResetTarget] = useState<AdminUserRow | null>(null)
+  const [resetNewPassword, setResetNewPassword] = useState('')
+  const [resetConfirmPassword, setResetConfirmPassword] = useState('')
+  const [resetAdminPassword, setResetAdminPassword] = useState('')
+  const [resetError, setResetError] = useState<string | null>(null)
+  const [resetBusy, setResetBusy] = useState(false)
 
   /** 读取当前搜索条件和页码的用户列表。 */
   const loadUsers = useCallback(async (page: number, q: string): Promise<AdminUserPage | null> => {
@@ -117,6 +123,59 @@ export function AdminUsersPanel() {
       setDeleteError('删除失败，请检查网络或管理员会话后重试。')
     } finally {
       setDeleteBusy(false)
+    }
+  }
+
+  /** 打开重置密码框；每次打开都清空输入，确保新密码和管理员密码都必须重新填写。 */
+  function openResetDialog(row: AdminUserRow) {
+    setResetTarget(row)
+    setResetNewPassword('')
+    setResetConfirmPassword('')
+    setResetAdminPassword('')
+    setResetError(null)
+  }
+
+  /** 关闭重置密码框，并丢弃本次输入的所有密码字段。 */
+  function closeResetDialog() {
+    if (resetBusy) return
+    setResetTarget(null)
+    setResetNewPassword('')
+    setResetConfirmPassword('')
+    setResetAdminPassword('')
+    setResetError(null)
+  }
+
+  /** 向服务端提交密码重置；管理员密码在服务端重新核对，前端状态不具备授权能力。 */
+  async function handleResetPassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!resetTarget) return
+
+    if (resetNewPassword !== resetConfirmPassword) {
+      setResetError('两次输入的新密码不一致，请重新填写。')
+      return
+    }
+
+    setResetBusy(true)
+    setResetError(null)
+    try {
+      const result = await resetUserPasswordForHiddenFn({
+        data: { userId: resetTarget.id, password: resetAdminPassword, newPassword: resetNewPassword },
+      })
+      if (result.status === 'invalid_password') {
+        setResetError('管理员密码错误，请重新输入。')
+        return
+      }
+      if (result.status === 'not_found') {
+        setResetError('该用户已经不存在，列表可能已经更新。')
+        return
+      }
+
+      toast.success(`已重置用户 ${resetTarget.name || resetTarget.email} 的登录密码。`)
+      closeResetDialog()
+    } catch {
+      setResetError('重置失败，请检查网络或管理员会话后重试。')
+    } finally {
+      setResetBusy(false)
     }
   }
 
@@ -245,9 +304,12 @@ export function AdminUsersPanel() {
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
               <h2 className="m-0 text-lg font-semibold">用户详情</h2>
-              <p className="mb-0 mt-1 text-sm text-fg-2">详情只读；删除操作需在列表中发起，并重新输入管理员密码。</p>
+              <p className="mb-0 mt-1 text-sm text-fg-2">详情只读；重置密码和删除操作都需重新输入管理员密码。</p>
             </div>
-            <Button type="button" variant="ghost" size="sm" onClick={() => setSelected(null)}><X size={15} />关闭</Button>
+            <div className="flex shrink-0 gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => openResetDialog(selected)}><KeyRound size={15} />重置密码</Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => setSelected(null)}><X size={15} />关闭</Button>
+            </div>
           </div>
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
             <div><dt className="text-xs text-fg-3">昵称</dt><dd className="m-0 mt-1 font-semibold">{selected.name}</dd></div>
@@ -296,6 +358,60 @@ export function AdminUsersPanel() {
               <Button type="button" variant="outline" onClick={closeDeleteDialog} disabled={deleteBusy}>取消</Button>
               <Button type="submit" disabled={deleteBusy} className="bg-destructive text-white hover:bg-destructive/90">
                 <Trash2 size={15} />{deleteBusy ? '正在删除……' : '确认删除'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={resetTarget !== null} onOpenChange={(open) => { if (!open) closeResetDialog() }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>重置登录密码</DialogTitle>
+            <DialogDescription>
+              将“{resetTarget?.name || resetTarget?.email || '该用户'}”的登录密码改为下方填写的新密码；若该账号还没有邮箱密码登录方式，系统会自动补建。
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleResetPassword} className="grid gap-4">
+            <div className="grid gap-1.5">
+              <label htmlFor="hidden-admin-reset-new-password" className="text-sm font-semibold">新密码（6–128 位）</label>
+              <Input
+                id="hidden-admin-reset-new-password"
+                type="password"
+                value={resetNewPassword}
+                onChange={(event) => setResetNewPassword(event.target.value)}
+                autoComplete="new-password"
+                required
+                autoFocus
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <label htmlFor="hidden-admin-reset-confirm-password" className="text-sm font-semibold">再次输入新密码</label>
+              <Input
+                id="hidden-admin-reset-confirm-password"
+                type="password"
+                value={resetConfirmPassword}
+                onChange={(event) => setResetConfirmPassword(event.target.value)}
+                autoComplete="new-password"
+                required
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <label htmlFor="hidden-admin-reset-admin-password" className="text-sm font-semibold">管理员密码</label>
+              <Input
+                id="hidden-admin-reset-admin-password"
+                type="password"
+                value={resetAdminPassword}
+                onChange={(event) => setResetAdminPassword(event.target.value)}
+                autoComplete="current-password"
+                required
+              />
+            </div>
+            {resetError && <p className="m-0 text-sm text-destructive" role="alert">{resetError}</p>}
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={closeResetDialog} disabled={resetBusy}>取消</Button>
+              <Button type="submit" disabled={resetBusy}>
+                <KeyRound size={15} />{resetBusy ? '正在重置……' : '确认重置'}
               </Button>
             </div>
           </form>

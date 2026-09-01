@@ -4,9 +4,10 @@
  */
 import { createServerFn } from '@tanstack/react-start'
 import { and, count, desc, eq, like, or } from 'drizzle-orm'
+import { hashPassword } from 'better-auth/crypto'
 import { createDb } from '@/db/client'
 import { env } from '@/lib/env'
-import { user } from '@/features/auth/auth.schema'
+import { account, user } from '@/features/auth/auth.schema'
 import { dailyCheckin } from '@/features/checkin/checkin.schema'
 import { isValidCheckinDate } from '@/features/checkin/checkin.shared'
 import { clampPage } from '@/features/admin/params'
@@ -191,6 +192,66 @@ export const deleteAdminUserForHiddenFn = createServerFn({ method: 'POST' })
     await db.delete(user).where(eq(user.id, data.userId))
 
     return { status: 'deleted', deletedCheckins: checkinRows.length }
+  })
+
+/** 重置密码的结果；密码错误单独返回，方便前端保留输入状态。 */
+export type ResetUserPasswordResult =
+  | { status: 'reset' }
+  | { status: 'not_found' }
+  | { status: 'invalid_password' }
+
+/**
+ * 重置注册用户的登录密码。
+ *
+ * 与删除用户同级的高风险操作：先校验管理员会话，再重新核对本次输入的管理员
+ * 密码。随后生成与 better-auth 完全一致的 scrypt 哈希写入账号。若该用户还没有
+ * 邮箱密码登录方式（例如早期仅通过第三方登录），则补建一条 credential 账号记录，
+ * 让「邮箱 + 新密码」可以立即登录。
+ */
+export const resetUserPasswordForHiddenFn = createServerFn({ method: 'POST' })
+  .validator((data: { userId?: unknown; password?: unknown; newPassword?: unknown }) => ({
+    userId: typeof data?.userId === 'string' ? data.userId.trim().slice(0, 200) : '',
+    password: typeof data?.password === 'string' ? data.password.slice(0, 200) : '',
+    newPassword: typeof data?.newPassword === 'string' ? data.newPassword : '',
+  }))
+  .handler(async ({ data }): Promise<ResetUserPasswordResult> => {
+    await requireAdminSession()
+    if (!data.userId) throw new Error('重置参数无效。')
+    // 新密码下限放宽到 6 位：登录阶段 better-auth 不校验密码长度，这里只防住空串和超长值。
+    if (data.newPassword.length < 6 || data.newPassword.length > 128) {
+      throw new Error('新密码长度需在 6 到 128 位之间。')
+    }
+    if (!verifyAdminPassword(data.password)) return { status: 'invalid_password' }
+
+    const db = createDb(env.DB)
+    const userRows = await db.select({ id: user.id }).from(user).where(eq(user.id, data.userId)).limit(1)
+    if (!userRows[0]) return { status: 'not_found' }
+
+    // better-auth 的密码哈希：N=16384、r=16、p=1、dkLen=64，结果形如 `盐:哈希`。
+    const hashedPassword = await hashPassword(data.newPassword)
+
+    // 已有邮箱密码账号则只改密码；否则补建 credential 记录（accountId 约定等于 userId）。
+    const credentialRows = await db
+      .select({ id: account.id })
+      .from(account)
+      .where(and(eq(account.userId, data.userId), eq(account.providerId, 'credential')))
+      .limit(1)
+
+    if (credentialRows[0]) {
+      await db.update(account).set({ password: hashedPassword }).where(eq(account.id, credentialRows[0].id))
+    } else {
+      await db.insert(account).values({
+        id: crypto.randomUUID(),
+        accountId: data.userId,
+        providerId: 'credential',
+        userId: data.userId,
+        password: hashedPassword,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+    }
+
+    return { status: 'reset' }
   })
 
 /** 分页列出当前数据库里的全部打卡记录，默认按日期从新到旧排列。 */

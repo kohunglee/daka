@@ -5,7 +5,7 @@ import { getOptionalUser } from '@/features/auth/middleware'
 import { getAnalyticsToken } from '@/features/analytics/analytics'
 import { getPublicCustomFooterHtmlFn } from '@/features/settings/site-settings.admin.actions'
 import { Toaster } from '@/components/ui/sonner'
-import { AreaEditorProvider, AREA_EDITOR_SCRIPT_ID, AREA_EDITOR_SCRIPT_INTEGRITY, AREA_EDITOR_SCRIPT_URL } from '@/components/editor/area-editor-provider'
+import { AreaEditorProvider } from '@/components/editor/area-editor-provider'
 import { useResolvedTheme } from '@/features/theme/use-resolved-theme'
 import appCss from '@/styles/app.css?url'
 
@@ -67,14 +67,6 @@ function RootComponent() {
   return (
     <html lang={lang} className={theme} suppressHydrationWarning>
       <head>
-        {/* 预先放入 HTML head，确保第三方运行库在 React 首次水合前即可被浏览器正常加载。 */}
-        <script
-          id={AREA_EDITOR_SCRIPT_ID}
-          defer
-          src={AREA_EDITOR_SCRIPT_URL}
-          integrity={AREA_EDITOR_SCRIPT_INTEGRITY}
-          crossOrigin="anonymous"
-        />
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <HeadContent />
       </head>
