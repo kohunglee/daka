@@ -15,12 +15,24 @@ function GoogleIcon() {
   )
 }
 
-export function SocialButtons({ providers }: { providers: Array<'google' | 'github'> }) {
+/**
+ * 渲染第三方登录按钮。
+ *
+ * 普通模式下登录页只展示 Google，此时不需要“或者继续”分隔线；
+ * 进入 666 模式后，邮箱表单会出现，分隔线再恢复为原来的提示。
+ */
+export function SocialButtons({
+  providers,
+  showDivider = true,
+}: {
+  providers: Array<'google' | 'github'>
+  showDivider?: boolean
+}) {
   const { t } = useTranslation()
   if (providers.length === 0) return null
   return (
     <>
-      <div className="divider my-5">{t('auth.orContinue')}</div>
+      {showDivider && <div className="divider my-5">{t('auth.orContinue')}</div>}
       <div className="grid gap-2.5">
         {providers.map((p) => (
           <button
