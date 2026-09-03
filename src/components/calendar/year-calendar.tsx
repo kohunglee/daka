@@ -93,7 +93,6 @@ export function YearCalendar({ userId }: { userId: string | null }) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
   const [detailError, setDetailError] = useState<string | null>(null)
-  const [summaryLoading, setSummaryLoading] = useState(false)
   // 只有年度打卡摘要成功返回后，按钮才显示具体状态，避免慢网速下先闪出错误文案。
   const [loadedSummaryKey, setLoadedSummaryKey] = useState<string | null>(() => (userId ? null : 'logged-out'))
   const timerRef = useRef<number | null>(null)
@@ -122,7 +121,6 @@ export function YearCalendar({ userId }: { userId: string | null }) {
       return () => { cancelled = true }
     }
 
-    setSummaryLoading(true)
     void getYearCheckinSummaryFn({ data: { year } })
       .then((summary) => {
         if (cancelled) return
@@ -132,9 +130,6 @@ export function YearCalendar({ userId }: { userId: string | null }) {
       })
       .catch(() => {
         if (!cancelled) setDetailError('日历数据读取失败，请刷新页面重试。')
-      })
-      .finally(() => {
-        if (!cancelled) setSummaryLoading(false)
       })
 
     return () => { cancelled = true }
@@ -223,7 +218,6 @@ export function YearCalendar({ userId }: { userId: string | null }) {
         </div>
       </div>
 
-      {summaryLoading && userId && <p className="mb-3 text-center text-xs text-fg-3">正在读取打卡日历……</p>}
       {/* 12 个月：宽度不超过 600px 时 2 列，601–1080px 时 3 列，更宽时 6 列。 */}
       <div className="grid grid-cols-2 gap-3 min-[601px]:grid-cols-3 min-[1081px]:grid-cols-6">
         {months.map((month) => (
