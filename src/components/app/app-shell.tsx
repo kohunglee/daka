@@ -185,6 +185,13 @@ export function AppShell({
               {t('billing.pro')}
             </Badge>
           ) : null}
+          {/* 个人中心顶部显示当前账号头像，紧贴在日间／夜间模式按钮左侧。 */}
+          {active === 'account' && (
+            <Avatar className="size-[32px]" title={`${primary} 的头像`} aria-label={`${primary} 的头像`}>
+              <AvatarImage src={user.image ?? undefined} alt={`${primary} 的头像`} />
+              <AvatarFallback>{initials(primary)}</AvatarFallback>
+            </Avatar>
+          )}
           <ThemeToggle theme={theme} />
         </div>
       </div>
