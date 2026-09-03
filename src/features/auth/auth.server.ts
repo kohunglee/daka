@@ -85,11 +85,13 @@ export function createAuth(authEnv: AuthEnv, db: DB) {
     rateLimit: { enabled: true, storage: 'database' },
     advanced: { ipAddress: { ipAddressHeaders: ['cf-connecting-ip'] } },
     socialProviders: socialProviders(authEnv),
-    // 禁用自动跨渠道账号关联（accountLinking: false），避免不同渠道同邮箱被自动合并
+    // 开启可信 OAuth 渠道的账号关联，让同一邮箱可以关联到已有登录账号
     account: {
       accountLinking: {
-        enabled: false,
+        enabled: true,
         trustedProviders: ['github', 'google'],
+        // 当前项目关闭注册邮箱强制验证，允许可信 OAuth 账号关联已有用户
+        requireLocalEmailVerified: false,
       },
     },
     user: {

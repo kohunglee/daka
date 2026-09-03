@@ -311,6 +311,10 @@ function AdminClearPanel({ page, editId }: { page: AdminWorkspacePage; editId?: 
               <div><dt className="text-xs text-fg-3">图片大小</dt><dd className="m-0">{Math.ceil(preview.imageBytes / 1024)}KB</dd></div>
               <div><dt className="text-xs text-fg-3">出海 / 外链 / 质量</dt><dd className="m-0">{displayHoursOption(preview.hours)} 小时 / {displayBacklinkOption(preview.backlinks)} 条 / {preview.quality}/10</dd></div>
             </dl>
+            <section className="grid gap-1.5">
+              <h2 className="m-0 text-xs font-semibold text-fg-3">工作日志</h2>
+              <p className="m-0 whitespace-pre-wrap break-words rounded-md bg-background p-3 leading-6 text-foreground">{preview.log || '暂无日志内容'}</p>
+            </section>
             <a
               href={getPreviewImageUrl(preview)}
               target="_blank"

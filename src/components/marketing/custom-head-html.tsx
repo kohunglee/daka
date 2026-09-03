@@ -12,14 +12,18 @@ export function CustomHeadHtml({ html }: { html: string }) {
     document.head.querySelectorAll(marker).forEach((node) => node.remove())
     if (!html) return
 
-    const template = document.createElement('template')
-    template.innerHTML = html
+    // 服务端先把原始 HTML 放在 template 中，避免它进入 TanStack 的序列化状态后
+    // 看起来像被转义；template 内容不会立即执行，下面仍统一克隆 script 节点。
+    const serverTemplate = document.head.querySelector<HTMLTemplateElement>('[data-custom-head-template="true"]')
+    const template = serverTemplate ?? document.createElement('template')
+    if (!serverTemplate) template.innerHTML = html
     const fragment = document.createDocumentFragment()
     for (const node of Array.from(template.content.childNodes)) {
       const cloned = cloneHeadNodeWithExecutableScripts(node)
       if (cloned instanceof Element) cloned.setAttribute('data-custom-head-html', 'true')
       fragment.appendChild(cloned)
     }
+    serverTemplate?.remove()
     document.head.appendChild(fragment)
 
     return () => {
@@ -27,7 +31,12 @@ export function CustomHeadHtml({ html }: { html: string }) {
     }
   }, [html])
 
-  return null
+  return html ? (
+    <template
+      data-custom-head-template="true"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  ) : null
 }
 
 /** 克隆任意 Head 节点，并让脚本以真实 script 标签方式执行。 */

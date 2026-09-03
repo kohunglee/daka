@@ -36,6 +36,7 @@ export interface AdminClearPreview {
   hours: string
   backlinks: string
   quality: number
+  log: string
   logLength: number
   createdAt: string
 }
@@ -87,6 +88,7 @@ function toAdminClearPreview(row: {
     hours: row.hours,
     backlinks: row.backlinks,
     quality: row.quality,
+    log: row.log,
     logLength: Array.from(row.log).length,
     createdAt: row.createdAt.toISOString(),
   }

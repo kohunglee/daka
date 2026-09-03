@@ -14,6 +14,26 @@ interface Transport {
   send(email: SentEmail): Promise<void>
 }
 
+/** Resend 纯文本测试邮件的最小载荷，避免测试邮件依赖业务模板。 */
+export interface ResendMessageInput {
+  to: string
+  subject: string
+  text: string
+}
+
+/** 统一处理 Resend SDK 的返回错误；SDK 遇到 API 错误时不会主动 throw。 */
+async function sendThroughResend(
+  apiKey: string,
+  from: string,
+  email: ResendMessageInput | SentEmail,
+): Promise<void> {
+  const resend = new Resend(apiKey)
+  const result = 'html' in email
+    ? await resend.emails.send({ from, to: email.to, subject: email.subject, html: email.html, text: email.text })
+    : await resend.emails.send({ from, to: email.to, subject: email.subject, text: email.text })
+  if (result.error) throw new Error(`Resend send failed: ${result.error.name}: ${result.error.message}`)
+}
+
 /** 可注入 transport 的内部实现（便于测试）。 */
 export async function sendEmailWith(transport: Transport, input: SendEmailInput): Promise<void> {
   const rendered = await renderEmail(input)
@@ -24,13 +44,18 @@ export async function sendEmailWith(transport: Transport, input: SendEmailInput)
  *  throwing — without this check a bad EMAIL_FROM or a rate-limit silently drops
  *  verify/reset emails while better-auth believes they were sent. */
 export function resendTransport(apiKey: string, from: string): Transport {
-  const resend = new Resend(apiKey)
   return {
-    async send(email) {
-      const { error } = await resend.emails.send({ from, to: email.to, subject: email.subject, html: email.html, text: email.text })
-      if (error) throw new Error(`Resend send failed: ${error.name}: ${error.message}`)
-    },
+    async send(email) { await sendThroughResend(apiKey, from, email) },
   }
+}
+
+/** 使用当前 Worker 的 RESEND_API_KEY 发送管理员手工填写的测试邮件。 */
+export async function sendResendMessage(email: ResendMessageInput): Promise<void> {
+  const { env } = await import('@/lib/env')
+  const apiKey = env.RESEND_API_KEY.trim()
+  if (!apiKey) throw new Error('RESEND_API_KEY 未配置，暂时无法发送测试邮件。')
+  const from = env.EMAIL_FROM || '打卡润 <onboarding@resend.dev>'
+  await sendThroughResend(apiKey, from, email)
 }
 
 /** 生产入口：有 RESEND_API_KEY 则用 Resend，否则降级到控制台捕获（本地不误发）。 */

@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
-import { SlidersHorizontal } from 'lucide-react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { Mail, SlidersHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import {
   getSiteSettingsForAdminFn,
@@ -9,6 +10,7 @@ import {
   setSiteCustomHeadHtmlForAdminFn,
   setSiteTestSettingForAdminFn,
 } from '@/features/settings/site-settings.admin.actions'
+import { sendTestEmailFn } from '@/features/email/test-email.actions'
 
 /** 666 管理中心中的全站 JSON 配置测试面板。 */
 export function SiteSettingsPanel({ modeEnabled, modeReady }: { modeEnabled: boolean; modeReady: boolean }) {
@@ -18,6 +20,11 @@ export function SiteSettingsPanel({ modeEnabled, modeReady }: { modeEnabled: boo
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [testEmailTo, setTestEmailTo] = useState('')
+  const [testEmailSubject, setTestEmailSubject] = useState('每天出海一小时｜邮件通知测试')
+  const [testEmailText, setTestEmailText] = useState('您好，\n\n这是一封来自「每天出海一小时」的邮件通知测试。\n\n本邮件用于确认 daka.run 的邮件服务配置与投递链路是否正常。\n\n如果本次测试并非由您主动发起，请忽略本邮件。\n\n每天出海一小时\ndaka.run')
+  const [testEmailBusy, setTestEmailBusy] = useState(false)
+  const [testEmailMessage, setTestEmailMessage] = useState<string | null>(null)
 
   /** 仅当 666 模式开启后读取全站配置，避免把管理数据暴露到普通界面。 */
   useEffect(() => {
@@ -86,6 +93,28 @@ export function SiteSettingsPanel({ modeEnabled, modeReady }: { modeEnabled: boo
     }
   }
 
+  /** 发送测试邮件；请求只提交到受保护的服务端动作，浏览器不会接触 RESEND_API_KEY。 */
+  async function sendTestEmail(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (testEmailBusy || loading || saving) return
+    setTestEmailBusy(true)
+    setTestEmailMessage(null)
+    try {
+      const result = await sendTestEmailFn({
+        data: {
+          to: testEmailTo,
+          subject: testEmailSubject,
+          text: testEmailText,
+        },
+      })
+      setTestEmailMessage(`测试邮件已提交发送：${result.sentTo}`)
+    } catch (error) {
+      setTestEmailMessage(error instanceof Error ? error.message : '测试邮件发送失败，请检查邮件接口配置。')
+    } finally {
+      setTestEmailBusy(false)
+    }
+  }
+
   if (!modeReady || !modeEnabled) {
     return (
       <Card className="max-w-2xl p-6">
@@ -131,6 +160,35 @@ export function SiteSettingsPanel({ modeEnabled, modeReady }: { modeEnabled: boo
           <Button type="button" variant="outline" size="sm" onClick={() => void loadSettings()} disabled={loading || saving}>重新读取</Button>
         </div>
         {message && <p className="m-0 text-sm text-fg-2" role="status">{message}</p>}
+      </Card>
+
+      <Card className="mt-5 grid gap-4 p-5 sm:p-6">
+        <div className="flex items-start gap-3">
+          <span className="rounded-lg bg-primary/10 p-2 text-primary"><Mail size={20} /></span>
+          <div>
+            <h2 className="m-0 text-base font-semibold">测试邮件发送</h2>
+            <p className="mb-0 mt-1 text-sm leading-6 text-fg-2">通过当前 RESEND_API_KEY 发送一封正式格式的通知测试邮件，用于确认 Resend 配置和收件流程是否正常。</p>
+          </div>
+        </div>
+        <form className="grid gap-4" onSubmit={sendTestEmail}>
+          <div className="grid gap-1.5">
+            <label htmlFor="test-email-to" className="text-sm font-medium">收件人</label>
+            <Input id="test-email-to" type="email" value={testEmailTo} onChange={(event) => setTestEmailTo(event.target.value)} placeholder="example@gmail.com" required disabled={testEmailBusy} />
+          </div>
+          <div className="grid gap-1.5">
+            <label htmlFor="test-email-subject" className="text-sm font-medium">邮件标题</label>
+            <Input id="test-email-subject" value={testEmailSubject} onChange={(event) => setTestEmailSubject(event.target.value)} maxLength={200} required disabled={testEmailBusy} />
+          </div>
+          <div className="grid gap-1.5">
+            <label htmlFor="test-email-text" className="text-sm font-medium">邮件内容</label>
+            <Textarea id="test-email-text" value={testEmailText} onChange={(event) => setTestEmailText(event.target.value)} rows={8} maxLength={20_000} required disabled={testEmailBusy} />
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-fg-3">仅 666 管理员可发送</span>
+            <Button type="submit" disabled={testEmailBusy || loading || saving}>{testEmailBusy ? '发送中……' : '发送测试邮件'}</Button>
+          </div>
+        </form>
+        {testEmailMessage && <p className="m-0 text-sm text-fg-2" role="status">{testEmailMessage}</p>}
       </Card>
 
       <Card className="mt-5 grid gap-4 p-5 sm:p-6">

@@ -14,11 +14,14 @@ export function CustomFooterHtml({ html }: { html: string }) {
     const container = containerRef.current
     if (!container) return
 
+    // 首次 SSR 时，原始内容位于 template 中；先取出它，再清空容器，避免
+    // 直接用 innerHTML 插入的 script 被浏览器当作普通文本而不执行。
+    const serverTemplate = container.querySelector<HTMLTemplateElement>('[data-custom-footer-template="true"]')
+    const template = serverTemplate ?? document.createElement('template')
+    if (!serverTemplate && html) template.innerHTML = html
     container.replaceChildren()
     if (!html) return
 
-    const template = document.createElement('template')
-    template.innerHTML = html
     const fragment = document.createDocumentFragment()
     for (const node of Array.from(template.content.childNodes)) {
       fragment.appendChild(cloneFooterNodeWithExecutableScripts(node))
@@ -28,7 +31,16 @@ export function CustomFooterHtml({ html }: { html: string }) {
     return () => container.replaceChildren()
   }, [html])
 
-  return <div ref={containerRef} className="contents" data-custom-footer-html="true" />
+  return (
+    <div ref={containerRef} className="contents" data-custom-footer-html="true">
+      {html ? (
+        <template
+          data-custom-footer-template="true"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      ) : null}
+    </div>
+  )
 }
 
 /** 克隆任意 HTML 节点，并让嵌套在其中的脚本以真实 script 标签方式重新执行。 */
