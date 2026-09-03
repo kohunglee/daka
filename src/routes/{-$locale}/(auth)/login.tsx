@@ -37,12 +37,8 @@ function Login() {
 
   // 666 模式是浏览器端开关；未完成本地状态读取前，默认按普通模式处理，避免邮箱入口短暂泄露。
   const emailAuthEnabled = modeReady && mode666
-  // 普通模式严格只保留 Google；666 模式沿用服务端实际开启的第三方登录方式。
-  const visibleProviders: Array<'google' | 'github'> = emailAuthEnabled
-    ? providers
-    : providers.includes('google')
-      ? ['google']
-      : []
+  // 展示服务端已配置的所有第三方社交登录方式（包括 Google、GitHub 等）
+  const visibleProviders: Array<'google' | 'github'> = providers
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()

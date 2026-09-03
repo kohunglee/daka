@@ -119,6 +119,20 @@ export function UserDetailDrawer({ row, open, onOpenChange, currentUserId, onCha
               <span>{row.plan === 'pro' ? <Badge variant="pro">{t('admin.pro')}</Badge> : row.plan ? t('admin.free') : '—'}</span>
             </div>
             <div className="grid gap-1"><span className="text-fg-3 text-xs">{t('admin.status')}</span><span>{row.status ?? '—'}</span></div>
+            <div className="grid col-span-2 gap-1">
+              <span className="text-fg-3 text-xs">登录渠道 / 绑定方式</span>
+              <div className="flex flex-wrap gap-1.5 mt-0.5">
+                {row.providers && row.providers.length > 0 ? (
+                  row.providers.map((p) => (
+                    <Badge key={p} variant="outline" className="text-xs font-normal">
+                      {p === 'google' ? 'Google' : p === 'github' ? 'GitHub' : p === 'credential' ? '邮箱密码' : p}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-xs text-fg-3">无记录</span>
+                )}
+              </div>
+            </div>
           </div>
 
           <hr className="border-border" />

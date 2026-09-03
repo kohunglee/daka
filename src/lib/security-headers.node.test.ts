@@ -25,17 +25,15 @@ test('CSP is omitted in dev (PROD=false)', () => {
   expect(res.headers.get('content-security-policy')).toBeNull()
 })
 
-test('CSP is set in production and allows Turnstile/analytics/Waline', () => {
+test('CSP is set in production and allows arbitrary HTTPS external resources', () => {
   vi.stubEnv('PROD', true)
   const csp = withSecurityHeaders(new Response('x')).headers.get('content-security-policy')
-  expect(csp).toContain("default-src 'self'")
-  expect(csp).toContain('https://challenges.cloudflare.com') // Turnstile
-  expect(csp).toContain('https://static.cloudflareinsights.com') // Web Analytics
-  expect(csp).toContain('https://cdn.rawlab.win') // Waline 脚本和样式
-  expect(csp).toContain('https://waline.rawlab.win') // Waline API
-  expect(csp).not.toContain('fonts.googleapis.com') // fonts are self-hosted
-  expect(csp).not.toContain('fonts.gstatic.com')
+  expect(csp).toContain("default-src 'self' https:")
+  expect(csp).toContain("script-src 'self' 'unsafe-inline' https:") // 任意 HTTPS 外部脚本
+  expect(csp).toContain("connect-src 'self' https: wss:") // 任意 HTTPS/WSS 外部连接
+  expect(csp).toContain("frame-src 'self' https:") // 任意 HTTPS iframe
   expect(csp).toContain("frame-ancestors 'none'")
+  expect(csp).toContain("object-src 'none'")
 })
 
 test('protocol upgrades (101 / websocket) pass through untouched', () => {

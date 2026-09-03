@@ -1,9 +1,9 @@
 <div align="center">
-  <h1>FlareStarter</h1>
+  <h1>打卡润</h1>
   <p>基于 <strong>TanStack Start</strong> + <strong>Cloudflare Workers</strong> 的全栈、边缘原生 SaaS 起步模板。</p>
   <p>
-    <a href="https://github.com/FlareStarter/flarestarter/actions/workflows/ci.yml"><img src="https://github.com/FlareStarter/flarestarter/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-    <a href="https://github.com/FlareStarter/flarestarter/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
+    <a href="https://github.com/kohunglee/daka/actions/workflows/ci.yml"><img src="https://github.com/kohunglee/daka/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+    <a href="https://github.com/kohunglee/daka/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
     <a href="https://developers.cloudflare.com/workers/"><img src="https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white" alt="Cloudflare Workers"></a>
     <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white" alt="TypeScript"></a>
   </p>
@@ -11,17 +11,17 @@
     <i>认证、计费、邮件、i18n、SEO、运营后台——全部接好、有测试、fork 即用。</i>
   </p>
   <p>
-    <a href="https://flarestarter.com"><strong>在线 Demo</strong></a> ·
-    <a href="https://flarestarter.com/docs"><strong>文档</strong></a>
+    <a href="https://daka.run"><strong>在线 Demo</strong></a> ·
+    <a href="https://daka.run/docs"><strong>文档</strong></a>
   </p>
-  <a href="https://flarestarter.com"><img src=".github/assets/hero.png" alt="FlareStarter —— 克隆即用,今晚部署到 Cloudflare" width="100%"></a>
+  <a href="https://daka.run"><img src=".github/assets/hero.png" alt="打卡润 —— 克隆即用,今晚部署到 Cloudflare" width="100%"></a>
 </div>
 
 ---
 
 [English](README.en.md) | **简体中文**
 
-FlareStarter 只交付能跑的东西：仓库里的每个功能都是真实实现，没有 mock、没有占位、没有为凑数而留空的 TODO。所有代码都跑在 Cloudflare 的低成本（乃至免费）技术栈上 (Workers + D1 + KV)。
+打卡润 只交付能跑的东西：仓库里的每个功能都是真实实现，没有 mock、没有占位、没有为凑数而留空的 TODO。所有代码都跑在 Cloudflare 的低成本（乃至免费）技术栈上 (Workers + D1 + KV)。
 
 ## 核心优势
 
@@ -32,7 +32,7 @@ FlareStarter 只交付能跑的东西：仓库里的每个功能都是真实实�
 
 ## 预览
 
-暗色优先设计 + 终端美学。以下均为真实运行界面——运营后台基于真实数据、无任何虚构指标。可在 [在线 Demo](https://flarestarter.com) 亲自体验。
+暗色优先设计 + 终端美学。以下均为真实运行界面——运营后台基于真实数据、无任何虚构指标。可在 [在线 Demo](https://daka.run) 亲自体验。
 
 **运营后台 · 统计仪表盘**（注册数 / 活跃 / 订阅，全部真实数据）
 
@@ -44,28 +44,28 @@ FlareStarter 只交付能跑的东西：仓库里的每个功能都是真实实�
 |:---:|:---:|
 | <img src=".github/assets/admin-users.png" alt="用户管理表" width="100%"> | <img src=".github/assets/app-dashboard.png" alt="应用仪表盘" width="100%"> |
 | **定价：开源核心 + Pro 终身买断** | **Pro 门禁演示（`requirePlan`）** |
-| <a href="https://flarestarter.com/pricing"><img src=".github/assets/pricing.png" alt="定价页" width="100%"></a> | <img src=".github/assets/app-pro.png" alt="Pro 专属内容" width="100%"> |
+| <a href="https://daka.run/pricing"><img src=".github/assets/pricing.png" alt="定价页" width="100%"></a> | <img src=".github/assets/app-pro.png" alt="Pro 专属内容" width="100%"> |
 | **反馈箱（提交 + 团队回复）** | **独立赞助页（PWYW 金额分层）** |
-| <img src=".github/assets/app-feedback.png" alt="反馈箱用户页" width="100%"> | <a href="https://flarestarter.com/sponsor"><img src=".github/assets/sponsor.png" alt="赞助页" width="100%"></a> |
+| <img src=".github/assets/app-feedback.png" alt="反馈箱用户页" width="100%"> | <a href="https://daka.run/sponsor"><img src=".github/assets/sponsor.png" alt="赞助页" width="100%"></a> |
 
 ## 包含什么
 
 | 模块 | 能力 |
 |------|------|
 | **认证** | 基于 [better-auth](https://better-auth.com) 的邮箱密码登录（强制邮箱验证）、找回密码、注销账号。Google 与 GitHub OAuth ——未配置环境变量时按钮自动隐藏（优雅降级）。会话以 D1 作为唯一数据源，并配合 cookie 缓存。 |
-| **计费** | [Stripe](https://stripe.com) 订阅（月付/年付）**以及**一次性终身买断、Customer Portal 入口、基于套餐的路由守卫 (`requirePlan`)、幂等 webhook 处理、可靠触发的计费事件钩子（例如「Pro 激活时发一封邮件」）。续费扣款失败时在 app 内提示更新支付方式（重试邮件交给 Stripe）——见 [计费文档](https://flarestarter.com/docs/features/billing)。 |
-| **存储** | [R2](https://developers.cloudflare.com/r2/) 对象存储，内置完整的头像上传功能（包含类型与大小校验）。R2 存储桶默认非公开，图片通过服务端路由以流式代理返回。本地开发经 miniflare 零配置即可使用。这可用作后续所有文件上传功能的参考实现——见 [存储文档](https://flarestarter.com/docs/features/storage)。 |
+| **计费** | [Stripe](https://stripe.com) 订阅（月付/年付）**以及**一次性终身买断、Customer Portal 入口、基于套餐的路由守卫 (`requirePlan`)、幂等 webhook 处理、可靠触发的计费事件钩子（例如「Pro 激活时发一封邮件」）。续费扣款失败时在 app 内提示更新支付方式（重试邮件交给 Stripe）——见 [计费文档](https://daka.run/docs/features/billing)。 |
+| **存储** | [R2](https://developers.cloudflare.com/r2/) 对象存储，内置完整的头像上传功能（包含类型与大小校验）。R2 存储桶默认非公开，图片通过服务端路由以流式代理返回。本地开发经 miniflare 零配置即可使用。这可用作后续所有文件上传功能的参考实现——见 [存储文档](https://daka.run/docs/features/storage)。 |
 | **邮件** | [Resend](https://resend.com) + 字符串模板（React Email 在 workerd 上不可用）。如果没配 API key，邮件会直接打印到控制台，确保本地开发不会被卡住。 |
 | **等待列表 (Waitlist)** | 完整的 pre-launch 报名闭环：公开报名页、Turnstile 防刷、后台管理页 + CSV 导出，报名邮箱自动同步到 [Resend](https://resend.com) audience（未配 key 时优雅跳过）。 |
 | **更新日志 (Changelog)** | MDX 驱动、按语言区分、带 `published` 开关的站内 `/changelog` 页——直接把版本记录做成产品页面，而不只是仓库里的 `CHANGELOG.md`。 |
 | **赞助 (Sponsor)** | 独立 `/sponsor` 页,演示真实 Stripe 收款闭环:**纯捐赠不解锁**（不碰 entitlement）。一次性与月度均为**金额驱动**（PWYW/自定义金额,通过 `price_data.recurring` 内联创建,无需预设 Price ID）。GitHub 致谢头像墙**按金额分层展示**,支持公开留言。月度赞助可随时经 Stripe 门户取消。webhook 按 metadata 分流 + 幂等入库。未配 Stripe key 时显示「未配置」态（优雅降级）。定制赞助页改 `src/features/sponsor/sponsor.config.ts`（金额/档位/开关/阈值）与 i18n `sponsor.*` 文案,无需改组件。 |
-| **反馈箱 (Feedback)** | 登录用户提交反馈 +「我的反馈」列表（可删自己 `open` 状态的条目）；后台治理页做状态流转（open/planned/shipped/closed）与一句话回复；admin 提交的反馈带 Pro 徽章（演示 `hasProAccess`）。同时是**加你自己功能的教学范本**：一个纵向切片跑通归属过滤（`db/scope`）、纯函数层、两套门控与双池测试——见 [反馈文档](https://flarestarter.com/docs/features/feedback)。 |
+| **反馈箱 (Feedback)** | 登录用户提交反馈 +「我的反馈」列表（可删自己 `open` 状态的条目）；后台治理页做状态流转（open/planned/shipped/closed）与一句话回复；admin 提交的反馈带 Pro 徽章（演示 `hasProAccess`）。同时是**加你自己功能的教学范本**：一个纵向切片跑通归属过滤（`db/scope`）、纯函数层、两套门控与双池测试——见 [反馈文档](https://daka.run/docs/features/feedback)。 |
 | **i18n** | 通过 TanStack 的 `{-$locale}` 可选前缀做路径式多语言路由——英文在 `/`，中文在 `/zh`。营销文案与 UI 字符串都已内置翻译。 |
 | **SEO** | 按语言生成的 sitemap、`hreflang`、canonical URL、OpenGraph 标签、`robots.txt`，以及需登录页面的 `noindex` 处理。 |
-| **AI 友好** | **部署侧**：内置 [`llms.txt`](https://flarestarter.com/llms.txt) 索引与 [`llms-full.txt`](https://flarestarter.com/llms-full.txt) 全文语料，每个文档页均可经 `/docs-md/*` 取到去除 frontmatter 的干净 Markdown，`robots.txt` 主动指向二者——便于 ChatGPT / Perplexity 等 AI 爬虫索引、引用你的内容。**代码侧**：[`AGENTS.md`](AGENTS.md)（+ 自动导入的 [`CLAUDE.md`](CLAUDE.md)）作为单一事实来源，让 Claude Code / Codex 等编码 agent 即刻读懂本仓库、直接在其上开发。 |
+| **AI 友好** | **部署侧**：内置 [`llms.txt`](https://daka.run/llms.txt) 索引与 [`llms-full.txt`](https://daka.run/llms-full.txt) 全文语料，每个文档页均可经 `/docs-md/*` 取到去除 frontmatter 的干净 Markdown，`robots.txt` 主动指向二者——便于 ChatGPT / Perplexity 等 AI 爬虫索引、引用你的内容。**代码侧**：[`AGENTS.md`](AGENTS.md)（+ 自动导入的 [`CLAUDE.md`](CLAUDE.md)）作为单一事实来源，让 Claude Code / Codex 等编码 agent 即刻读懂本仓库、直接在其上开发。 |
 | **后台** | better-auth admin 插件：角色管理、账号封禁、用户模拟登录 (Impersonation)、可搜索/分页的用户表，以及统计仪表盘（注册数 / 活跃数 / 订阅）——全部基于真实数据，无任何虚构指标。 |
 | **主题** | 暗色优先设计 + 亮/暗模式切换，用户偏好经 cookie 持久化。 |
-| **安全 & 可观测性** | Turnstile bot 防护、安全响应头 + 生产环境 CSP、认证端点限流（D1 存储）、启动期环境变量校验（fail-fast）；CF Web Analytics（无 cookie）与 Sentry 错误上报——均可选，留空即关。见 [安全文档](https://flarestarter.com/docs/platform/security) / [可观测性文档](https://flarestarter.com/docs/platform/observability)。 |
+| **安全 & 可观测性** | Turnstile bot 防护、安全响应头 + 生产环境 CSP、认证端点限流（D1 存储）、启动期环境变量校验（fail-fast）；CF Web Analytics（无 cookie）与 Sentry 错误上报——均可选，留空即关。见 [安全文档](https://daka.run/docs/platform/security) / [可观测性文档](https://daka.run/docs/platform/observability)。 |
 | **运维 (Dev/Ops)** | Cron Triggers 定时任务参考实现（每日清理过期 session/token/限流行）、local/staging/prod 多环境分离、GitHub Actions CI（lint + typecheck + 构建）。 |
 
 ## 技术栈
@@ -151,15 +151,15 @@ drizzle/           # 生成的 SQL 迁移文件（仓库根，与 src/ 同级）
 
 ## 环境变量
 
-完整清单见 [`.dev.vars.example`](.dev.vars.example)。本地开发时一切可选，支持优雅降级。生产环境所需的 secrets 及配置方式见 [部署文档](https://flarestarter.com/docs/getting-started/deploy)：
+完整清单见 [`.dev.vars.example`](.dev.vars.example)。本地开发时一切可选，支持优雅降级。生产环境所需的 secrets 及配置方式见 [部署文档](https://daka.run/docs/getting-started/deploy)：
 
-- `BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`（同时决定 canonical / sitemap origin）—— **必填**；启动时校验（见 [安全文档](https://flarestarter.com/docs/platform/security)）。
+- `BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`（同时决定 canonical / sitemap origin）—— **必填**；启动时校验（见 [安全文档](https://daka.run/docs/platform/security)）。
 - `RESEND_API_KEY`、`EMAIL_FROM`（邮件服务；留空则由控制台捕获）。
 - `GOOGLE_CLIENT_ID/SECRET`、`GITHUB_CLIENT_ID/SECRET`（可选社交登录）。
 - `STRIPE_SECRET_KEY`、`STRIPE_WEBHOOK_SECRET`、`STRIPE_PRICE_PRO_*`（计费服务）。
 - `ADMIN_EMAILS`（管理员邮箱）。
-- `TURNSTILE_SITE_KEY`、`TURNSTILE_SECRET_KEY`（可选的 bot 防护——见 [安全文档](https://flarestarter.com/docs/platform/security)）。
-- `CF_ANALYTICS_TOKEN`、`SENTRY_DSN`（可选的数据分析 + 错误上报——见 [可观测性文档](https://flarestarter.com/docs/platform/observability)）。
+- `TURNSTILE_SITE_KEY`、`TURNSTILE_SECRET_KEY`（可选的 bot 防护——见 [安全文档](https://daka.run/docs/platform/security)）。
+- `CF_ANALYTICS_TOKEN`、`SENTRY_DSN`（可选的数据分析 + 错误上报——见 [可观测性文档](https://daka.run/docs/platform/observability)）。
 
 **优雅降级机制**：每个可选集成均支持优雅降级。如果留空对应的 key，该功能即自动关闭。启动期的环境变量校验会拦截错误的配置（如缺失必填项、OAuth/Turnstile 配置不全等），并触发快速失败 (fail-fast)，避免在运行时产生意料之外的错误。
 
@@ -174,9 +174,9 @@ wrangler deploy
 
 > Cloudflare 运行环境在**构建时**通过 `CLOUDFLARE_ENV` 选定（而不是在部署时通过 `wrangler deploy --env`），因为 Vite 插件会将选定环境的 bindings 直接注入到构建产物中。
 
-首次部署的**完整流程**——创建 D1/KV、设置 secrets、执行远程数据迁移、配置 Stripe webhook 等——请参阅 **[部署文档](https://flarestarter.com/docs/getting-started/deploy)**。
+首次部署的**完整流程**——创建 D1/KV、设置 secrets、执行远程数据迁移、配置 Stripe webhook 等——请参阅 **[部署文档](https://daka.run/docs/getting-started/deploy)**。
 
-> **提示**：R2 (对象存储) 已在 `wrangler.jsonc` 中默认启用并接入代码（头像上传参考实现）。部署前先在 Cloudflare 建桶：`wrangler r2 bucket create flarestarter-files`（见 [存储文档](https://flarestarter.com/docs/features/storage)）。
+> **提示**：R2 (对象存储) 已在 `wrangler.jsonc` 中默认启用并接入代码（头像上传参考实现）。部署前先在 Cloudflare 建桶：`wrangler r2 bucket create flarestarter-files`（见 [存储文档](https://daka.run/docs/features/storage)）。
 
 ## 文档
 
@@ -199,12 +199,12 @@ wrangler deploy
 
 ## 社区与贡献
 
-- **交流群**：加入 [Telegram 交流群](https://t.me/+coaN5Ihjte9jNzZl)，或扫码加入微信群「FlareStarter & 出海 SaaS 交流」，一起讨论使用与二次开发。
+- **交流群**：加入 [Telegram 交流群](https://t.me/+coaN5Ihjte9jNzZl)，或扫码加入微信群「打卡润 & 出海 SaaS 交流」，一起讨论使用与二次开发。
 - **关注作者**：[X (Twitter) @0xdinglv](https://x.com/0xdinglv)、[小红书](https://xhslink.com/m/19FI1djnItu)，获取更新与出海 SaaS 分享。
-- **遇到问题？** 本地运行或部署遇到问题，欢迎在 [GitHub Issues](https://github.com/FlareStarter/flarestarter/issues) 讨论。
+- **遇到问题？** 本地运行或部署遇到问题，欢迎在 [GitHub Issues](https://github.com/kohunglee/daka/issues) 讨论。
 
 <p>
-  <img src=".github/assets/wechat-group.jpg" alt="微信群：FlareStarter & 出海 SaaS 交流" width="240">
+  <img src=".github/assets/wechat-group.jpg" alt="微信群：打卡润 & 出海 SaaS 交流" width="240">
 </p>
 
 > 微信群二维码定期更新；若已过期，请加入 [Telegram 群](https://t.me/+coaN5Ihjte9jNzZl)，或添加作者微信 `hansenones`，拉你进群。
@@ -213,7 +213,7 @@ wrangler deploy
 
 ## 赞助 / Sponsor
 
-❤️ 觉得这个项目有用？[赞助我们](https://flarestarter.com/sponsor)——你的头像会实时出现在官网赞助墙。
+❤️ 觉得这个项目有用？[赞助我们](https://daka.run/sponsor)——你的头像会实时出现在官网赞助墙。
 
 也可以微信扫码赞赏，支持作者持续维护：
 
@@ -223,4 +223,4 @@ wrangler deploy
 
 ## 许可证
 
-本项目基于 [Apache License 2.0](LICENSE) 开源协议。Copyright 2026 FlareStarter。
+本项目基于 [Apache License 2.0](LICENSE) 开源协议。Copyright 2026 打卡润。

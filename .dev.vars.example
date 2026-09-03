@@ -3,7 +3,7 @@ BETTER_AUTH_SECRET=replace-with-32+char-random-string
 BETTER_AUTH_URL=http://localhost:3000
 # Email (Resend) — 留空则本地走控制台捕获，不真发
 RESEND_API_KEY=
-EMAIL_FROM=FlareStarter <onboarding@resend.dev>
+EMAIL_FROM=打卡润 <onboarding@resend.dev>
 # 邮箱验证开关：MVP 可设 false；改为 true 且配置 Resend 后恢复注册验证。
 EMAIL_VERIFICATION_ENABLED=false
 # Optional: Resend audience id for the waitlist (and future newsletter).

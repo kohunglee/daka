@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { useTranslation } from '@/features/i18n/provider'
 
-const GITHUB_URL = 'https://github.com/flarestarter/flarestarter'
+const GITHUB_URL = 'https://github.com/kohunglee/daka'
 
 const BTN_CLASS =
   'inline-flex h-12 shrink-0 items-center border-l border-border bg-primary px-[18px] text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-primary-hover'

@@ -3,9 +3,10 @@ import { isLocale, defaultLocale } from '@/features/i18n/locale'
 import { getPreferences } from '@/server/preferences'
 import { getOptionalUser } from '@/features/auth/middleware'
 import { getAnalyticsToken } from '@/features/analytics/analytics'
-import { getPublicCustomFooterHtmlFn } from '@/features/settings/site-settings.admin.actions'
+import { getPublicCustomFooterHtmlFn, getPublicCustomHeadHtmlFn } from '@/features/settings/site-settings.admin.actions'
 import { Toaster } from '@/components/ui/sonner'
 import { AreaEditorProvider } from '@/components/editor/area-editor-provider'
+import { CustomHeadHtml } from '@/components/marketing/custom-head-html'
 import { useResolvedTheme } from '@/features/theme/use-resolved-theme'
 import appCss from '@/styles/app.css?url'
 
@@ -40,9 +41,10 @@ export const Route = createRootRoute({
       const user = await getOptionalUser()
       const analyticsToken = await getAnalyticsToken()
       const customFooterHtml = await getPublicCustomFooterHtmlFn()
-      return { theme, themeFromCookie, user, analyticsToken, customFooterHtml }
+      const customHeadHtml = await getPublicCustomHeadHtmlFn()
+      return { theme, themeFromCookie, user, analyticsToken, customFooterHtml, customHeadHtml }
     } catch {
-      return { theme: 'dark' as const, themeFromCookie: false, user: null, analyticsToken: null, customFooterHtml: '' }
+      return { theme: 'dark' as const, themeFromCookie: false, user: null, analyticsToken: null, customFooterHtml: '', customHeadHtml: '' }
     }
   },
   component: RootComponent,
@@ -55,7 +57,7 @@ export const Route = createRootRoute({
 const THEME_BOOT_SCRIPT = `(function(){try{if(!/(?:^|;\\s*)theme=/.test(document.cookie)&&matchMedia('(prefers-color-scheme: light)').matches){document.documentElement.classList.replace('dark','light')}}catch(e){}})()`
 
 function RootComponent() {
-  const { theme, analyticsToken } = Route.useLoaderData()
+  const { theme, analyticsToken, customHeadHtml } = Route.useLoaderData()
   const params = useParams({ strict: false }) as { locale?: string }
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   // Validate before use: on 404s the optional {-$locale} param swallows the
@@ -69,6 +71,7 @@ function RootComponent() {
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <HeadContent />
+        <CustomHeadHtml html={customHeadHtml} />
       </head>
       <body>
         <Outlet />

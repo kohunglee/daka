@@ -4,7 +4,7 @@ Guide for AI coding agents (Claude Code, Codex, etc.) working in this repo.
 
 ## What this is
 
-FlareStarter — a Cloudflare-native SaaS starter on **TanStack Start + Cloudflare Workers**, with D1 (SQLite) + KV, Drizzle ORM, better-auth, Stripe, Resend, and Tailwind v4. Clone it and build your product on top.
+打卡润 — a Cloudflare-native SaaS starter on **TanStack Start + Cloudflare Workers**, with D1 (SQLite) + KV, Drizzle ORM, better-auth, Stripe, Resend, and Tailwind v4. Clone it and build your product on top.
 
 ## Structure
 

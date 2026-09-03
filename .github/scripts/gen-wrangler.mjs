@@ -7,7 +7,7 @@
  * Variables) — these are identifiers, not secrets:
  *   - CF_PROD_D1_ID   (required)  production D1 database_id
  *   - CF_PROD_KV_ID   (required)  production KV namespace id
- *   - CF_PROD_DOMAIN  (optional)  custom domain, e.g. flarestarter.com
+ *   - CF_PROD_DOMAIN  (optional)  custom domain, e.g. daka.run
  *
  * Only the production env block is patched (this workflow deploys production).
  */

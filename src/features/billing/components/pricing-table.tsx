@@ -7,7 +7,7 @@ import { WaitlistDialog } from '@/features/waitlist/components/waitlist-dialog'
 import type { Locale } from '@/features/i18n/locale'
 
 // Set this to your real repository URL before publishing.
-const GITHUB_URL = 'https://github.com/flarestarter/flarestarter'
+const GITHUB_URL = 'https://github.com/kohunglee/daka'
 
 interface Content {
   kicker: string

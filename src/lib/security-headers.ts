@@ -19,13 +19,16 @@ const BASE_HEADERS: Record<string, string> = {
 }
 
 const PROD_CSP = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com https://cdn.rawlab.win", // Turnstile、Web Analytics 和 Waline
-  "style-src 'self' 'unsafe-inline' https://cdn.rawlab.win", // Waline 评论样式
+  "default-src 'self' https: data: blob:", // 未单独列出的资源类型也允许 HTTPS 外部资源
+  "script-src 'self' 'unsafe-inline' https: data: blob:", // 允许任意 HTTPS 外部脚本，支持站长自定义统计和第三方组件
+  "style-src 'self' 'unsafe-inline' https: data:", // 允许任意 HTTPS 外部样式
   "img-src 'self' data: blob: https:", // blob: for client-side avatar preview
-  "font-src 'self' data:", // fonts are self-hosted under /fonts
-  "connect-src 'self' https://cloudflareinsights.com https://waline.rawlab.win", // Web Analytics 和 Waline API 请求
-  "frame-src https://challenges.cloudflare.com", // Turnstile widget iframe
+  "font-src 'self' data: https:", // 允许任意 HTTPS 外部字体
+  "connect-src 'self' https: wss:", // 允许任意 HTTPS/WSS 外部接口和实时连接
+  "frame-src 'self' https: data: blob:", // 允许任意 HTTPS 外部 iframe
+  "media-src 'self' https: data: blob:", // 允许任意 HTTPS 外部音视频
+  "worker-src 'self' https: blob:", // 允许任意 HTTPS 外部 Worker
+  "manifest-src 'self' https:", // 允许任意 HTTPS 外部 Web App Manifest
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

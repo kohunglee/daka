@@ -20,8 +20,8 @@ export const Route = createFileRoute('/{-$locale}/')({
       title: '每天出海一小时',
       description:
         locale === 'zh'
-          ? 'FlareStarter——Cloudflare 原生的 SaaS 起步模板。克隆即用，部署到 Workers。'
-          : 'FlareStarter — the Cloudflare-native SaaS starter. Clone it and ship on Workers.',
+          ? '打卡润——Cloudflare 原生的 SaaS 起步模板。克隆即用，部署到 Workers。'
+          : '打卡润 — the Cloudflare-native SaaS starter. Clone it and ship on Workers.',
     })
     return { meta, links }
   },

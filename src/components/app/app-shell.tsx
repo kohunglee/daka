@@ -17,6 +17,8 @@ export interface ShellUser {
   email: string
   role?: string | null
   image?: string | null
+  /** 登录渠道列表（如 google、github、credential） */
+  providers?: string[]
 }
 
 function initials(primary: string): string {
@@ -131,7 +133,21 @@ export function AppShell({
           </Avatar>
           <div className="min-w-0 flex-1">
             <div className="truncate text-[13px] font-semibold text-foreground">{primary}</div>
-            <div className="truncate text-xs text-fg-3">{secondary}</div>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="truncate text-xs text-fg-3">{secondary}</span>
+            </div>
+            {user.providers && user.providers.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {user.providers.map((p) => (
+                  <span
+                    key={p}
+                    className="inline-flex items-center rounded border border-border px-1.5 py-0.5 text-[10px] text-fg-2 font-mono"
+                  >
+                    {p === 'google' ? 'Google' : p === 'github' ? 'GitHub' : p === 'credential' ? '邮箱' : p}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </>

@@ -18,6 +18,25 @@ function userInitials(name: string, email: string): string {
   return source.slice(0, 2).toUpperCase()
 }
 
+/** 渲染用户的登录来源渠道徽章（Google / GitHub / 邮箱密码）。 */
+function renderProviderBadges(providers?: string[]) {
+  if (!providers || providers.length === 0) {
+    return <span className="text-xs text-fg-3">—</span>
+  }
+  return (
+    <div className="flex flex-wrap gap-1">
+      {providers.map((p) => {
+        const label = p === 'google' ? 'Google' : p === 'github' ? 'GitHub' : p === 'credential' ? '邮箱密码' : p
+        return (
+          <Badge key={p} variant="outline" className="text-[11px] font-normal">
+            {label}
+          </Badge>
+        )
+      })}
+    </div>
+  )
+}
+
 /** 统一展示用户角色，避免数据库里的空值直接出现在管理界面。 */
 function userRole(row: AdminUserRow): string {
   return row.role === 'admin' ? '管理员' : row.role ?? '普通用户'
@@ -231,6 +250,7 @@ export function AdminUsersPanel() {
               <TableRow>
                 <TableHead>用户</TableHead>
                 <TableHead>邮箱</TableHead>
+                <TableHead>登录渠道</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead className="hidden md:table-cell">套餐</TableHead>
                 <TableHead className="hidden md:table-cell">注册时间</TableHead>
@@ -264,6 +284,7 @@ export function AdminUsersPanel() {
                     </div>
                   </TableCell>
                   <TableCell><span className="font-mono text-xs text-fg-3">{row.email}</span></TableCell>
+                  <TableCell>{renderProviderBadges(row.providers)}</TableCell>
                   <TableCell>{row.banned ? <Badge variant="warn" dot>已封禁</Badge> : <Badge variant="ok" dot>正常</Badge>}</TableCell>
                   <TableCell className="hidden md:table-cell">{row.plan === 'pro' ? <Badge variant="pro">Pro</Badge> : <span className="text-fg-3">{row.plan ? '免费版' : '—'}</span>}</TableCell>
                   <TableCell className="hidden text-fg-3 md:table-cell">{fmtDate(row.createdAt)}</TableCell>
@@ -322,6 +343,7 @@ export function AdminUsersPanel() {
               </dd>
             </div>
             <div><dt className="text-xs text-fg-3">角色</dt><dd className="m-0 mt-1">{userRole(selected)}</dd></div>
+            <div><dt className="text-xs text-fg-3">登录渠道 / 绑定方式</dt><dd className="m-0 mt-1">{renderProviderBadges(selected.providers)}</dd></div>
             <div><dt className="text-xs text-fg-3">账号状态</dt><dd className="m-0 mt-1">{selected.banned ? '已封禁' : '正常'}</dd></div>
             <div><dt className="text-xs text-fg-3">邮箱验证</dt><dd className="m-0 mt-1">{selected.emailVerified ? '已验证' : '未验证'}</dd></div>
             <div><dt className="text-xs text-fg-3">注册时间</dt><dd className="m-0 mt-1">{fmtDate(selected.createdAt)}</dd></div>

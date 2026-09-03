@@ -29,7 +29,7 @@ export const Route = createFileRoute('/{-$locale}/sponsor')({
       origin,
       locale,
       path: '/sponsor',
-      title: locale === 'zh' ? '赞助 — FlareStarter' : 'Sponsor — FlareStarter',
+      title: locale === 'zh' ? '赞助 — 打卡润' : 'Sponsor — 打卡润',
       description:
         locale === 'zh'
           ? '赞助这个开源项目，一次性或按月均可。'

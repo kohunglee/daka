@@ -21,6 +21,25 @@ export function initials(name: string, email: string): string {
   return src.slice(0, 2).toUpperCase()
 }
 
+/** 渲染用户的登录来源渠道徽章（Google / GitHub / 邮箱密码）。 */
+function renderProviderBadges(providers?: string[]) {
+  if (!providers || providers.length === 0) {
+    return <span className="text-xs text-fg-3">—</span>
+  }
+  return (
+    <div className="flex flex-wrap gap-1">
+      {providers.map((p) => {
+        const label = p === 'google' ? 'Google' : p === 'github' ? 'GitHub' : p === 'credential' ? '邮箱' : p
+        return (
+          <Badge key={p} variant="outline" className="text-[11px] font-normal">
+            {label}
+          </Badge>
+        )
+      })}
+    </div>
+  )
+}
+
 export function UserTable({ rows, sortBy, sortDir, onSort, onRowClick }: Props) {
   const { t } = useTranslation()
 
@@ -42,6 +61,7 @@ export function UserTable({ rows, sortBy, sortDir, onSort, onRowClick }: Props) 
         <TableRow>
           <SortHead col="name" label={t('admin.name')} />
           <SortHead col="email" label={t('admin.email')} />
+          <TableHead className="hidden sm:table-cell">渠道</TableHead>
           <TableHead>{t('admin.role')}</TableHead>
           {/* secondary columns fold away on phones — the detail drawer has them */}
           <TableHead className="hidden md:table-cell">{t('admin.plan')}</TableHead>
@@ -73,6 +93,7 @@ export function UserTable({ rows, sortBy, sortDir, onSort, onRowClick }: Props) 
               </div>
             </TableCell>
             <TableCell><span className="font-mono text-[12.5px] text-fg-3">{u.email}</span></TableCell>
+            <TableCell className="hidden sm:table-cell">{renderProviderBadges(u.providers)}</TableCell>
             <TableCell>{u.role === 'admin' ? <Badge variant="pro">{t('admin.roleAdmin')}</Badge> : <span className="text-fg-2">{u.role ?? 'user'}</span>}</TableCell>
             <TableCell className="hidden md:table-cell">{u.plan === 'pro' ? <Badge variant="pro">{t('admin.pro')}</Badge> : <span className="text-fg-3">{u.plan ? t('admin.free') : '—'}</span>}</TableCell>
             <TableCell>{u.banned ? <Badge variant="warn" dot>{t('admin.banned')}</Badge> : <Badge variant="ok" dot>{t('admin.active')}</Badge>}</TableCell>

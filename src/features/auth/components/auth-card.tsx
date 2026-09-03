@@ -25,7 +25,7 @@ export function AuthCard({
     <div className="auth-wrap grid-bg">
       <div className="border-b border-border">
         <div className="mx-auto flex h-16 w-full max-w-[1450px] items-center gap-3 px-4 md:px-7">
-          <Link to="/{-$locale}" className="auth-home" aria-label="FlareStarter">
+          <Link to="/{-$locale}" className="auth-home" aria-label="打卡润">
             <span className="auth-back" aria-hidden="true">
               <ChevronLeft size={16} />
             </span>

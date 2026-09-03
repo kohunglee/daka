@@ -40,12 +40,8 @@ function Register() {
 
   // 普通模式不允许通过邮箱注册；本地状态尚未读取完成时也保持关闭，避免表单闪现。
   const emailAuthEnabled = modeReady && mode666
-  // 普通模式只展示 Google，进入 666 模式后恢复服务端已配置的第三方登录按钮。
-  const visibleProviders: Array<'google' | 'github'> = emailAuthEnabled
-    ? providers
-    : providers.includes('google')
-      ? ['google']
-      : []
+  // 展示服务端已配置的所有第三方社交登录方式（包括 Google、GitHub 等）
+  const visibleProviders: Array<'google' | 'github'> = providers
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()

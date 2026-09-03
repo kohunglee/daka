@@ -14,7 +14,7 @@ title: "邮件"
 
 - 有 `RESEND_API_KEY` → 用 Resend 真发;**留空 → 降级到 dev transport**,把邮件正文/链接
   `console.log` 到终端(`src/features/email/dev-transport.ts`),本地绝不误发。
-- 发件人取 `EMAIL_FROM`,缺省为 `FlareStarter <onboarding@resend.dev>`。
+- 发件人取 `EMAIL_FROM`,缺省为 `打卡润 <onboarding@resend.dev>`。
 - 正文由 `renderEmail`(`templates.ts`)渲染:根据 `locale` 从 i18n 字典 `dict.email` 取
   标题/正文/按钮文案,套进一个内联样式的 HTML 骨架,同时产出纯文本版。
 

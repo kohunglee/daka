@@ -5,6 +5,7 @@ import {
   DEFAULT_SETTINGS_JSON,
   readSiteSettings,
   updateCustomFooterHtmlJson,
+  updateCustomHeadHtmlJson,
   updateTestSettingsJson,
   type SiteSettingsView,
 } from './settings.shared'
@@ -24,6 +25,12 @@ export async function getPublicCustomFooterHtml(db: DB): Promise<string> {
   return readSiteSettings(row.settingsJson).customFooterHtml
 }
 
+/** 公开页面仅取得会被输出到 Head 的 HTML，不下发其他全站 JSON 配置。 */
+export async function getPublicCustomHeadHtml(db: DB): Promise<string> {
+  const row = await getOrCreateSiteSettingsRow(db)
+  return readSiteSettings(row.settingsJson).customHeadHtml
+}
+
 /** 更新全站测试开关，并保留 JSON 中由未来功能写入的未知键。 */
 export async function setSiteTestSetting(db: DB, testEnabled: boolean): Promise<SiteSettingsView> {
   const row = await getOrCreateSiteSettingsRow(db)
@@ -39,6 +46,17 @@ export async function setSiteTestSetting(db: DB, testEnabled: boolean): Promise<
 export async function setSiteCustomFooterHtml(db: DB, customFooterHtml: string): Promise<SiteSettingsView> {
   const row = await getOrCreateSiteSettingsRow(db)
   const settingsJson = updateCustomFooterHtmlJson(row.settingsJson, customFooterHtml)
+  await db
+    .update(siteSettings)
+    .set({ settingsJson, updatedAt: new Date() })
+    .where(eq(siteSettings.id, GLOBAL_SITE_SETTINGS_ID))
+  return readSiteSettings(settingsJson)
+}
+
+/** 保存站长的自定义 Head HTML；调用方负责管理员会话和长度校验。 */
+export async function setSiteCustomHeadHtml(db: DB, customHeadHtml: string): Promise<SiteSettingsView> {
+  const row = await getOrCreateSiteSettingsRow(db)
+  const settingsJson = updateCustomHeadHtmlJson(row.settingsJson, customHeadHtml)
   await db
     .update(siteSettings)
     .set({ settingsJson, updatedAt: new Date() })

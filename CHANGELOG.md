@@ -30,4 +30,4 @@ and this project aims to follow [Semantic Versioning](https://semver.org/spec/v2
 - Known gaps tracked for production hardening: per-endpoint auth rate limiting,
   error/abuse monitoring, and analytics.
 
-[Unreleased]: https://github.com/flarestarter/flarestarter/commits/main
+[Unreleased]: https://github.com/kohunglee/daka/commits/main

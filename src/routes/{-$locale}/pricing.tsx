@@ -25,7 +25,7 @@ export const Route = createFileRoute('/{-$locale}/pricing')({
       origin,
       locale,
       path: '/pricing',
-      title: locale === 'zh' ? '定价 — FlareStarter' : 'Pricing — FlareStarter',
+      title: locale === 'zh' ? '定价 — 打卡润' : 'Pricing — 打卡润',
       description:
         locale === 'zh'
           ? '开源核心（Apache 2.0）。Pro 一次买断、终身可用，即将推出。'

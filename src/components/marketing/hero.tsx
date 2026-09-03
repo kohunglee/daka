@@ -3,7 +3,7 @@ import { ArrowRight, Terminal } from 'lucide-react'
 import { useTranslation } from '@/features/i18n/provider'
 import { buttonVariants } from '@/components/ui/button'
 
-const GITHUB_URL = 'https://github.com/flarestarter/flarestarter'
+const GITHUB_URL = 'https://github.com/kohunglee/daka'
 
 function TerminalCard() {
   return (

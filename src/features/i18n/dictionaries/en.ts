@@ -1,5 +1,5 @@
 export const en = {
-  common: { appName: 'FlareStarter', toggleTheme: 'Toggle theme', language: 'Language' },
+  common: { appName: '打卡润', toggleTheme: 'Toggle theme', language: 'Language' },
   home: {
     title: 'Ship your SaaS on the edge',
     greeting: 'Hello, {name}!',
@@ -50,7 +50,7 @@ export const en = {
     navWorkspace: 'Workspace',
     collapseSidebar: 'Collapse sidebar', expandSidebar: 'Expand sidebar',
     navAccount: 'Settings',
-    welcomeSub: "Here's your FlareStarter workspace.",
+    welcomeSub: "Here's your 打卡润 workspace.",
     quickActions: 'Quick actions',
     openAccount: 'Account settings',
     openAccountSub: 'Profile, password, danger zone',
@@ -85,7 +85,7 @@ export const en = {
     termsTitle: 'Terms of Service',
     privacyTitle: 'Privacy Policy',
     placeholder:
-      'This is a placeholder page shipped with the FlareStarter template. Replace it with your own legal content before you launch.',
+      'This is a placeholder page shipped with the 打卡润 template. Replace it with your own legal content before you launch.',
   },
   auth: {
     login: 'Log in', register: 'Sign up', logout: 'Log out',
@@ -98,7 +98,7 @@ export const en = {
     checkEmailReset: 'If that email exists, a reset link has been sent.',
     deleteAccount: 'Delete account', deleteConfirm: 'This permanently deletes your account and data. Continue?',
     changePassword: 'Change password',
-    loginTitle: 'Welcome back', loginSub: 'Sign in to your FlareStarter workspace.',
+    loginTitle: 'Welcome back', loginSub: 'Sign in to your 打卡润 workspace.',
     registerTitle: 'Create your account', registerSub: 'Start shipping in minutes — no credit card.',
     orContinue: 'or continue with',
     forgotTitle: 'Reset your password', forgotSub: "Enter your email and we'll send a reset link.",
@@ -129,7 +129,7 @@ export const en = {
   admin: {
     title: 'Admin', dashboard: 'Overview', users: 'Users',
     navAdmin: 'Admin',
-    overviewSub: 'Signups, activity and subscriptions across FlareStarter.',
+    overviewSub: 'Signups, activity and subscriptions across 打卡润.',
     usersSub: 'Search, inspect and manage every account.',
     totalUsers: 'Users', activeUsers: 'Active users', activeSubs: 'Active subs', subscriptions: 'Subscriptions',
     active: 'Active', pastDue: 'Past due', canceled: 'Canceled', pro: 'Pro', free: 'Free',
@@ -214,8 +214,8 @@ export const en = {
   sponsor: {
     navSponsor: 'Sponsor', footerSponsor: 'Sponsor',
     kicker: '// support the project',
-    title: 'Sponsor FlareStarter', titleHl: 'FlareStarter',
-    subtitle: 'FlareStarter is open source under Apache 2.0. Sponsorships fund maintenance, new Cloudflare modules, and support — and put your avatar on the sponsor wall. Early sponsors also get an exclusive perk when Pro launches.',
+    title: 'Sponsor 打卡润', titleHl: '打卡润',
+    subtitle: '打卡润 is open source under Apache 2.0. Sponsorships fund maintenance, new Cloudflare modules, and support — and put your avatar on the sponsor wall. Early sponsors also get an exclusive perk when Pro launches.',
     monthly: 'Monthly', once: 'One-time', perMo: '/mo',
     popular: 'Recommended',
     customLabel: 'Custom', customHint: 'Enter any amount',
@@ -233,7 +233,7 @@ export const en = {
     autoRenewNote: 'Renews monthly until canceled — manage anytime via the Stripe portal',
     nonRefundNote: 'Sponsorships are voluntary support and are non-refundable',
     earlyPerkNote: 'Early sponsors get an exclusive perk when Pro launches',
-    messageLabel: 'Public message', messageOptional: 'optional', messagePlaceholder: 'FlareStarter shipped our SaaS in a weekend',
+    messageLabel: 'Public message', messageOptional: 'optional', messagePlaceholder: '打卡润 shipped our SaaS in a weekend',
     messageNote: 'Shown as a quote on the sponsor wall, next to your name.',
     sponsorBtn: 'Sponsor', secure: 'Secure checkout via Stripe · cancel anytime',
     notConfigured: 'Sponsorship is not configured on this instance.',

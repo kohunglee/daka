@@ -3,12 +3,18 @@ import { SlidersHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
-import { getSiteSettingsForAdminFn, setSiteCustomFooterHtmlForAdminFn, setSiteTestSettingForAdminFn } from '@/features/settings/site-settings.admin.actions'
+import {
+  getSiteSettingsForAdminFn,
+  setSiteCustomFooterHtmlForAdminFn,
+  setSiteCustomHeadHtmlForAdminFn,
+  setSiteTestSettingForAdminFn,
+} from '@/features/settings/site-settings.admin.actions'
 
 /** 666 管理中心中的全站 JSON 配置测试面板。 */
 export function SiteSettingsPanel({ modeEnabled, modeReady }: { modeEnabled: boolean; modeReady: boolean }) {
   const [testEnabled, setTestEnabled] = useState(true)
   const [customFooterHtml, setCustomFooterHtml] = useState('')
+  const [customHeadHtml, setCustomHeadHtml] = useState('')
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
@@ -27,6 +33,7 @@ export function SiteSettingsPanel({ modeEnabled, modeReady }: { modeEnabled: boo
       const settings = await getSiteSettingsForAdminFn()
       setTestEnabled(settings.testEnabled)
       setCustomFooterHtml(settings.customFooterHtml)
+      setCustomHeadHtml(settings.customHeadHtml)
     } catch {
       setMessage('全站配置读取失败，管理员会话可能已经失效。')
     } finally {
@@ -44,6 +51,21 @@ export function SiteSettingsPanel({ modeEnabled, modeReady }: { modeEnabled: boo
       setMessage(settings.customFooterHtml ? '自定义 Footer HTML 已保存，将在全站页足后生效。' : '自定义 Footer HTML 已清空。')
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Footer HTML 保存失败，请检查管理员会话后重试。')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  /** 保存站长可信的 Head HTML；服务端会再次验证隐藏管理员会话。 */
+  async function saveCustomHeadHtml() {
+    setSaving(true)
+    setMessage(null)
+    try {
+      const settings = await setSiteCustomHeadHtmlForAdminFn({ data: { html: customHeadHtml } })
+      setCustomHeadHtml(settings.customHeadHtml)
+      setMessage(settings.customHeadHtml ? '自定义 Head HTML 已保存，将在全站 head 中生效。' : '自定义 Head HTML 已清空。')
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Head HTML 保存失败，请检查管理员会话后重试。')
     } finally {
       setSaving(false)
     }
@@ -130,6 +152,28 @@ export function SiteSettingsPanel({ modeEnabled, modeReady }: { modeEnabled: boo
         <div className="flex items-center justify-between gap-3">
           <span className="text-xs text-fg-3">{customFooterHtml.length.toLocaleString()} / 50,000</span>
           <Button type="button" onClick={() => void saveCustomFooterHtml()} disabled={loading || saving}>保存 Footer HTML</Button>
+        </div>
+      </Card>
+
+      <Card className="mt-5 grid gap-4 p-5 sm:p-6">
+        <div>
+          <h2 className="m-0 text-base font-semibold">自定义 Head HTML</h2>
+          <p className="mb-0 mt-1 text-sm leading-6 text-fg-2">会追加到每个页面 head 的末尾。支持 meta、link、style、内联脚本与外部脚本；只粘贴陛下完全信任的代码。</p>
+        </div>
+        <Textarea
+          value={customHeadHtml}
+          onChange={(event) => setCustomHeadHtml(event.target.value)}
+          placeholder={'例如：<meta name="google-site-verification" content="……" />'}
+          rows={10}
+          maxLength={50_000}
+          disabled={loading || saving}
+          spellCheck={false}
+          className="font-mono text-xs leading-5"
+          aria-label="自定义 Head HTML"
+        />
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs text-fg-3">{customHeadHtml.length.toLocaleString()} / 50,000</span>
+          <Button type="button" onClick={() => void saveCustomHeadHtml()} disabled={loading || saving}>保存 Head HTML</Button>
         </div>
       </Card>
     </div>

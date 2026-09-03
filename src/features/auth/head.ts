@@ -9,7 +9,7 @@ export function authPageHead(
   const locale: Locale = 'zh'
   return {
     meta: [
-      { title: `${dictionaries[locale].auth[key]} — FlareStarter` },
+      { title: `${dictionaries[locale].auth[key]} — 打卡润` },
       { name: 'robots', content: 'noindex' },
     ],
   }

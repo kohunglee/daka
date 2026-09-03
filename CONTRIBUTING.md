@@ -1,6 +1,6 @@
-# Contributing to FlareStarter
+# Contributing to 打卡润
 
-Thanks for your interest in improving FlareStarter! This is a starter template, so
+Thanks for your interest in improving 打卡润! This is a starter template, so
 the bar is: changes should keep it **honest** (no mocked/stubbed features), lean,
 and runnable on the Cloudflare free-to-cheap stack.
 

@@ -2,7 +2,7 @@
 title: "安全加固"
 ---
 
-模板默认就带的安全措施。报告漏洞请看根目录 [`SECURITY.md`](https://github.com/flarestarter/flarestarter/blob/main/SECURITY.md);这里讲**已经就位的防护**和怎么调。
+模板默认就带的安全措施。报告漏洞请看根目录 [`SECURITY.md`](https://github.com/kohunglee/daka/blob/main/SECURITY.md);这里讲**已经就位的防护**和怎么调。
 
 ## 1. 安全响应头(`src/lib/security-headers.ts`)
 
@@ -14,9 +14,9 @@ title: "安全加固"
 - `Permissions-Policy: camera=(), microphone=(), geolocation=()`
 - `Strict-Transport-Security`(HTTPS 下生效)
 
-外加**仅生产**注入的 `Content-Security-Policy`(dev 不注入,因为 Vite 需要 eval/ws)。当前 CSP 用了 `'unsafe-inline'`(TanStack 的注水内联脚本 + React/Tailwind 内联样式需要),并放行了字体/Turnstile/Analytics 域。**建议的下一步**是改成基于 nonce 的策略以去掉 `'unsafe-inline'`。
+外加**仅生产**注入的 `Content-Security-Policy`(dev 不注入,因为 Vite 需要 eval/ws)。当前策略允许任意 HTTPS 外部脚本、样式、字体、图片、接口、WebSocket、iframe、媒体和 Worker，便于 666 模式中的自定义 Head/Footer HTML 接入第三方服务；同时保留 `frame-ancestors 'none'`、`object-src 'none'`、`base-uri 'self'` 等基础限制。由于自定义 HTML 会在全站执行，只能粘贴完全信任的代码。
 
-改 CSP:编辑 `security-headers.ts` 里的 `PROD_CSP`。新增第三方域(脚本/iframe/上报)时记得同步放行,否则浏览器会拦。
+改 CSP:编辑 `security-headers.ts` 里的 `PROD_CSP`。如果未来需要进一步收紧，再把 `https:` 改回具体的第三方域名白名单，并逐项验证站点功能。
 
 ## 2. 启动期环境校验(`src/lib/env-validate.ts`)
 

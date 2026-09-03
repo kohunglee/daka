@@ -7,6 +7,7 @@ import { mapAuthError } from '@/features/auth/errors'
 import { useTranslation } from '@/features/i18n/provider'
 import { AppShell } from '@/components/app/app-shell'
 import { Button, buttonVariants } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
@@ -165,6 +166,29 @@ function AccountPage() {
             <AvatarUploader image={user.image} name={user.name} />
           </Section>
         )}
+
+        <Section title="账号与登录方式">
+          <div className="grid gap-4 text-sm sm:grid-cols-2">
+            <div>
+              <span className="block text-xs text-fg-3">绑定邮箱</span>
+              <span className="mt-1 block font-mono text-sm font-semibold text-foreground break-all">{user.email}</span>
+            </div>
+            <div>
+              <span className="block text-xs text-fg-3">登录渠道 / 绑定方式</span>
+              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                {user.providers && user.providers.length > 0 ? (
+                  user.providers.map((p) => (
+                    <Badge key={p} variant="outline" className="text-xs font-normal">
+                      {p === 'google' ? 'Google 登录' : p === 'github' ? 'GitHub 登录' : p === 'credential' ? '邮箱密码' : p}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-xs text-fg-3">未记录</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </Section>
 
         <Section title="昵称">
           <form onSubmit={handleNickname} className="grid gap-4">
