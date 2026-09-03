@@ -3,7 +3,7 @@ import { redirect } from '@tanstack/react-router'
 import { createDb } from '@/db/client'
 import { env } from '@/lib/env'
 import { readUser } from '@/features/auth/readUser.server'
-import { getUserSettings, setUserTestSetting } from './user-settings.server'
+import { getUserSettings, setUserShowInPlaza, setUserTestSetting } from './user-settings.server'
 
 /** 仅从当前会话读取个人配置，调用方无法传入或枚举其他用户 ID。 */
 export const getMyUserSettingsFn = createServerFn({ method: 'GET' })
@@ -20,4 +20,13 @@ export const setMyUserTestSettingFn = createServerFn({ method: 'POST' })
     const currentUser = await readUser()
     if (!currentUser) throw redirect({ to: '/{-$locale}/login' })
     return setUserTestSetting(createDb(env.DB), currentUser.id, data.enabled)
+  })
+
+/** 保存当前用户是否展示在广场；默认值由服务端兼容旧 JSON 并按 true 处理。 */
+export const setMyShowInPlazaFn = createServerFn({ method: 'POST' })
+  .validator((data: { enabled?: unknown }) => ({ enabled: data?.enabled !== false }))
+  .handler(async ({ data }) => {
+    const currentUser = await readUser()
+    if (!currentUser) throw redirect({ to: '/{-$locale}/login' })
+    return setUserShowInPlaza(createDb(env.DB), currentUser.id, data.enabled)
   })

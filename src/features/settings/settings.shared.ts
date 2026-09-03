@@ -14,6 +14,11 @@ export interface TestSettingsView {
   testEnabled: boolean
 }
 
+/** 个人设置视图：广场默认公开，只有用户主动关闭后才隐藏。 */
+export interface UserSettingsView extends TestSettingsView {
+  showInPlaza: boolean
+}
+
 /** 全站设置页需要读取的已定义配置；未知键仍原样保存在 JSON 中。 */
 export interface SiteSettingsView extends TestSettingsView {
   customFooterHtml: string
@@ -24,6 +29,15 @@ export interface SiteSettingsView extends TestSettingsView {
 export function readTestSettings(settingsJson: string | null | undefined): TestSettingsView {
   const record = parseSettingsRecord(settingsJson)
   return { testEnabled: typeof record.testEnabled === 'boolean' ? record.testEnabled : true }
+}
+
+/** 读取个人设置；历史 JSON 没有该字段时按“允许显示在广场”处理。 */
+export function readUserSettings(settingsJson: string | null | undefined): UserSettingsView {
+  const record = parseSettingsRecord(settingsJson)
+  return {
+    testEnabled: typeof record.testEnabled === 'boolean' ? record.testEnabled : true,
+    showInPlaza: typeof record.showInPlaza === 'boolean' ? record.showInPlaza : true,
+  }
 }
 
 /** 读取全站设置的最小公开视图；自定义 HTML 缺失或格式不正确时安全回退为空。 */
@@ -41,6 +55,13 @@ export function updateTestSettingsJson(settingsJson: string | null | undefined, 
   const record = parseSettingsRecord(settingsJson)
   const version = typeof record.version === 'number' && Number.isInteger(record.version) && record.version > 0 ? record.version : 1
   return JSON.stringify({ ...record, version, testEnabled })
+}
+
+/** 只更新广场显示设置，并完整保留 JSON 中已有的其他配置。 */
+export function updateShowInPlazaJson(settingsJson: string | null | undefined, showInPlaza: boolean): string {
+  const record = parseSettingsRecord(settingsJson)
+  const version = typeof record.version === 'number' && Number.isInteger(record.version) && record.version > 0 ? record.version : 1
+  return JSON.stringify({ ...record, version, showInPlaza })
 }
 
 /** 只更新全站 Footer HTML，并完整保留其他已知和未来的 JSON 键。 */

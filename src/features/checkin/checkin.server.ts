@@ -1,5 +1,7 @@
 import { and, asc, count, desc, eq, gte, lte } from 'drizzle-orm'
 import type { DB } from '@/db/client'
+import { user } from '@/features/auth/auth.schema'
+import { readUserSettings } from '@/features/settings/settings.shared'
 import { dailyCheckin } from './checkin.schema'
 import {
   calculateCurrentStreak,
@@ -122,6 +124,108 @@ export async function listMyCheckinsForExport(db: DB, userId: string): Promise<C
     .orderBy(desc(dailyCheckin.checkinDate), desc(dailyCheckin.createdAt))
 
   return rows.map(toCheckinRecordView)
+}
+
+/** 广场首页只展示用户摘要，不把任何单条打卡内容直接铺成信息流。 */
+export interface PlazaUserSummary {
+  userId: string
+  name: string
+  image: string | null
+  checkinCount: number
+  currentStreak: number
+  lastCheckinDate: string
+}
+
+/** 读取允许公开的用户及其打卡摘要；不读取邮箱等私密字段。 */
+export async function listPlazaUsers(db: DB): Promise<PlazaUserSummary[]> {
+  const rows = await db
+    .select({
+      userId: user.id,
+      name: user.name,
+      image: user.image,
+      settingsJson: user.settingsJson,
+      checkinDate: dailyCheckin.checkinDate,
+    })
+    .from(user)
+    .innerJoin(dailyCheckin, eq(dailyCheckin.userId, user.id))
+    .orderBy(desc(dailyCheckin.checkinDate))
+
+  const grouped = new Map<string, { name: string; image: string | null; dates: string[] }>()
+  for (const row of rows) {
+    if (!readUserSettings(row.settingsJson).showInPlaza) continue
+    const current = grouped.get(row.userId)
+    if (current) {
+      current.dates.push(row.checkinDate)
+    } else {
+      grouped.set(row.userId, { name: row.name, image: row.image, dates: [row.checkinDate] })
+    }
+  }
+
+  return Array.from(grouped, ([userId, summary]) => ({
+    userId,
+    name: summary.name,
+    image: summary.image,
+    checkinCount: summary.dates.length,
+    currentStreak: calculateCurrentStreak(summary.dates),
+    lastCheckinDate: summary.dates[0] ?? '',
+  }))
+}
+
+/** 广场个人小主页的分页数据：摘要和记录流都只对允许公开的用户开放。 */
+export interface PublicPlazaUserPage {
+  profile: PlazaUserSummary
+  rows: CheckinRecordView[]
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+/** 读取广场用户个人小主页，并复用与“我的记录”相同的分页口径。 */
+export async function listPublicPlazaUserCheckins(db: DB, userId: string, page: number): Promise<PublicPlazaUserPage | null> {
+  if (!userId || userId.includes('/')) return null
+  const ownerRows = await db
+    .select({ id: user.id, name: user.name, image: user.image, settingsJson: user.settingsJson })
+    .from(user)
+    .where(eq(user.id, userId))
+    .limit(1)
+  const owner = ownerRows[0]
+  if (!owner || !readUserSettings(owner.settingsJson).showInPlaza) return null
+
+  const safePage = Number.isInteger(page) && page >= 0 ? Math.min(page, 100_000) : 0
+  const [allDates, rows, totalRows] = await Promise.all([
+    db
+      .select({ checkinDate: dailyCheckin.checkinDate })
+      .from(dailyCheckin)
+      .where(eq(dailyCheckin.userId, userId))
+      .orderBy(asc(dailyCheckin.checkinDate)),
+    db
+      .select()
+      .from(dailyCheckin)
+      .where(eq(dailyCheckin.userId, userId))
+      .orderBy(desc(dailyCheckin.checkinDate), desc(dailyCheckin.createdAt))
+      .limit(MY_CHECKIN_PAGE_SIZE)
+      .offset(safePage * MY_CHECKIN_PAGE_SIZE),
+    db
+      .select({ total: count() })
+      .from(dailyCheckin)
+      .where(eq(dailyCheckin.userId, userId)),
+  ])
+  const dates = allDates.map((row) => row.checkinDate)
+  const total = totalRows[0]?.total ?? 0
+  return {
+    profile: {
+      userId,
+      name: owner.name,
+      image: owner.image,
+      checkinCount: total,
+      currentStreak: calculateCurrentStreak(dates),
+      lastCheckinDate: dates.at(-1) ?? '',
+    },
+    rows: rows.map(toCheckinRecordView),
+    page: safePage,
+    pageSize: MY_CHECKIN_PAGE_SIZE,
+    totalPages: Math.max(1, Math.ceil(total / MY_CHECKIN_PAGE_SIZE)),
+  }
 }
 
 /** 服务端最终校验表单字段，前端校验只能作为体验优化。 */

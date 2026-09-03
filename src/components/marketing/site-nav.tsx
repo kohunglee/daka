@@ -37,6 +37,9 @@ export function SiteNav({ theme, loggedIn }: { theme: 'light' | 'dark'; loggedIn
           </div>
         )}
 
+        <Link to="/{-$locale}/plaza" className="px-2 py-1 text-sm text-fg-2 transition-colors hover:text-foreground">
+          广场
+        </Link>
         <Link to="/{-$locale}/blog" className="px-2 py-1 text-sm text-fg-2 transition-colors hover:text-foreground">
           博客
         </Link>

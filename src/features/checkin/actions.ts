@@ -14,7 +14,7 @@ import {
   type CheckinCalendarSummary,
   type SubmitCheckinResult,
 } from './checkin.shared'
-import { getPublicCheckin, getUserCheckin, getYearCheckinData, listMyCheckins, listMyCheckinsForExport, parseCheckinOptions, validateCheckinFields, validateYear } from './checkin.server'
+import { getPublicCheckin, getUserCheckin, getYearCheckinData, listMyCheckins, listMyCheckinsForExport, listPlazaUsers, listPublicPlazaUserCheckins, parseCheckinOptions, validateCheckinFields, validateYear } from './checkin.server'
 
 /** 未登录时只返回空日历；打卡动作本身仍然会跳转登录。 */
 export const getYearCheckinSummaryFn = createServerFn({ method: 'GET' })
@@ -54,6 +54,18 @@ export const getMyCheckinsForExportFn = createServerFn({ method: 'GET' })
     if (!user) throw redirect({ to: '/{-$locale}/login' })
     return listMyCheckinsForExport(createDb(env.DB), user.id)
   })
+
+/** 公开读取广场用户摘要；不要求登录，也不返回邮箱等私密资料。 */
+export const getPlazaUsersFn = createServerFn({ method: 'GET' })
+  .handler(async () => listPlazaUsers(createDb(env.DB)))
+
+/** 读取广场用户个人小主页的只读信息流。 */
+export const getPublicPlazaUserFn = createServerFn({ method: 'GET' })
+  .validator((data: { userId: string; page?: unknown }) => ({
+    userId: data.userId,
+    page: typeof data?.page === 'number' && Number.isInteger(data.page) && data.page >= 0 ? data.page : 0,
+  }))
+  .handler(async ({ data }) => listPublicPlazaUserCheckins(createDb(env.DB), data.userId, data.page))
 
 /** 公开链接使用 userId/date 读取单条记录，不提供按用户枚举记录的接口。 */
 export const getPublicCheckinDetailFn = createServerFn({ method: 'GET' })

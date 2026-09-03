@@ -27,11 +27,14 @@ import { Route as DocsMdSplatRouteImport } from './routes/docs-md/$'
 import { Route as ApiSearchRouteImport } from './routes/api/search'
 import { Route as AdminWaitlistDotcsvRouteImport } from './routes/admin/waitlist[.]csv'
 import { Route as AdminSponsorsDotcsvRouteImport } from './routes/admin/sponsors[.]csv'
+import { Route as Char123LocaleChar125PlazaRouteRouteImport } from './routes/{-$locale}/plaza/route'
 import { Route as Char123LocaleChar125BlogRouteRouteImport } from './routes/{-$locale}/blog/route'
 import { Route as Char123LocaleChar125AdminRouteRouteImport } from './routes/{-$locale}/admin/route'
+import { Route as Char123LocaleChar125PlazaIndexRouteImport } from './routes/{-$locale}/plaza/index'
 import { Route as Char123LocaleChar125BlogIndexRouteImport } from './routes/{-$locale}/blog/index'
 import { Route as Char123LocaleChar125AppIndexRouteImport } from './routes/{-$locale}/app/index'
 import { Route as Char123LocaleChar125AdminIndexRouteImport } from './routes/{-$locale}/admin/index'
+import { Route as Char123LocaleChar125PlazaUserIdRouteImport } from './routes/{-$locale}/plaza/$userId'
 import { Route as Char123LocaleChar125BlogPostIdRouteImport } from './routes/{-$locale}/blog/$postId'
 import { Route as Char123LocaleChar125AppRecordsRouteImport } from './routes/{-$locale}/app/records'
 import { Route as Char123LocaleChar125AppProRouteImport } from './routes/{-$locale}/app/pro'
@@ -152,6 +155,12 @@ const AdminSponsorsDotcsvRoute = AdminSponsorsDotcsvRouteImport.update({
   path: '/admin/sponsors.csv',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char123LocaleChar125PlazaRouteRoute =
+  Char123LocaleChar125PlazaRouteRouteImport.update({
+    id: '/plaza',
+    path: '/plaza',
+    getParentRoute: () => Char123LocaleChar125RouteRoute,
+  } as any)
 const Char123LocaleChar125BlogRouteRoute =
   Char123LocaleChar125BlogRouteRouteImport.update({
     id: '/blog',
@@ -163,6 +172,12 @@ const Char123LocaleChar125AdminRouteRoute =
     id: '/admin',
     path: '/admin',
     getParentRoute: () => Char123LocaleChar125RouteRoute,
+  } as any)
+const Char123LocaleChar125PlazaIndexRoute =
+  Char123LocaleChar125PlazaIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => Char123LocaleChar125PlazaRouteRoute,
   } as any)
 const Char123LocaleChar125BlogIndexRoute =
   Char123LocaleChar125BlogIndexRouteImport.update({
@@ -181,6 +196,12 @@ const Char123LocaleChar125AdminIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => Char123LocaleChar125AdminRouteRoute,
+  } as any)
+const Char123LocaleChar125PlazaUserIdRoute =
+  Char123LocaleChar125PlazaUserIdRouteImport.update({
+    id: '/$userId',
+    path: '/$userId',
+    getParentRoute: () => Char123LocaleChar125PlazaRouteRoute,
   } as any)
 const Char123LocaleChar125BlogPostIdRoute =
   Char123LocaleChar125BlogPostIdRouteImport.update({
@@ -314,6 +335,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/{-$locale}/admin': typeof Char123LocaleChar125AdminRouteRouteWithChildren
   '/{-$locale}/blog': typeof Char123LocaleChar125BlogRouteRouteWithChildren
+  '/{-$locale}/plaza': typeof Char123LocaleChar125PlazaRouteRouteWithChildren
   '/admin/sponsors.csv': typeof AdminSponsorsDotcsvRoute
   '/admin/waitlist.csv': typeof AdminWaitlistDotcsvRoute
   '/api/search': typeof ApiSearchRoute
@@ -345,9 +367,11 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/app/pro': typeof Char123LocaleChar125AppProRoute
   '/{-$locale}/app/records': typeof Char123LocaleChar125AppRecordsRoute
   '/{-$locale}/blog/$postId': typeof Char123LocaleChar125BlogPostIdRoute
+  '/{-$locale}/plaza/$userId': typeof Char123LocaleChar125PlazaUserIdRoute
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/app/': typeof Char123LocaleChar125AppIndexRoute
   '/{-$locale}/blog/': typeof Char123LocaleChar125BlogIndexRoute
+  '/{-$locale}/plaza/': typeof Char123LocaleChar125PlazaIndexRoute
   '/api/checkins/$userId/$date': typeof ApiCheckinsUserIdDateRoute
   '/{-$locale}/checkin/$userId/$date': typeof Char123LocaleChar125CheckinUserIdDateRoute
 }
@@ -388,9 +412,11 @@ export interface FileRoutesByTo {
   '/{-$locale}/app/pro': typeof Char123LocaleChar125AppProRoute
   '/{-$locale}/app/records': typeof Char123LocaleChar125AppRecordsRoute
   '/{-$locale}/blog/$postId': typeof Char123LocaleChar125BlogPostIdRoute
+  '/{-$locale}/plaza/$userId': typeof Char123LocaleChar125PlazaUserIdRoute
   '/{-$locale}/admin': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/app': typeof Char123LocaleChar125AppIndexRoute
   '/{-$locale}/blog': typeof Char123LocaleChar125BlogIndexRoute
+  '/{-$locale}/plaza': typeof Char123LocaleChar125PlazaIndexRoute
   '/api/checkins/$userId/$date': typeof ApiCheckinsUserIdDateRoute
   '/{-$locale}/checkin/$userId/$date': typeof Char123LocaleChar125CheckinUserIdDateRoute
 }
@@ -404,6 +430,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/{-$locale}/admin': typeof Char123LocaleChar125AdminRouteRouteWithChildren
   '/{-$locale}/blog': typeof Char123LocaleChar125BlogRouteRouteWithChildren
+  '/{-$locale}/plaza': typeof Char123LocaleChar125PlazaRouteRouteWithChildren
   '/admin/sponsors.csv': typeof AdminSponsorsDotcsvRoute
   '/admin/waitlist.csv': typeof AdminWaitlistDotcsvRoute
   '/api/search': typeof ApiSearchRoute
@@ -435,9 +462,11 @@ export interface FileRoutesById {
   '/{-$locale}/app/pro': typeof Char123LocaleChar125AppProRoute
   '/{-$locale}/app/records': typeof Char123LocaleChar125AppRecordsRoute
   '/{-$locale}/blog/$postId': typeof Char123LocaleChar125BlogPostIdRoute
+  '/{-$locale}/plaza/$userId': typeof Char123LocaleChar125PlazaUserIdRoute
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/app/': typeof Char123LocaleChar125AppIndexRoute
   '/{-$locale}/blog/': typeof Char123LocaleChar125BlogIndexRoute
+  '/{-$locale}/plaza/': typeof Char123LocaleChar125PlazaIndexRoute
   '/api/checkins/$userId/$date': typeof ApiCheckinsUserIdDateRoute
   '/{-$locale}/checkin/$userId/$date': typeof Char123LocaleChar125CheckinUserIdDateRoute
 }
@@ -452,6 +481,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/{-$locale}/admin'
     | '/{-$locale}/blog'
+    | '/{-$locale}/plaza'
     | '/admin/sponsors.csv'
     | '/admin/waitlist.csv'
     | '/api/search'
@@ -483,9 +513,11 @@ export interface FileRouteTypes {
     | '/{-$locale}/app/pro'
     | '/{-$locale}/app/records'
     | '/{-$locale}/blog/$postId'
+    | '/{-$locale}/plaza/$userId'
     | '/{-$locale}/admin/'
     | '/{-$locale}/app/'
     | '/{-$locale}/blog/'
+    | '/{-$locale}/plaza/'
     | '/api/checkins/$userId/$date'
     | '/{-$locale}/checkin/$userId/$date'
   fileRoutesByTo: FileRoutesByTo
@@ -526,9 +558,11 @@ export interface FileRouteTypes {
     | '/{-$locale}/app/pro'
     | '/{-$locale}/app/records'
     | '/{-$locale}/blog/$postId'
+    | '/{-$locale}/plaza/$userId'
     | '/{-$locale}/admin'
     | '/{-$locale}/app'
     | '/{-$locale}/blog'
+    | '/{-$locale}/plaza'
     | '/api/checkins/$userId/$date'
     | '/{-$locale}/checkin/$userId/$date'
   id:
@@ -541,6 +575,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/{-$locale}/admin'
     | '/{-$locale}/blog'
+    | '/{-$locale}/plaza'
     | '/admin/sponsors.csv'
     | '/admin/waitlist.csv'
     | '/api/search'
@@ -572,9 +607,11 @@ export interface FileRouteTypes {
     | '/{-$locale}/app/pro'
     | '/{-$locale}/app/records'
     | '/{-$locale}/blog/$postId'
+    | '/{-$locale}/plaza/$userId'
     | '/{-$locale}/admin/'
     | '/{-$locale}/app/'
     | '/{-$locale}/blog/'
+    | '/{-$locale}/plaza/'
     | '/api/checkins/$userId/$date'
     | '/{-$locale}/checkin/$userId/$date'
   fileRoutesById: FileRoutesById
@@ -725,6 +762,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSponsorsDotcsvRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/{-$locale}/plaza': {
+      id: '/{-$locale}/plaza'
+      path: '/plaza'
+      fullPath: '/{-$locale}/plaza'
+      preLoaderRoute: typeof Char123LocaleChar125PlazaRouteRouteImport
+      parentRoute: typeof Char123LocaleChar125RouteRoute
+    }
     '/{-$locale}/blog': {
       id: '/{-$locale}/blog'
       path: '/blog'
@@ -738,6 +782,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/{-$locale}/admin'
       preLoaderRoute: typeof Char123LocaleChar125AdminRouteRouteImport
       parentRoute: typeof Char123LocaleChar125RouteRoute
+    }
+    '/{-$locale}/plaza/': {
+      id: '/{-$locale}/plaza/'
+      path: '/'
+      fullPath: '/{-$locale}/plaza/'
+      preLoaderRoute: typeof Char123LocaleChar125PlazaIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125PlazaRouteRoute
     }
     '/{-$locale}/blog/': {
       id: '/{-$locale}/blog/'
@@ -759,6 +810,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/{-$locale}/admin/'
       preLoaderRoute: typeof Char123LocaleChar125AdminIndexRouteImport
       parentRoute: typeof Char123LocaleChar125AdminRouteRoute
+    }
+    '/{-$locale}/plaza/$userId': {
+      id: '/{-$locale}/plaza/$userId'
+      path: '/$userId'
+      fullPath: '/{-$locale}/plaza/$userId'
+      preLoaderRoute: typeof Char123LocaleChar125PlazaUserIdRouteImport
+      parentRoute: typeof Char123LocaleChar125PlazaRouteRoute
     }
     '/{-$locale}/blog/$postId': {
       id: '/{-$locale}/blog/$postId'
@@ -953,9 +1011,26 @@ const Char123LocaleChar125BlogRouteRouteWithChildren =
     Char123LocaleChar125BlogRouteRouteChildren,
   )
 
+interface Char123LocaleChar125PlazaRouteRouteChildren {
+  Char123LocaleChar125PlazaUserIdRoute: typeof Char123LocaleChar125PlazaUserIdRoute
+  Char123LocaleChar125PlazaIndexRoute: typeof Char123LocaleChar125PlazaIndexRoute
+}
+
+const Char123LocaleChar125PlazaRouteRouteChildren: Char123LocaleChar125PlazaRouteRouteChildren =
+  {
+    Char123LocaleChar125PlazaUserIdRoute: Char123LocaleChar125PlazaUserIdRoute,
+    Char123LocaleChar125PlazaIndexRoute: Char123LocaleChar125PlazaIndexRoute,
+  }
+
+const Char123LocaleChar125PlazaRouteRouteWithChildren =
+  Char123LocaleChar125PlazaRouteRoute._addFileChildren(
+    Char123LocaleChar125PlazaRouteRouteChildren,
+  )
+
 interface Char123LocaleChar125RouteRouteChildren {
   Char123LocaleChar125AdminRouteRoute: typeof Char123LocaleChar125AdminRouteRouteWithChildren
   Char123LocaleChar125BlogRouteRoute: typeof Char123LocaleChar125BlogRouteRouteWithChildren
+  Char123LocaleChar125PlazaRouteRoute: typeof Char123LocaleChar125PlazaRouteRouteWithChildren
   Char123LocaleChar125ChangelogRoute: typeof Char123LocaleChar125ChangelogRoute
   Char123LocaleChar125PricingRoute: typeof Char123LocaleChar125PricingRoute
   Char123LocaleChar125PrivacyRoute: typeof Char123LocaleChar125PrivacyRoute
@@ -983,6 +1058,8 @@ const Char123LocaleChar125RouteRouteChildren: Char123LocaleChar125RouteRouteChil
       Char123LocaleChar125AdminRouteRouteWithChildren,
     Char123LocaleChar125BlogRouteRoute:
       Char123LocaleChar125BlogRouteRouteWithChildren,
+    Char123LocaleChar125PlazaRouteRoute:
+      Char123LocaleChar125PlazaRouteRouteWithChildren,
     Char123LocaleChar125ChangelogRoute: Char123LocaleChar125ChangelogRoute,
     Char123LocaleChar125PricingRoute: Char123LocaleChar125PricingRoute,
     Char123LocaleChar125PrivacyRoute: Char123LocaleChar125PrivacyRoute,
