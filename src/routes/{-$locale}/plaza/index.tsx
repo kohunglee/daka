@@ -3,6 +3,7 @@ import { ArrowRight, Users } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card'
 import { getPlazaUsersFn } from '@/features/checkin/actions'
+import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/{-$locale}/plaza/')({
   loader: () => getPlazaUsersFn(),
@@ -39,7 +40,8 @@ function PlazaIndexPage() {
               params={{ userId: plazaUser.userId }}
               className="group block"
             >
-              <Card className="flex items-center gap-4 p-5 transition-colors group-hover:border-border-strong">
+              {/* 当前连续天数为 0 的用户暂时用灰底标记，保持卡片信息仍可正常查看。 */}
+              <Card className={cn('flex items-center gap-4 p-5 transition-colors group-hover:border-border-strong', plazaUser.currentStreak < 1 && 'bg-muted')}>
                 <Avatar className="size-12">
                   <AvatarImage src={plazaUser.image ?? undefined} alt={plazaUser.name} />
                   <AvatarFallback>{plazaUser.name.slice(0, 2).toUpperCase()}</AvatarFallback>

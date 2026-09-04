@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { getMyCheckinDetailFn, getYearCheckinSummaryFn } from '@/features/checkin/actions'
-import { displayBacklinkOption, displayHoursOption, formatBeijingDate, type CheckinRecordView } from '@/features/checkin/checkin.shared'
+import { displayBacklinkOption, displayHoursOption, formatBeijingDate, type CheckinCalendarSummary, type CheckinRecordView } from '@/features/checkin/checkin.shared'
 import { DailyCheckinForm } from './daily-checkin-form'
 
 /** 星期表头：最左列是星期一。 */
@@ -82,19 +82,22 @@ function CheckinDetail({ record }: { record: CheckinRecordView }) {
   )
 }
 
-/** 全年日历组件的外部身份输入，未登录时保留日历框架但不显示打卡数据。 */
-export function YearCalendar({ userId }: { userId: string | null }) {
+/** 全年日历组件的外部输入；本年度摘要由首页服务端 loader 提前注入，避免刷新时出现客户端等待状态。 */
+export function YearCalendar({ userId, initialSummary }: { userId: string | null; initialSummary: CheckinCalendarSummary }) {
   const [year, setYear] = useState(() => new Date().getFullYear())
   const [highlight, setHighlight] = useState(false)
   const [showCheckinForm, setShowCheckinForm] = useState(false)
-  const [checkedDates, setCheckedDates] = useState<Set<string>>(() => new Set())
-  const [currentStreak, setCurrentStreak] = useState(0)
+  const [checkedDates, setCheckedDates] = useState<Set<string>>(() => new Set(initialSummary.checkedDates))
+  const [currentStreak, setCurrentStreak] = useState(initialSummary.currentStreak)
   const [selectedRecord, setSelectedRecord] = useState<CheckinRecordView | null>(null)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
   const [detailError, setDetailError] = useState<string | null>(null)
   // 只有年度打卡摘要成功返回后，按钮才显示具体状态，避免慢网速下先闪出错误文案。
-  const [loadedSummaryKey, setLoadedSummaryKey] = useState<string | null>(() => (userId ? null : 'logged-out'))
+  const [loadedSummaryKey, setLoadedSummaryKey] = useState<string | null>(() => {
+    if (!userId) return 'logged-out'
+    return initialSummary.authenticated ? `${userId}:${initialSummary.year}` : null
+  })
   const timerRef = useRef<number | null>(null)
 
   const months = useMemo(() => buildYear(year), [year])
@@ -121,6 +124,14 @@ export function YearCalendar({ userId }: { userId: string | null }) {
       return () => { cancelled = true }
     }
 
+    // 当前年份的数据已经随 SSR HTML 下发，刷新时直接复用，避免首屏再经历一次读取状态。
+    if (initialSummary.authenticated && requestKey === `${userId}:${initialSummary.year}`) {
+      setCheckedDates(new Set(initialSummary.checkedDates))
+      setCurrentStreak(initialSummary.currentStreak)
+      setLoadedSummaryKey(requestKey)
+      return () => { cancelled = true }
+    }
+
     void getYearCheckinSummaryFn({ data: { year } })
       .then((summary) => {
         if (cancelled) return
@@ -133,7 +144,7 @@ export function YearCalendar({ userId }: { userId: string | null }) {
       })
 
     return () => { cancelled = true }
-  }, [userId, year])
+  }, [initialSummary, userId, year])
 
   /** 清理日期闪烁定时器，避免组件卸载后继续更新状态。 */
   useEffect(

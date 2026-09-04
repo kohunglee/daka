@@ -1,11 +1,11 @@
-import { useState, type SyntheticEvent } from 'react'
+import { useEffect, useRef, useState, type SyntheticEvent } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card'
 import { displayBacklinkOption, displayHoursOption, type CheckinRecordView } from '../checkin.shared'
 import { useTranslation } from '@/features/i18n/provider'
 
 /** 可复用的单条打卡记录卡片；“我的记录”和广场个人主页共用同一套展示结构。 */
-export function CheckinRecordCard({ record, name, userImage }: { record: CheckinRecordView; name: string; userImage?: string | null }) {
+export function CheckinRecordCard({ record, name, userImage, onImageClick }: { record: CheckinRecordView; name: string; userImage?: string | null; onImageClick?: () => void }) {
   const { t } = useTranslation()
   return (
     <Card className="overflow-hidden p-0">
@@ -23,7 +23,7 @@ export function CheckinRecordCard({ record, name, userImage }: { record: Checkin
       </div>
 
       <div className="overflow-x-auto px-5 pb-5">
-        <RecordImage record={record} title={t('app.openImage')} />
+        <RecordImage record={record} title={t('app.openImage')} onImageClick={onImageClick} />
       </div>
 
       <div className="grid grid-cols-3 gap-2 border-t border-border px-5 py-4 text-center">
@@ -41,18 +41,34 @@ export function CheckinRecordCard({ record, name, userImage }: { record: Checkin
 }
 
 /** 竖图折叠成 1:1 视觉窗口，并用渐隐避免底部出现生硬裁切。 */
-function RecordImage({ record, title }: { record: CheckinRecordView; title: string }) {
+function RecordImage({ record, title, onImageClick }: { record: CheckinRecordView; title: string; onImageClick?: () => void }) {
   const [isPortrait, setIsPortrait] = useState(false)
+  const imageRef = useRef<HTMLImageElement | null>(null)
 
   /** 图片加载后按真实尺寸判断方向，横图保持原始宽高比例。 */
   function handleImageLoad(event: SyntheticEvent<HTMLImageElement>) {
-    setIsPortrait(event.currentTarget.naturalHeight > event.currentTarget.naturalWidth)
+    const image = event.currentTarget
+    if (image.naturalWidth > 0 && image.naturalHeight > 0) {
+      setIsPortrait(image.naturalHeight > image.naturalWidth)
+    }
   }
 
-  return (
-    <a href={record.imageUrl} target="_blank" rel="noopener noreferrer" title={title} className="block w-[450px] transition-opacity hover:opacity-85">
-      <div className={isPortrait ? 'relative h-[450px] w-[450px] overflow-hidden rounded-lg border border-border bg-background' : 'w-[450px]'}>
+  /**
+   * 补偿浏览器缓存命中时可能错过 onLoad 的情况。
+   * 图片 URL 变化时先清除旧方向，避免复用组件时短暂沿用上一张图片的遮罩状态。
+   */
+  useEffect(() => {
+    setIsPortrait(false)
+    const image = imageRef.current
+    if (image?.complete && image.naturalWidth > 0 && image.naturalHeight > 0) {
+      setIsPortrait(image.naturalHeight > image.naturalWidth)
+    }
+  }, [record.imageUrl])
+
+  const imageContent = (
+    <div className={isPortrait ? 'relative h-[450px] w-[450px] overflow-hidden rounded-lg border border-border bg-background' : 'w-[450px]'}>
         <img
+          ref={imageRef}
           src={record.imageUrl}
           alt={`${record.checkinDate} 的打卡截图`}
           onLoad={handleImageLoad}
@@ -60,7 +76,20 @@ function RecordImage({ record, title }: { record: CheckinRecordView; title: stri
           loading="lazy"
         />
         {isPortrait && <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[45px] bg-gradient-to-t from-background via-background/80 to-transparent" aria-hidden="true" />}
-      </div>
+    </div>
+  )
+
+  if (onImageClick) {
+    return (
+      <button type="button" title="查看大图" aria-label={`${record.checkinDate} 查看大图`} onClick={onImageClick} className="block w-[450px] cursor-zoom-in border-0 bg-transparent p-0 text-left transition-opacity hover:opacity-85">
+        {imageContent}
+      </button>
+    )
+  }
+
+  return (
+    <a href={record.imageUrl} target="_blank" rel="noopener noreferrer" title={title} className="block w-[450px] transition-opacity hover:opacity-85">
+      {imageContent}
     </a>
   )
 }

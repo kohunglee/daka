@@ -5,11 +5,19 @@ import type { Locale } from '@/features/i18n/locale'
 import { SiteNav } from '@/components/marketing/site-nav'
 import { Footer } from '@/components/marketing/footer'
 import { YearCalendar } from '@/components/calendar/year-calendar'
+import { getYearCheckinSummaryFn } from '@/features/checkin/actions'
 
 const rootRoute = getRouteApi('__root__')
 
 export const Route = createFileRoute('/{-$locale}/')({
-  loader: async () => ({ origin: await getOrigin() }),
+  loader: async () => {
+    const year = new Date().getFullYear()
+    const [origin, summary] = await Promise.all([
+      getOrigin(),
+      getYearCheckinSummaryFn({ data: { year } }),
+    ])
+    return { origin, summary }
+  },
   head: ({ loaderData, params }) => {
     const origin = loaderData?.origin ?? ''
     const locale = ((params as { locale?: string }).locale ?? 'zh') as Locale
@@ -30,6 +38,7 @@ export const Route = createFileRoute('/{-$locale}/')({
 
 function Home() {
   const { theme, user } = rootRoute.useLoaderData()
+  const { summary } = Route.useLoaderData()
   const loggedIn = !!user
 
   // 使用动态视口高度：短页面让页足贴近底部，长页面仍由正文自然撑开。
@@ -38,7 +47,7 @@ function Home() {
       <SiteNav theme={theme} loggedIn={loggedIn} />
       {/* 首页正文：打卡系统 MVP 的全年日历占位 */}
       <main className="flex-1" aria-label="Main content">
-        <YearCalendar userId={user?.id ?? null} />
+        <YearCalendar userId={user?.id ?? null} initialSummary={summary} />
       </main>
       <Footer />
     </div>

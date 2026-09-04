@@ -471,7 +471,7 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
               截图
             </Label>
             <FieldHint
-              ariaLabel="用于证明今天主要工作的站点数据，也可以提交必应搜索工具截图。"
+              ariaLabel="用于证明今天主要工作的站点数据，也可以提交必应搜索工具、GA4 等类似平台截图。必须露出今天的折线数据，网址是否打码请自行判断。"
               text={
                 <>
                   除了 GSC，截图{' '}
@@ -482,6 +482,14 @@ export function DailyCheckinForm({ onSuccess }: { onSuccess?: (record: CheckinRe
                     className="text-[#26384d] underline decoration-[#26384d]/20 underline-offset-2 transition-colors hover:text-[#1d5b8f] dark:text-[#c6d4e4] dark:decoration-[#c6d4e4]/25 dark:hover:text-[#a9c9e8]"
                   >
                     必应搜索工具
+                  </a>{'、'}
+                  <a
+                    href="https://analytics.google.com/analytics/web/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#26384d] underline decoration-[#26384d]/20 underline-offset-2 transition-colors hover:text-[#1d5b8f] dark:text-[#c6d4e4] dark:decoration-[#c6d4e4]/25 dark:hover:text-[#a9c9e8]"
+                  >
+                    GA4
                   </a>{' '}
                   等类似平台也可以哦。必须漏出今天的折线数据！网址是否打码请自行判断。
                 </>

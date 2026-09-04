@@ -3,6 +3,7 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { BookOpen, ChevronLeft, ChevronRight, Download, Image as ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { AppShell } from '@/components/app/app-shell'
+import { ImageLightbox } from '@/components/media/image-lightbox'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { requireUser } from '@/features/auth/middleware'
@@ -44,6 +45,7 @@ function MyRecordsPage() {
   const totalPages = records.totalPages
   const primaryName = user.name || user.email
   const [exporting, setExporting] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [showInPlaza, setShowInPlaza] = useState(settings.showInPlaza)
   const [plazaSettingBusy, setPlazaSettingBusy] = useState(false)
   const [plazaSettingMessage, setPlazaSettingMessage] = useState<string | null>(null)
@@ -155,7 +157,15 @@ function MyRecordsPage() {
         </Card>
       ) : (
         <div className="grid max-w-[760px] gap-5">
-          {records.rows.map((record) => <CheckinRecordCard key={record.id} record={record} name={primaryName} userImage={user.image} />)}
+          {records.rows.map((record, index) => (
+            <CheckinRecordCard
+              key={record.id}
+              record={record}
+              name={primaryName}
+              userImage={user.image}
+              onImageClick={() => setLightboxIndex(index)}
+            />
+          ))}
         </div>
       )}
 
@@ -168,6 +178,17 @@ function MyRecordsPage() {
           {t('app.recordsNext')}<ChevronRight size={15} />
         </Button>
       </div>
+
+      {/* 当前页的记录组成一个图片画廊；卡片内原有正方形遮罩保持不变，灯箱负责查看完整原图。 */}
+      <ImageLightbox
+        openIndex={lightboxIndex}
+        onClose={() => setLightboxIndex(null)}
+        slides={records.rows.map((record) => ({
+          src: record.imageUrl,
+          alt: `${record.checkinDate} 的打卡截图`,
+          title: record.checkinDate,
+        }))}
+      />
     </AppShell>
   )
 }
