@@ -3,8 +3,10 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Users } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { ImageLightbox } from '@/components/media/image-lightbox'
 import { CheckinRecordCard } from '@/features/checkin/components/checkin-record-card'
 import { getPublicPlazaUserFn } from '@/features/checkin/actions'
+import { useState } from 'react'
 
 interface PlazaUserSearch {
   page?: number
@@ -24,6 +26,7 @@ export const Route = createFileRoute('/{-$locale}/plaza/$userId')({
 function PlazaUserPage() {
   const result = Route.useLoaderData()
   const router = useRouter()
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   if (!result) {
     return (
@@ -63,7 +66,15 @@ function PlazaUserPage() {
         <Card className="p-8 text-center text-sm text-fg-2">暂时还没有打卡记录。</Card>
       ) : (
         <div className="grid max-w-[760px] gap-5">
-          {rows.map((record) => <CheckinRecordCard key={record.id} record={record} name={name} userImage={profile.image} />)}
+          {rows.map((record, index) => (
+            <CheckinRecordCard
+              key={record.id}
+              record={record}
+              name={name}
+              userImage={profile.image}
+              onImageClick={() => setLightboxIndex(index)}
+            />
+          ))}
         </div>
       )}
 
@@ -76,6 +87,17 @@ function PlazaUserPage() {
           下一页<ChevronRight size={15} />
         </Button>
       </div>
+
+      {/* 广场只浏览当前分页的图片，不跨页；图片灯箱组件与后台记录页共用。 */}
+      <ImageLightbox
+        openIndex={lightboxIndex}
+        onClose={() => setLightboxIndex(null)}
+        slides={rows.map((record) => ({
+          src: record.imageUrl,
+          alt: `${record.checkinDate} 的打卡截图`,
+          title: record.checkinDate,
+        }))}
+      />
     </main>
   )
 }

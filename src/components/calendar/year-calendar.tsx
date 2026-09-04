@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import { ImageLightbox } from '@/components/media/image-lightbox'
 import { getMyCheckinDetailFn, getYearCheckinSummaryFn } from '@/features/checkin/actions'
 import { displayBacklinkOption, displayHoursOption, formatBeijingDate, type CheckinCalendarSummary, type CheckinRecordView } from '@/features/checkin/checkin.shared'
 import { DailyCheckinForm } from './daily-checkin-form'
@@ -49,8 +50,8 @@ function CheckinMarker({ day }: { day: number }) {
   return <span className="flex h-5 min-w-5 items-center justify-center border-b-2 border-destructive"><span>{day}</span></span>
 }
 
-/** 只读展示当天已经保存的完整打卡内容。 */
-function CheckinDetail({ record }: { record: CheckinRecordView }) {
+/** 只读展示当天已经保存的完整打卡内容；图片点击后交给首页共用灯箱查看。 */
+function CheckinDetail({ record, onImageClick }: { record: CheckinRecordView; onImageClick: () => void }) {
   const publicPath = `/checkin/${encodeURIComponent(record.userId)}/${record.checkinDate}`
   return (
     <Card className="mt-5 p-5 sm:p-6">
@@ -68,7 +69,9 @@ function CheckinDetail({ record }: { record: CheckinRecordView }) {
           链接 <ExternalLink size={14} />
         </a>
       </div>
-      <img src={record.imageUrl} alt={`${record.checkinDate} 的 GSC 截图`} className="mt-5 h-auto w-full rounded-lg border border-border" />
+      <button type="button" title="查看大图" aria-label={`${record.checkinDate} 查看大图`} onClick={onImageClick} className="mt-5 block w-full cursor-zoom-in border-0 bg-transparent p-0 text-left transition-opacity hover:opacity-85">
+        <img src={record.imageUrl} alt={`${record.checkinDate} 的 GSC 截图`} className="h-auto w-full rounded-lg border border-border" />
+      </button>
       <dl className="mt-5 grid grid-cols-3 gap-3 text-center">
         <div className="rounded-lg bg-bg-alt p-3"><dt className="text-xs text-fg-3">出海小时</dt><dd className="m-0 mt-1 text-xl font-semibold">{displayHoursOption(record.hours)}</dd></div>
         <div className="rounded-lg bg-bg-alt p-3"><dt className="text-xs text-fg-3">新增外链</dt><dd className="m-0 mt-1 text-xl font-semibold">{displayBacklinkOption(record.backlinks)}</dd></div>
@@ -91,6 +94,7 @@ export function YearCalendar({ userId, initialSummary }: { userId: string | null
   const [currentStreak, setCurrentStreak] = useState(initialSummary.currentStreak)
   const [selectedRecord, setSelectedRecord] = useState<CheckinRecordView | null>(null)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [lightboxRecord, setLightboxRecord] = useState<CheckinRecordView | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
   const [detailError, setDetailError] = useState<string | null>(null)
   // 只有年度打卡摘要成功返回后，按钮才显示具体状态，避免慢网速下先闪出错误文案。
@@ -116,6 +120,7 @@ export function YearCalendar({ userId, initialSummary }: { userId: string | null
     const requestKey = userId ? `${userId}:${year}` : 'logged-out'
     setSelectedRecord(null)
     setSelectedDate(null)
+    setLightboxRecord(null)
     setDetailError(null)
     if (!userId) {
       setLoadedSummaryKey(requestKey)
@@ -177,6 +182,7 @@ export function YearCalendar({ userId, initialSummary }: { userId: string | null
     if (!userId || !checkedDates.has(checkinDate)) return
     setSelectedDate(checkinDate)
     setSelectedRecord(null)
+    setLightboxRecord(null)
     setDetailError(null)
     setDetailLoading(true)
     try {
@@ -211,6 +217,7 @@ export function YearCalendar({ userId, initialSummary }: { userId: string | null
     setShowCheckinForm(false)
     setSelectedDate(record.checkinDate)
     setSelectedRecord(record)
+    setLightboxRecord(null)
     setDetailError(null)
   }
 
@@ -279,7 +286,12 @@ export function YearCalendar({ userId, initialSummary }: { userId: string | null
 
       {detailLoading && <p className="mt-5 text-center text-sm text-fg-2">正在读取当天记录……</p>}
       {detailError && <p className="mt-5 text-center text-sm text-destructive" role="alert">{detailError}</p>}
-      {selectedRecord && selectedDate === selectedRecord.checkinDate && <CheckinDetail record={selectedRecord} />}
+      {selectedRecord && selectedDate === selectedRecord.checkinDate && <CheckinDetail record={selectedRecord} onImageClick={() => setLightboxRecord(selectedRecord)} />}
+      <ImageLightbox
+        openIndex={lightboxRecord ? 0 : null}
+        onClose={() => setLightboxRecord(null)}
+        slides={lightboxRecord ? [{ src: lightboxRecord.imageUrl, alt: `${lightboxRecord.checkinDate} 的打卡截图`, title: lightboxRecord.checkinDate }] : []}
+      />
     </section>
   )
 }
