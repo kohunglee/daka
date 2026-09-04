@@ -10,6 +10,12 @@ export const Route = createFileRoute('/{-$locale}/plaza/')({
   component: PlazaIndexPage,
 })
 
+/** 广场卡片只展示个人简介前 15 个字符，避免摘要把用户卡片撑得过高。 */
+function getBioPreview(bio: string): string {
+  const characters = Array.from(bio)
+  return characters.length > 15 ? `${characters.slice(0, 15).join('')}...` : bio
+}
+
 /** 广场首页只展示用户摘要；具体打卡内容留给用户个人小主页。 */
 function PlazaIndexPage() {
   const users = Route.useLoaderData()
@@ -48,8 +54,8 @@ function PlazaIndexPage() {
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-semibold text-foreground">{plazaUser.name}</div>
-                  <div className="mt-1 text-sm text-fg-2">已坚持 {plazaUser.checkinCount} 天</div>
-                  <div className="mt-0.5 text-xs text-fg-3">当前连续 {plazaUser.currentStreak} 天</div>
+                  <div className="mt-1 text-sm text-fg-2">当前连续坚持 {plazaUser.currentStreak} 天</div>
+                  {plazaUser.bio && <div className="mt-1 whitespace-pre-line text-xs leading-5 text-fg-3">{getBioPreview(plazaUser.bio)}</div>}
                 </div>
                 <ArrowRight size={17} className="shrink-0 text-fg-3 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
               </Card>

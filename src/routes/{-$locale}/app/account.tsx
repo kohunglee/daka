@@ -10,12 +10,14 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
 import { LogOut, Trash2 } from 'lucide-react'
 import { ManageSubscription } from '@/features/billing/components/manage-subscription'
 import { AvatarUploader } from '@/features/storage/components/avatar-uploader'
 import { use666Mode } from '@/features/admin/mode-666'
-import { getMyUserSettingsFn, setMyUserTestSettingFn } from '@/features/settings/user-settings.actions'
+import { countBioCharacters, MAX_BIO_LENGTH } from '@/features/settings/settings.shared'
+import { getMyUserSettingsFn, setMyBioFn, setMyUserTestSettingFn } from '@/features/settings/user-settings.actions'
 
 export const Route = createFileRoute('/{-$locale}/app/account')({
   head: () => ({ meta: [{ name: 'robots', content: 'noindex' }] }),
@@ -71,6 +73,11 @@ function AccountPage() {
   const [nicknameSuccess, setNicknameSuccess] = useState(false)
   const [nicknameBusy, setNicknameBusy] = useState(false)
 
+  const [bio, setBio] = useState(settings.bio)
+  const [bioError, setBioError] = useState<string | null>(null)
+  const [bioSuccess, setBioSuccess] = useState(false)
+  const [bioBusy, setBioBusy] = useState(false)
+
   const [testEnabled, setTestEnabled] = useState(settings.testEnabled)
   const [testSettingBusy, setTestSettingBusy] = useState(false)
   const [testSettingMessage, setTestSettingMessage] = useState<string | null>(null)
@@ -101,6 +108,28 @@ function AccountPage() {
     setNickname(nextNickname)
     setNicknameSuccess(true)
     await router.invalidate()
+  }
+
+  /** 保存个人简介；保留换行并通过前后端共同限制 100 个字符。 */
+  async function handleBio(e: React.FormEvent) {
+    e.preventDefault()
+    if (countBioCharacters(bio) > MAX_BIO_LENGTH) {
+      setBioError('个人简介最多 100 个字。')
+      return
+    }
+
+    setBioBusy(true)
+    setBioError(null)
+    setBioSuccess(false)
+    try {
+      const nextSettings = await setMyBioFn({ data: { bio } })
+      setBio(nextSettings.bio)
+      setBioSuccess(true)
+    } catch {
+      setBioError('个人简介保存失败，请稍后重试。')
+    } finally {
+      setBioBusy(false)
+    }
   }
 
   async function handleChangePassword(e: React.FormEvent) {
@@ -207,6 +236,32 @@ function AccountPage() {
             {nicknameSuccess && <p className="text-sm text-success">昵称已保存。</p>}
             <div>
               <Button type="submit" disabled={nicknameBusy}>{nicknameBusy ? '正在保存……' : '保存昵称'}</Button>
+            </div>
+          </form>
+        </Section>
+
+        <Section title="个人简介">
+          <form onSubmit={handleBio} className="grid gap-4">
+            <div className="field">
+              <div className="flex items-center justify-between gap-3">
+                <Label htmlFor="bio">个人简介</Label>
+                <span className="text-xs text-fg-3">{countBioCharacters(bio)} / {MAX_BIO_LENGTH}</span>
+              </div>
+              <Textarea
+                id="bio"
+                name="bio"
+                value={bio}
+                onChange={(e) => { setBio(e.target.value); setBioSuccess(false); setBioError(null) }}
+                maxLength={MAX_BIO_LENGTH}
+                rows={5}
+                placeholder="简单介绍一下自己，支持换行。"
+              />
+              <p className="mb-0 mt-1.5 text-xs text-fg-3">这段简介会显示在广场和个人小主页，最多 100 个字。</p>
+            </div>
+            {bioError && <p className="text-sm text-destructive">{bioError}</p>}
+            {bioSuccess && <p className="text-sm text-success">个人简介已保存。</p>}
+            <div>
+              <Button type="submit" disabled={bioBusy}>{bioBusy ? '正在保存……' : '保存个人简介'}</Button>
             </div>
           </form>
         </Section>

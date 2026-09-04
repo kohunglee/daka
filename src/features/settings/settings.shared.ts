@@ -9,6 +9,14 @@ export const DEFAULT_SETTINGS_JSON = '{"version":1,"testEnabled":true,"customFoo
 /** 自定义 Head/Footer HTML 的统一上限：足够容纳常见脚本，又避免误粘贴整页内容。 */
 export const MAX_CUSTOM_HTML_LENGTH = 50_000
 
+/** 广场个人简介的字符上限；换行也会原样保留并计入长度。 */
+export const MAX_BIO_LENGTH = 100
+
+/** 按用户可见字符计数，避免中文简介因 UTF-16 编码被错误计算。 */
+export function countBioCharacters(value: string): number {
+  return Array.from(value).length
+}
+
 /** 设置页当前可读的最小配置视图。 */
 export interface TestSettingsView {
   testEnabled: boolean
@@ -17,6 +25,7 @@ export interface TestSettingsView {
 /** 个人设置视图：广场默认公开，只有用户主动关闭后才隐藏。 */
 export interface UserSettingsView extends TestSettingsView {
   showInPlaza: boolean
+  bio: string
 }
 
 /** 全站设置页需要读取的已定义配置；未知键仍原样保存在 JSON 中。 */
@@ -37,6 +46,7 @@ export function readUserSettings(settingsJson: string | null | undefined): UserS
   return {
     testEnabled: typeof record.testEnabled === 'boolean' ? record.testEnabled : true,
     showInPlaza: typeof record.showInPlaza === 'boolean' ? record.showInPlaza : true,
+    bio: typeof record.bio === 'string' ? Array.from(record.bio).slice(0, MAX_BIO_LENGTH).join('') : '',
   }
 }
 
@@ -62,6 +72,13 @@ export function updateShowInPlazaJson(settingsJson: string | null | undefined, s
   const record = parseSettingsRecord(settingsJson)
   const version = typeof record.version === 'number' && Number.isInteger(record.version) && record.version > 0 ? record.version : 1
   return JSON.stringify({ ...record, version, showInPlaza })
+}
+
+/** 只更新个人简介并完整保留 settings_json 中的其他配置。 */
+export function updateBioJson(settingsJson: string | null | undefined, bio: string): string {
+  const record = parseSettingsRecord(settingsJson)
+  const version = typeof record.version === 'number' && Number.isInteger(record.version) && record.version > 0 ? record.version : 1
+  return JSON.stringify({ ...record, version, bio })
 }
 
 /** 只更新全站 Footer HTML，并完整保留其他已知和未来的 JSON 键。 */

@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card'
 import { requireUser } from '@/features/auth/middleware'
 import { getMyCheckinsFn, getMyCheckinsForExportFn } from '@/features/checkin/actions'
 import { CheckinRecordCard } from '@/features/checkin/components/checkin-record-card'
+import type { CheckinRecordView } from '@/features/checkin/checkin.shared'
 import { getEntitlement } from '@/features/billing/middleware'
 import { useTranslation } from '@/features/i18n/provider'
 import { getMyUserSettingsFn, setMyShowInPlazaFn } from '@/features/settings/user-settings.actions'
@@ -73,33 +74,13 @@ function MyRecordsPage() {
     }
   }
 
-  /**
-   * 下载当前账号的全部打卡记录。
-   * 文件名使用本地导出时间与加密随机后缀，便于用户区分多次备份文件。
-   */
+  /** 下载当前账号的全部打卡记录；CSV 使用 UTF-8 BOM，便于表格软件正确识别中文。 */
   async function exportRecords() {
     setExporting(true)
     try {
       const exportedAt = new Date()
       const rows = await getMyCheckinsForExportFn()
-      const payload = {
-        format: 'daka.run/checkins',
-        version: 1,
-        exportedAt: exportedAt.toISOString(),
-        total: rows.length,
-        records: rows.map((record) => ({
-          id: record.id,
-          date: record.checkinDate,
-          hours: record.hours,
-          backlinks: record.backlinks,
-          quality: record.quality,
-          log: record.log,
-          imageUrl: record.imageUrl,
-          imageBytes: record.imageBytes,
-          createdAt: record.createdAt,
-        })),
-      }
-      const file = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' })
+      const file = new Blob([createCheckinCsv(rows)], { type: 'text/csv;charset=utf-8' })
       const objectUrl = URL.createObjectURL(file)
       const link = document.createElement('a')
       link.href = objectUrl
@@ -122,10 +103,9 @@ function MyRecordsPage() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-center gap-3">
           <span className="rounded-lg bg-soft p-2 text-primary"><BookOpen size={22} /></span>
-          <div>
-            <h1 className="page-h">{t('app.myRecords')}</h1>
-            <p className="mt-1.5 text-[14.5px] text-fg-2">{t('app.myRecordsSub')}</p>
-          </div>
+        <div>
+          <h1 className="page-h">{t('app.myRecords')}</h1>
+        </div>
           </div>
           <Button type="button" variant="outline" size="sm" onClick={() => { void exportRecords() }} disabled={exporting}>
             <Download size={15} />{exporting ? t('app.exportRecordsBusy') : t('app.exportRecords')}
@@ -193,12 +173,35 @@ function MyRecordsPage() {
   )
 }
 
-/** 生成不覆盖旧备份的 JSON 文件名，例如 daka-records-20260901-143045-a4k7m2.json。 */
+/** 把 CSV 单元格安全转义，避免日志中的逗号、引号或换行破坏列结构。 */
+function escapeCsvCell(value: string | number): string {
+  const text = String(value)
+  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
+}
+
+/** 生成适合 Excel 和其他表格软件打开的打卡记录 CSV。 */
+function createCheckinCsv(rows: CheckinRecordView[]): string {
+  const header = ['记录 ID', '日期', '出海时间', '新增外链', '工作质量', '工作日志', '图片地址', '图片大小（字节）', '创建时间']
+  const lines = rows.map((record) => [
+    record.id,
+    record.checkinDate,
+    record.hours,
+    record.backlinks,
+    record.quality,
+    record.log,
+    record.imageUrl,
+    record.imageBytes,
+    record.createdAt,
+  ].map(escapeCsvCell).join(','))
+  return `\uFEFF${[header.join(','), ...lines].join('\r\n')}\r\n`
+}
+
+/** 生成不覆盖旧备份的 CSV 文件名，例如 daka-records-20260901-143045-a4k7m2.csv。 */
 function createExportFileName(date: Date): string {
   const pad = (value: number) => String(value).padStart(2, '0')
   const timestamp = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`
   const alphabet = 'abcdefghjkmnpqrstuvwxyz23456789'
   const randomBytes = crypto.getRandomValues(new Uint8Array(6))
   const suffix = Array.from(randomBytes, (value) => alphabet.charAt(value % alphabet.length)).join('')
-  return `daka-records-${timestamp}-${suffix}.json`
+  return `daka-records-${timestamp}-${suffix}.csv`
 }

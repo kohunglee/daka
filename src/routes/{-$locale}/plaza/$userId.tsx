@@ -58,7 +58,13 @@ function PlazaUserPage() {
         </Avatar>
         <div>
           <h1 className="page-h">{name}</h1>
-          <p className="mb-0 mt-1.5 text-sm text-fg-2">已坚持 {profile.checkinCount} 天 · 当前连续 {profile.currentStreak} 天</p>
+          <p className="mb-0 mt-1.5 text-sm text-fg-2">当前连续坚持 {profile.currentStreak} 天</p>
+          {profile.bio && (
+            <div className="mt-3 max-w-[760px] rounded-lg bg-bg-alt px-3.5 py-3">
+              <div className="mb-1 text-xs font-medium text-fg-3">简介</div>
+              <p className="mb-0 whitespace-pre-line text-sm leading-6 text-fg-2">{profile.bio}</p>
+            </div>
+          )}
         </div>
       </header>
 

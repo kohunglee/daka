@@ -131,6 +131,7 @@ export interface PlazaUserSummary {
   userId: string
   name: string
   image: string | null
+  bio: string
   checkinCount: number
   currentStreak: number
   lastCheckinDate: string
@@ -150,14 +151,15 @@ export async function listPlazaUsers(db: DB): Promise<PlazaUserSummary[]> {
     .innerJoin(dailyCheckin, eq(dailyCheckin.userId, user.id))
     .orderBy(desc(dailyCheckin.checkinDate))
 
-  const grouped = new Map<string, { name: string; image: string | null; dates: string[] }>()
+  const grouped = new Map<string, { name: string; image: string | null; bio: string; dates: string[] }>()
   for (const row of rows) {
-    if (!readUserSettings(row.settingsJson).showInPlaza) continue
+    const settings = readUserSettings(row.settingsJson)
+    if (!settings.showInPlaza) continue
     const current = grouped.get(row.userId)
     if (current) {
       current.dates.push(row.checkinDate)
     } else {
-      grouped.set(row.userId, { name: row.name, image: row.image, dates: [row.checkinDate] })
+      grouped.set(row.userId, { name: row.name, image: row.image, bio: settings.bio, dates: [row.checkinDate] })
     }
   }
 
@@ -165,6 +167,7 @@ export async function listPlazaUsers(db: DB): Promise<PlazaUserSummary[]> {
     userId,
     name: summary.name,
     image: summary.image,
+    bio: summary.bio,
     checkinCount: summary.dates.length,
     currentStreak: calculateCurrentStreak(summary.dates),
     lastCheckinDate: summary.dates[0] ?? '',
@@ -189,7 +192,8 @@ export async function listPublicPlazaUserCheckins(db: DB, userId: string, page: 
     .where(eq(user.id, userId))
     .limit(1)
   const owner = ownerRows[0]
-  if (!owner || !readUserSettings(owner.settingsJson).showInPlaza) return null
+  const ownerSettings = owner ? readUserSettings(owner.settingsJson) : null
+  if (!owner || !ownerSettings?.showInPlaza) return null
 
   const safePage = Number.isInteger(page) && page >= 0 ? Math.min(page, 100_000) : 0
   const [allDates, rows, totalRows] = await Promise.all([
@@ -217,6 +221,7 @@ export async function listPublicPlazaUserCheckins(db: DB, userId: string, page: 
       userId,
       name: owner.name,
       image: owner.image,
+      bio: ownerSettings.bio,
       checkinCount: total,
       currentStreak: calculateCurrentStreak(dates),
       lastCheckinDate: dates.at(-1) ?? '',

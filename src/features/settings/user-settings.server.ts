@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 import type { DB } from '@/db/client'
 import { user } from '@/features/auth/auth.schema'
-import { readUserSettings, updateShowInPlazaJson, updateTestSettingsJson, type UserSettingsView } from './settings.shared'
+import { MAX_BIO_LENGTH, countBioCharacters, readUserSettings, updateBioJson, updateShowInPlazaJson, updateTestSettingsJson, type UserSettingsView } from './settings.shared'
 
 /** 当前用户可读取的个人配置测试视图。 */
 /** 读取一个用户的配置 JSON，并只返回当前已定义且可供页面使用的字段。 */
@@ -45,6 +45,26 @@ export async function setUserShowInPlaza(db: DB, userId: string, showInPlaza: bo
   if (!row) throw new Error('用户不存在。')
 
   const settingsJson = updateShowInPlazaJson(row.settingsJson, showInPlaza)
+  await db
+    .update(user)
+    .set({ settingsJson, updatedAt: new Date() })
+    .where(eq(user.id, userId))
+  return readUserSettings(settingsJson)
+}
+
+/** 更新当前用户的个人简介；简介写入 settings_json，不新增数据库列。 */
+export async function setUserBio(db: DB, userId: string, bio: string): Promise<UserSettingsView> {
+  if (countBioCharacters(bio) > MAX_BIO_LENGTH) throw new Error('个人简介最多 100 个字。')
+
+  const rows = await db
+    .select({ settingsJson: user.settingsJson })
+    .from(user)
+    .where(eq(user.id, userId))
+    .limit(1)
+  const row = rows[0]
+  if (!row) throw new Error('用户不存在。')
+
+  const settingsJson = updateBioJson(row.settingsJson, bio)
   await db
     .update(user)
     .set({ settingsJson, updatedAt: new Date() })
